@@ -22,6 +22,12 @@
         "-y",
         "@modelcontextprotocol/server-memory"
       ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     }
   }
 }
