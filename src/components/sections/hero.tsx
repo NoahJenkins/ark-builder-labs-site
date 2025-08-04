@@ -18,17 +18,6 @@ export function HeroSection() {
       <div className="container mx-auto px-4 relative">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <FadeIn direction="up" delay={0.1}>
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="inline-flex items-center space-x-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium border border-primary/20"
-            >
-              <span>🚀 Building exceptional software solutions</span>
-            </motion.div>
-          </FadeIn>
-
-          <FadeIn direction="up" delay={0.2}>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               <span className="gradient-text">Building software</span>
               <br />
@@ -36,13 +25,13 @@ export function HeroSection() {
             </h1>
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.3}>
+          <FadeIn direction="up" delay={0.2}>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {SITE_CONFIG.mission}
             </p>
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.4}>
+          <FadeIn direction="up" delay={0.3}>
             <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
               <Button size="lg" className="text-base" asChild>
                 <Link href="/contact" className="inline-flex items-center space-x-2">
@@ -59,10 +48,10 @@ export function HeroSection() {
             </div>
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.5}>
+          <FadeIn direction="up" delay={0.4}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16">
               <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold gradient-text">5+</div>
+                <div className="text-3xl md:text-4xl font-bold gradient-text">9+</div>
                 <div className="text-muted-foreground">Years Experience</div>
               </div>
               <div className="text-center">
