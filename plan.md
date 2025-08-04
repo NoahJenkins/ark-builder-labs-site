@@ -51,24 +51,24 @@ Building a professional, modern company website for Ark Builder Labs using Next.
 ### Core Dependencies
 ```json
 {
-  "next": "14.0.0",
-  "react": "^18.0.0",
-  "react-dom": "^18.0.0",
-  "typescript": "^5.0.0",
-  "tailwindcss": "^3.3.0",
-  "framer-motion": "^10.0.0",
-  "next-themes": "^0.2.1",
-  "lucide-react": "^0.263.1",
-  "class-variance-authority": "^0.7.0",
-  "clsx": "^2.0.0",
-  "tailwind-merge": "^1.14.0",
-  "@next/mdx": "^14.0.0",
-  "next-mdx-remote": "^4.4.1",
+  "next": "15.4.5",
+  "react": "^19.1.1",
+  "react-dom": "^19.1.1",
+  "typescript": "^5.9.2",
+  "tailwindcss": "^4.1.11",
+  "framer-motion": "^12.23.12",
+  "next-themes": "^0.4.6",
+  "lucide-react": "^0.536.0",
+  "class-variance-authority": "^0.7.1",
+  "clsx": "^2.1.1",
+  "tailwind-merge": "^3.3.1",
+  "@next/mdx": "^15.4.5",
+  "next-mdx-remote": "^5.0.0",
   "gray-matter": "^4.0.3",
-  "react-hook-form": "^7.47.0",
-  "@cal-com/embed-react": "^1.3.0",
-  "react-intersection-observer": "^9.5.3",
-  "embla-carousel-react": "^8.0.0"
+  "react-hook-form": "^7.62.0",
+  "@calcom/embed-react": "^1.5.3",
+  "react-intersection-observer": "^9.16.0",
+  "embla-carousel-react": "^8.6.0"
 }
 ```
 
