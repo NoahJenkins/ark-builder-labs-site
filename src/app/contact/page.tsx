@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
 import { ContactForm } from "@/components/forms/contact-form"
+import { ConsultationCalendar } from "@/components/calendar/consultation-calendar"
 import { Card, CardContent } from "@/components/ui/card"
 import { SITE_CONFIG } from "@/lib/constants"
 import { Mail, Clock, MessageCircle, Calendar, MapPin, Phone } from "lucide-react"
@@ -118,21 +119,9 @@ export default function ContactPage() {
                 Prefer to talk? Book a free 30-minute consultation to discuss your project in detail.
               </p>
               
-              {/* Cal.com embed placeholder */}
-              <div className="bg-card rounded-xl border p-8 text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold mb-4">Calendar Integration</h3>
-                <p className="text-muted-foreground mb-6">
-                  Cal.com integration will be configured here to allow direct booking of consultation calls.
-                </p>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <p>📅 30-minute free consultation</p>
-                  <p>💬 Discuss your project requirements</p>
-                  <p>📊 Get initial recommendations</p>
-                  <p>📝 Receive a custom proposal</p>
-                </div>
+              {/* Cal.com embed */}
+              <div className="bg-card rounded-xl border overflow-hidden">
+                <ConsultationCalendar />
               </div>
             </FadeIn>
           </div>
