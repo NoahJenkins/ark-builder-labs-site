@@ -1,0 +1,11 @@
+# Blog Images Directory
+
+Place your blog post images in this directory.
+
+Example structure:
+- welcome-blog.jpg
+- nextjs-guide.jpg  
+- cloud-architecture.jpg
+- content/
+  - diagram-1.jpg
+  - screenshot-2.png

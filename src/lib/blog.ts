@@ -12,6 +12,7 @@ export interface BlogPost {
   featured: boolean
   content: string
   slug: string
+  image?: string
 }
 
 const postsDirectory = path.join(process.cwd(), 'content/blog')
@@ -41,6 +42,7 @@ export function getBlogPosts(): BlogPost[] {
           publishedAt: data.publishedAt || new Date().toISOString().split('T')[0],
           readTime: data.readTime || '5 min read',
           featured: data.featured || false,
+          image: data.image,
           content,
         } as BlogPost
       })
@@ -73,6 +75,7 @@ export function getBlogPost(slug: string): BlogPost | null {
       publishedAt: data.publishedAt || new Date().toISOString().split('T')[0],
       readTime: data.readTime || '5 min read',
       featured: data.featured || false,
+      image: data.image,
       content,
     } as BlogPost
   } catch (error) {

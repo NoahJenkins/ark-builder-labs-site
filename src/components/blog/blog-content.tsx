@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { FadeIn } from "@/components/animations/fade-in"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -58,8 +59,18 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
             <FadeIn key={post.id} direction="up" className="mb-16">
               <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-muted/20">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                  <div className="aspect-video lg:aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <div className="text-4xl">📝</div>
+                  <div className="aspect-video lg:aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
+                    {post.image ? (
+                      <Image
+                        src={post.image}
+                        alt={post.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 1024px) 100vw, 50vw"
+                      />
+                    ) : (
+                      <div className="text-4xl">📝</div>
+                    )}
                   </div>
                   <div className="p-8 flex flex-col justify-center">
                     <Badge className="w-fit mb-4">{post.category}</Badge>
@@ -100,8 +111,18 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
               {regularPosts.map((post, index) => (
                 <FadeIn key={post.id} direction="up" delay={index * 0.1}>
                   <Card className="h-full group hover:shadow-xl transition-all duration-300">
-                    <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-                      <div className="text-2xl">📄</div>
+                    <div className="aspect-video bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
+                      {post.image ? (
+                        <Image
+                          src={post.image}
+                          alt={post.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      ) : (
+                        <div className="text-2xl">📄</div>
+                      )}
                     </div>
                     <CardHeader>
                       <Badge className="w-fit mb-2">{post.category}</Badge>

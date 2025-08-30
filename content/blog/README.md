@@ -15,6 +15,7 @@ category: "Web Development" # or "Cloud Engineering", "AI Consulting", etc.
 publishedAt: "2024-08-30" # YYYY-MM-DD format
 readTime: "5 min read"
 featured: false # Set to true to feature on the blog homepage
+image: "/images/blog/your-image.jpg" # Optional: path to blog post image
 ---
 ```
 
@@ -32,6 +33,7 @@ featured: false # Set to true to feature on the blog homepage
 - `publishedAt` (required): Publication date in YYYY-MM-DD format
 - `readTime` (optional): Estimated reading time, defaults to "5 min read"
 - `featured` (optional): Whether to feature the post, defaults to false
+- `image` (optional): Path to blog post image, replaces emoji placeholder
 
 ## MDX Features
 
@@ -53,6 +55,7 @@ category: "Web Development"
 publishedAt: "2024-08-30"
 readTime: "8 min read"
 featured: true
+image: "/assets/images/blog/nextjs-15-guide.jpg"
 ---
 
 # Getting Started with Next.js 15
@@ -71,4 +74,57 @@ const example = "Hello World"
 \`\`\`
 
 [Learn more](https://nextjs.org)
+```
+
+## Adding Images to Blog Posts
+
+### Method 1: Frontmatter Image (Recommended)
+
+Add an `image` field to your post's frontmatter:
+
+```yaml
+---
+title: "My Blog Post"
+image: "/assets/images/blog/my-post-hero.jpg"
+---
+```
+
+**Image Requirements:**
+- Place images in `/public/assets/images/blog/` directory
+- Recommended size: 1200x630px (16:9 aspect ratio)
+- Supported formats: JPG, PNG, WebP
+- File size: Keep under 500KB for best performance
+
+### Method 2: Images Within Content
+
+You can also add images directly in your MDX content:
+
+```mdx
+![Alt text](/assets/images/blog/content-image.jpg)
+
+# Or using Next.js Image component
+import Image from 'next/image'
+
+<Image 
+  src="/assets/images/blog/content-image.jpg" 
+  alt="Description" 
+  width={600} 
+  height={400} 
+/>
+```
+
+### Image Organization
+
+```
+public/
+  assets/
+    images/
+      blog/
+        welcome-to-our-blog.png              # Featured image for welcome post
+        nextjs-performance-optimization.png  # Featured image for Next.js post
+        cloud-infrastructure-best-practices.png # Featured image for cloud post
+        ai-integration-practical-guide.png   # Featured image for AI post
+        content/
+          diagram-1.jpg                      # Images used within post content
+          screenshot-2.png                   # Screenshots or other content images
 ```
