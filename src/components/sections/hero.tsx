@@ -5,9 +5,17 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { SITE_CONFIG } from "@/lib/constants"
 import { ArrowRight, Play } from "lucide-react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { useTheme } from "next-themes"
+import { useEffect, useState } from "react"
 
 export function HeroSection() {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 py-20 md:py-32">
       {/* Background elements */}
@@ -38,6 +46,51 @@ export function HeroSection() {
           <div className="absolute top-1/3 right-1/4 w-1 h-1 rounded-full bg-accent/25 animate-float-4" />
         </div>
       </div>
+      
+      {/* Weather Animations */}
+      {mounted && (
+        <>
+          {/* Snow Animation for Light Mode */}
+          {theme === 'light' && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {Array.from({ length: 50 }, (_, i) => (
+                <div
+                  key={`snow-${i}`}
+                  className="absolute w-1 h-1 bg-blue-400 rounded-full animate-snowfall"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: '-20px',
+                    opacity: 0,
+                    animationDelay: `${Math.random() * 10}s`,
+                    animationDuration: `${3 + Math.random() * 4}s`
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          
+          {/* Rain and Lightning Animation for Dark Mode */}
+          {theme === 'dark' && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {/* Rain */}
+              {Array.from({ length: 80 }, (_, i) => (
+                <div
+                  key={`rain-${i}`}
+                  className="absolute w-0.5 h-4 bg-blue-200/50 animate-rainfall"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: '-20px',
+                    opacity: 0,
+                    animationDelay: `${Math.random() * 3}s`,
+                    animationDuration: `${0.8 + Math.random() * 0.4}s`
+                  }}
+                />
+              ))}
+              
+            </div>
+          )}
+        </>
+      )}
       
       <div className="container mx-auto px-4 relative">
         <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -223,6 +276,91 @@ export function HeroSection() {
           animation: float-4 7s ease-in-out infinite 3s;
         }
         
+        /* Weather Animation Keyframes */
+        @keyframes snowfall {
+          0% {
+            transform: translateY(-10px) translateX(0px);
+            opacity: 0;
+          }
+          5% {
+            opacity: 1;
+          }
+          95% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) translateX(20px);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes rainfall {
+          0% {
+            transform: translateY(-10px);
+            opacity: 0;
+          }
+          5% {
+            opacity: 0.8;
+          }
+          100% {
+            transform: translateY(100vh);
+            opacity: 0;
+          }
+        }
+        
+        @keyframes lightning {
+          0%, 98%, 100% {
+            opacity: 0;
+            visibility: hidden;
+          }
+          98.5% {
+            visibility: visible;
+          }
+          99%, 99.2%, 99.4% {
+            opacity: 0.8;
+            visibility: visible;
+          }
+          99.1%, 99.3% {
+            opacity: 0.2;
+            visibility: visible;
+          }
+        }
+        
+        @keyframes lightning-2 {
+          0%, 97%, 100% {
+            opacity: 0;
+            visibility: hidden;
+          }
+          97.5% {
+            visibility: visible;
+          }
+          98%, 98.4% {
+            opacity: 0.4;
+            visibility: visible;
+          }
+          98.2% {
+            opacity: 0.1;
+            visibility: visible;
+          }
+        }
+        
+        /* Weather Animation Classes */
+        .animate-snowfall {
+          animation: snowfall linear infinite;
+        }
+        
+        .animate-rainfall {
+          animation: rainfall linear infinite;
+        }
+        
+        .animate-lightning {
+          animation: lightning ease-in-out infinite;
+        }
+        
+        .animate-lightning-2 {
+          animation: lightning-2 ease-in-out infinite;
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 768px) {
           .animate-sweep-primary,
@@ -239,7 +377,11 @@ export function HeroSection() {
         .animate-float-1,
         .animate-float-2,
         .animate-float-3,
-        .animate-float-4 {
+        .animate-float-4,
+        .animate-snowfall,
+        .animate-rainfall,
+        .animate-lightning,
+        .animate-lightning-2 {
           will-change: transform, opacity;
           backface-visibility: hidden;
           transform-style: preserve-3d;
