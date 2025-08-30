@@ -17,15 +17,16 @@ export const SERVICES = [
   {
     id: "web-mobile",
     title: "Web & Mobile Development",
-    description: "Custom web applications, PWAs, and mobile-first development with React and Next.js",
+    description: "Need a landing page for your business, a custom website, or even a mobile app? We've got you covered.",
     icon: "Code2",
-    technologies: ["React", "Next.js", "React Native", "TypeScript"],
+    technologies: ["React", "Next.js", "React Native", "TypeScript", "Tailwind CSS"],
     features: [
-      "Custom web applications",
-      "Progressive Web Apps (PWAs)",
-      "Mobile-first development",
-      "E-commerce solutions",
-      "API development"
+      "Full Stack Web Application",
+      "Progressive Web Apps",
+      "SEO Optimization",
+      "E-commerce Solution",
+      "Landing Pages",
+      "API Development"
     ]
   },
   {
