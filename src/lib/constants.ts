@@ -36,23 +36,24 @@ export const SERVICES = [
     icon: "Cloud",
     technologies: ["Azure", "AWS", "Vercel", "Docker", "GitHub Actions", "Terraform"],
     features: [
-      "Cloud architecture design",
+      "Cloud Architecture Design",
       "Security Enhancements",
-      "Performance optimization",
-      "Cost optimization",
-      "DevOps implementation"
+      "Performance Optimization",
+      "Cost Optimization",
+      "DevOps Implementation"
     ]
   },
   {
     id: "ai-consulting",
     title: "AI Technology Consulting",
-    description: "AI integration strategies, machine learning implementation, and ethical AI practices",
+    description: "Whether you need a custom chatbot, an agent to respond to emails or manage phone calls, or you just want to learn how to use ChatGPT for your business, we can help.",
     icon: "Brain",
-    technologies: ["Gemini", "Azure AI", "OpenAI", "LangChain", "Hugging Face"],
+    technologies: ["Gemini", "Azure AI", "OpenAI", "CrewAI", "Ollama"],
     features: [
       "Custom Agent Solutions",
       "Training/finetuning LLMs",
-      "AI integration strategies"
+      "AI Integration Strategies",
+      "Cost Optimization"
     ]
   }
 ] as const
