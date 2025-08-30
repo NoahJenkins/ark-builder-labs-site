@@ -62,27 +62,32 @@ export const PARTNERS = [
   {
     name: "Microsoft",
     description: "Azure cloud solutions and enterprise development",
-    logo: "/partners/microsoft.svg"
+    logo: "/assets/images/Microsoft_logo.svg.png"
+  },
+  {
+    name: "Amazon",
+    description: "AWS cloud infrastructure and services",
+    logo: "/assets/images/29026e-aws-dark.svg"
   },
   {
     name: "Vercel",
     description: "Next.js hosting and edge computing",
-    logo: "/partners/vercel.svg"
+    logo: "/assets/images/logo-vercel.svg"
   },
   {
     name: "HashiCorp",
     description: "Infrastructure as Code expertise",
-    logo: "/partners/hashicorp.svg"
+    logo: "/assets/images/hashicorp.svg"
   },
   {
     name: "GitHub",
     description: "DevOps and collaboration tools",
-    logo: "/partners/github.svg"
+    logo: "/assets/images/Octicons-mark-github.svg.png"
   },
   {
-    name: "Wix",
-    description: "Website solutions for small businesses",
-    logo: "/partners/wix.svg"
+    name: "Google",
+    description: "Gemini models powered by Google Cloud",
+    logo: "/assets/images/gcp.png"
   }
 ] as const
 
