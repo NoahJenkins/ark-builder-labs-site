@@ -30,7 +30,7 @@ export function ServicesOverview() {
             </p>
           </FadeIn>
 
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 md:items-stretch">
             {SERVICES.map((service, index) => {
               const IconComponent = iconMap[service.icon as keyof typeof iconMap]
               
@@ -39,20 +39,21 @@ export function ServicesOverview() {
                   key={service.id}
                   whileHover={{ y: -5 }}
                   transition={{ duration: 0.2 }}
+                  className="h-full"
                 >
-                  <Card className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm">
+                  <Card className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm flex flex-col">
                     <CardHeader className="text-center pb-4">
                       <div className="mx-auto mb-4 w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <IconComponent className="h-8 w-8 text-white" />
                       </div>
                       <CardTitle className="text-xl md:text-2xl">{service.title}</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                      <p className="text-muted-foreground text-center">
+                    <CardContent className="space-y-6 flex-1 flex flex-col">
+                      <p className="text-muted-foreground text-center min-h-[48px] flex items-center justify-center">
                         {service.description}
                       </p>
                       
-                      <div className="flex flex-wrap gap-2 justify-center">
+                      <div className="flex flex-wrap gap-2 justify-center min-h-[32px] items-center">
                         {service.technologies.slice(0, 3).map((tech) => (
                           <Badge key={tech} variant="secondary" className="text-xs">
                             {tech}
@@ -60,7 +61,7 @@ export function ServicesOverview() {
                         ))}
                       </div>
 
-                      <ul className="space-y-2">
+                      <ul className="space-y-2 flex-1 min-h-[72px]">
                         {service.features.slice(0, 3).map((feature) => (
                           <li key={feature} className="text-sm text-muted-foreground flex items-start">
                             <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 mr-3 flex-shrink-0" />
@@ -69,7 +70,7 @@ export function ServicesOverview() {
                         ))}
                       </ul>
 
-                      <Button variant="ghost" className="w-full group/btn" asChild>
+                      <Button variant="ghost" className="w-full group/btn mt-auto" asChild>
                         <Link href={`/services/${service.id}`}>
                           Learn More
                           <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />

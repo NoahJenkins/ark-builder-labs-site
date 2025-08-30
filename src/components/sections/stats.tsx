@@ -2,7 +2,7 @@
 
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
-import { Award, Users, Rocket, Target } from "lucide-react"
+import { Award, Users, Rocket, Target, Cloud, Lock } from "lucide-react"
 
 const stats = [
   {
@@ -12,16 +12,16 @@ const stats = [
     description: "Delivering quality software solutions"
   },
   {
-    icon: Users,
-    value: "50+",
-    label: "Happy Clients",
-    description: "Trusted by businesses worldwide"
+    icon: Lock,
+    value: "Security",
+    label: "First Design",
+    description: "We build with security in the front of our mind"
   },
   {
-    icon: Rocket,
-    value: "100+",
-    label: "Projects Delivered",
-    description: "From concept to production"
+    icon: Cloud,
+    value: "Multi Cloud",
+    label: "Certified Partner",
+    description: "We are certified with Microsoft, Amazon, GitHub, and more!"
   },
   {
     icon: Target,
