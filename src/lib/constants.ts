@@ -19,7 +19,7 @@ export const SERVICES = [
     title: "Web & Mobile Development",
     description: "Need a landing page for your business, a custom website, or even a mobile app? We've got you covered.",
     icon: "Code2",
-    technologies: ["React", "Next.js", "React Native", "TypeScript", "Tailwind CSS"],
+    technologies: ["React", "Next.js", "React Native", "TypeScript", "Tailwind CSS", "Jest", "Playwright"],
     features: [
       "Full Stack Web Application",
       "Progressive Web Apps",
@@ -32,12 +32,12 @@ export const SERVICES = [
   {
     id: "cloud-engineering",
     title: "Cloud Engineering & Consulting",
-    description: "Cloud architecture, migration strategies, and optimization for Azure, AWS, and Vercel",
+    description: "Need hosting for your website or a complete infrastructure setup for your enterprise application? We build custom solutions tailored to your specific needs.",
     icon: "Cloud",
-    technologies: ["Azure", "AWS", "Vercel", "Docker", "Kubernetes"],
+    technologies: ["Azure", "AWS", "Vercel", "Docker", "GitHub Actions", "Terraform"],
     features: [
       "Cloud architecture design",
-      "Migration strategies",
+      "Security Enhancements",
       "Performance optimization",
       "Cost optimization",
       "DevOps implementation"
