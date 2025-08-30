@@ -10,6 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 
+
 # testing
 /coverage
 
@@ -27,6 +28,7 @@
 # AI assistant files
 .claude/
 .roo/
+.roomodes
 
 # debug
 npm-debug.log*
