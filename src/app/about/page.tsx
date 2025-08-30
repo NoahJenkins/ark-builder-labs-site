@@ -60,9 +60,10 @@ export default function AboutPage() {
               <div className="prose prose-lg max-w-none text-center mb-16">
                 <h2 className="text-3xl md:text-4xl font-bold mb-8">Our Story</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Like Noah's ark that provided safety and shelter during uncertain times, 
-                  Ark Builder Labs was founded on the principle of creating reliable, enduring 
-                  software solutions that help businesses navigate the ever-changing digital landscape.
+                  In the same way that Noah was faithful with the creation of the Ark as directed by God, 
+                  Ark Builder Labs was founded on the principal of being faithful with the projects we have 
+                  been given to steward, creating reliable, enduring software solutions that help businesses 
+                  navigate the ever-changing digital landscape.
                 </p>
               </div>
             </FadeIn>
@@ -83,7 +84,7 @@ export default function AboutPage() {
                 </div>
                 <div className="relative">
                   <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <div className="text-6xl">⚓</div>
+                    <img src="/assets/images/logo.png" alt="Ark Builder Labs Logo" className="w-full h-full object-contain rounded-2xl" />
                   </div>
                 </div>
               </div>
