@@ -47,13 +47,11 @@ export const SERVICES = [
     title: "AI Technology Consulting",
     description: "AI integration strategies, machine learning implementation, and ethical AI practices",
     icon: "Brain",
-    technologies: ["TensorFlow", "PyTorch", "OpenAI", "LangChain", "Hugging Face"],
+    technologies: ["Gemini", "Azure AI", "OpenAI", "LangChain", "Hugging Face"],
     features: [
-      "AI integration strategies",
-      "Machine learning implementation",
-      "Natural language processing",
-      "Computer vision solutions",
-      "Ethical AI practices"
+      "Custom Agent Solutions",
+      "Training/finetuning LLMs",
+      "AI integration strategies"
     ]
   }
 ] as const

@@ -177,31 +177,6 @@ export default function BlogPage() {
               ))}
             </div>
 
-            {/* Coming Soon Message */}
-            <FadeIn direction="up" className="text-center mt-16">
-              <Card className="max-w-2xl mx-auto">
-                <CardContent className="p-12">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-                    <div className="text-2xl">🚀</div>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-4">More Content Coming Soon</h3>
-                  <p className="text-muted-foreground mb-6">
-                    We're working on expanding our blog with more technical insights, tutorials, 
-                    and industry analysis. Subscribe to our newsletter to get notified when new posts are published.
-                  </p>
-                  <div className="flex items-center justify-center space-x-4">
-                    <input 
-                      type="email" 
-                      placeholder="Enter your email" 
-                      className="px-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <button className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                      Subscribe
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            </FadeIn>
           </div>
         </div>
       </section>

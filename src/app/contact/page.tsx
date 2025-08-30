@@ -26,13 +26,6 @@ const contactMethods = [
     value: "24 hours",
     action: null
   },
-  {
-    icon: MessageCircle,
-    title: "Live Chat",
-    description: "Quick questions and support",
-    value: "Available 9am-5pm EST",
-    action: null
-  }
 ]
 
 const faqs = [
@@ -78,7 +71,7 @@ export default function ContactPage() {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20 max-w-4xl mx-auto">
               {contactMethods.map((method, index) => (
                 <Card key={index} className="text-center group hover:shadow-lg transition-all duration-300">
                   <CardContent className="p-8">

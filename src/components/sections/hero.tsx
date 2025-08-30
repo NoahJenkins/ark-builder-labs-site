@@ -19,9 +19,9 @@ export function HeroSection() {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <FadeIn direction="up" delay={0.1}>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-              <span className="gradient-text">Building software</span>
+              <span className="gradient-text">Building Software</span>
               <br />
-              <span className="text-foreground">for every season</span>
+              <span className="text-foreground">for Every Season</span>
             </h1>
           </FadeIn>
 
