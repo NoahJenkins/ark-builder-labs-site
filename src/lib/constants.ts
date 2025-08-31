@@ -6,10 +6,10 @@ export const SITE_CONFIG = {
   mission: "Our mission at Ark Builder Labs is to serve our clients with honesty, integrity, a servant's heart, and a steward's attitude, creating lasting value and forging enduring relationships.",
   email: "noah@arkbuilderlabs.com",
   social: {
-    linkedin: "#",
-    twitter: "#",
-    instagram: "#",
-    facebook: "#"
+    linkedin: "https://www.linkedin.com/company/arkbuilderlabs",
+    twitter: "https://x.com/arkbuilderlabs",
+    instagram: "https://www.instagram.com/arkbuilderlabs",
+    facebook: "https://www.facebook.com/people/Ark-Builder-Labs/61578219340498/"
   }
 } as const
 

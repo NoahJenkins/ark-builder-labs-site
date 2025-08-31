@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/forms/contact-form"
 import { ConsultationCalendar } from "@/components/calendar/consultation-calendar"
 import { Card, CardContent } from "@/components/ui/card"
 import { SITE_CONFIG } from "@/lib/constants"
-import { Mail, Clock, MessageCircle, Calendar, MapPin, Phone } from "lucide-react"
+import { Mail, Clock, MessageCircle, Calendar, MapPin, Phone, Linkedin, X, Instagram, Facebook } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -28,6 +28,20 @@ const contactMethods = [
     action: null
   },
 ]
+
+const socialIcons = {
+  linkedin: Linkedin,
+  twitter: X,
+  instagram: Instagram,
+  facebook: Facebook,
+}
+
+const socialLabels = {
+  linkedin: "linkedin",
+  twitter: "X/Twitter", 
+  instagram: "instagram",
+  facebook: "facebook",
+}
 
 const faqs = [
   {
@@ -178,11 +192,11 @@ export default function ContactPage() {
                       <h3 className="text-xl font-bold">Our Location</h3>
                     </div>
                     <p className="text-muted-foreground mb-4">
-                      We're a remote-first company, serving clients globally while maintaining 
-                      personal connections and local expertise.
+                      Based in Fort Worth, Texas, we proudly serve our local community while 
+                      leveraging remote capabilities to work with clients across the United States.
                     </p>
-                    <p className="font-medium">🌍 Remote-First, Global Reach</p>
-                    <p className="text-sm text-muted-foreground">Available across all time zones</p>
+                    <p className="font-medium">🤠 Fort Worth, Texas</p>
+                    <p className="text-sm text-muted-foreground">Serving our local community & clients nationwide.</p>
                   </CardContent>
                 </Card>
               </FadeIn>
@@ -198,18 +212,21 @@ export default function ContactPage() {
                       Stay updated with our latest projects, insights, and technology updates.
                     </p>
                     <div className="space-y-3">
-                      {Object.entries(SITE_CONFIG.social).map(([platform, url]) => (
-                        <a 
-                          key={platform}
-                          href={url}
-                          className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors group"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-muted group-hover:bg-primary/10 flex items-center justify-center">
-                            <span className="text-sm font-medium capitalize">{platform[0]}</span>
-                          </div>
-                          <span className="capitalize font-medium">{platform}</span>
-                        </a>
-                      ))}
+                      {Object.entries(SITE_CONFIG.social).map(([platform, url]) => {
+                        const IconComponent = socialIcons[platform as keyof typeof socialIcons]
+                        return (
+                          <a 
+                            key={platform}
+                            href={url}
+                            className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors group"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-muted group-hover:bg-primary/10 flex items-center justify-center">
+                              {IconComponent && <IconComponent className="w-4 h-4" />}
+                            </div>
+                            <span className="capitalize font-medium">{socialLabels[platform as keyof typeof socialLabels]}</span>
+                          </a>
+                        )
+                      })}
                     </div>
                   </CardContent>
                 </Card>
