@@ -4,6 +4,7 @@ import { Providers } from "./providers";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
 import { SITE_CONFIG } from "@/lib/constants";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: {
@@ -63,6 +64,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <Analytics />
         </Providers>
       </body>
     </html>
