@@ -76,7 +76,7 @@ export function MobileNavigation() {
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative z-50"
+        className="relative z-[1000000]"
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         <span className="sr-only">Toggle menu</span>
@@ -122,7 +122,21 @@ export function MobileNavigation() {
                   color: isDarkMode ? '#ffffff' : '#000000'
                 }}
               >
-              <div className="flex flex-col space-y-6 mt-16">
+                <div className="flex justify-end mb-4">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsOpen(false)}
+                    className="h-8 w-8"
+                    style={{
+                      color: isDarkMode ? '#ffffff' : '#000000'
+                    }}
+                  >
+                    <X className="h-5 w-5" />
+                    <span className="sr-only">Close menu</span>
+                  </Button>
+                </div>
+              <div className="flex flex-col space-y-6 mt-8">
                 {NAVIGATION_ITEMS.map((item) => (
                   <Link
                     key={item.href}
