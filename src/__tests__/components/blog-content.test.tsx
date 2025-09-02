@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BlogContent } from '@/components/blog/blog-content'
 import type { BlogPost } from '@/lib/blog'
@@ -146,8 +146,6 @@ describe('BlogContent', () => {
 
   it('renders "Read More" links with correct URLs', () => {
     render(<BlogContent blogPosts={mockBlogPosts} categories={mockCategories} />)
-    
-    const readMoreLinks = screen.getAllByText(/read/i)
     
     // Check that links point to correct blog post URLs
     expect(screen.getByRole('link', { name: /read more/i })).toHaveAttribute('href', '/blog/post-1')

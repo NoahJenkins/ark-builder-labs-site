@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/forms/contact-form"
 import { ConsultationCalendar } from "@/components/calendar/consultation-calendar"
 import { Card, CardContent } from "@/components/ui/card"
 import { SITE_CONFIG } from "@/lib/constants"
-import { Mail, Clock, MessageCircle, Calendar, MapPin, Phone, Linkedin, X, Instagram, Facebook } from "lucide-react"
+import { Mail, Clock, MessageCircle, Calendar, MapPin, Linkedin, X, Instagram, Facebook } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Contact Us",

@@ -3,9 +3,8 @@ import Image from "next/image"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { PARTNERS } from "@/lib/constants"
-import { Award, Shield, Zap, Users, CheckCircle } from "lucide-react"
+import { Award, Shield, Zap, Users } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Partnerships & Certifications",

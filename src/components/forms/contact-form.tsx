@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { SERVICES } from "@/lib/constants"
 import { Send, CheckCircle, AlertCircle } from "lucide-react"
 
@@ -19,7 +18,7 @@ interface ContactFormData {
   _hp?: string // honeypot field for spam protection
 }
 
-type ExtendedFormspreePayload = ContactFormData & { [key: string]: unknown }
+type ExtendedFormspreePayload = ContactFormData & { [key: string]: string | undefined }
 
 import { FORMSPREE_CONFIG } from "@/lib/constants"
 import {
@@ -28,7 +27,6 @@ import {
   recordSubmission,
   throttleSubmission,
   isHoneypotTripped,
-  FormspreePayload
 } from "@/lib/formspree"
 
 export function ContactForm() {
@@ -82,7 +80,7 @@ export function ContactForm() {
         } else {
           result = { ok: false, error: "Local API error", status: response.status }
         }
-      } catch (error) {
+      } catch {
         result = { ok: false, error: "Network error" }
       }
     }

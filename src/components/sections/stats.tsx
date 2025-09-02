@@ -2,7 +2,7 @@
 
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
-import { Award, Users, Rocket, Target, Cloud, Lock } from "lucide-react"
+import { Award, Target, Cloud, Lock } from "lucide-react"
 
 const stats = [
   {

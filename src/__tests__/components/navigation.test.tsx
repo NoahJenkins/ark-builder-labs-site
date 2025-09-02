@@ -9,7 +9,7 @@ jest.mock('next/navigation', () => ({
 
 describe('Navigation', () => {
   beforeEach(() => {
-    const { usePathname } = require('next/navigation')
+    const { usePathname } = jest.requireMock('next/navigation')
     usePathname.mockReturnValue('/')
   })
 
@@ -39,7 +39,7 @@ describe('Navigation', () => {
   })
 
   it('highlights active navigation item', () => {
-    const { usePathname } = require('next/navigation')
+    const { usePathname } = jest.requireMock('next/navigation')
     usePathname.mockReturnValue('/about')
     
     render(<Navigation />)
@@ -49,7 +49,7 @@ describe('Navigation', () => {
   })
 
   it('applies default styling to inactive navigation items', () => {
-    const { usePathname } = require('next/navigation')
+    const { usePathname } = jest.requireMock('next/navigation')
     usePathname.mockReturnValue('/about')
     
     render(<Navigation />)

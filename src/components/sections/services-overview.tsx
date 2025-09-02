@@ -31,7 +31,7 @@ export function ServicesOverview() {
           </FadeIn>
 
           <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 md:items-stretch">
-            {SERVICES.map((service, index) => {
+            {SERVICES.map((service) => {
               const IconComponent = iconMap[service.icon as keyof typeof iconMap]
               
               return (
