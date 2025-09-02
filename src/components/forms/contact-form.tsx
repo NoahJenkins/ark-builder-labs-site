@@ -16,43 +16,84 @@ interface ContactFormData {
   company?: string
   service: string
   message: string
+  _hp?: string // honeypot field for spam protection
 }
+
+type ExtendedFormspreePayload = ContactFormData & { [key: string]: unknown }
+
+import { FORMSPREE_CONFIG } from "@/lib/constants"
+import {
+  submitToFormspree,
+  canSubmitForm,
+  recordSubmission,
+  throttleSubmission,
+  isHoneypotTripped,
+  FormspreePayload
+} from "@/lib/formspree"
 
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error' | 'rate-limit' | 'spam'>('idle')
+  const [lastSubmit, setLastSubmit] = useState(0)
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors }
-  } = useForm<ContactFormData>()
+  } = useForm<ContactFormData & { _hp?: string }>()
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (data: ContactFormData & { _hp?: string }) => {
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (response.ok) {
-        setSubmitStatus('success')
-        reset()
-      } else {
-        setSubmitStatus('error')
-      }
-    } catch (error) {
-      setSubmitStatus('error')
-    } finally {
+    // Honeypot spam protection
+    if (isHoneypotTripped(data as ExtendedFormspreePayload)) {
+      setSubmitStatus('spam')
       setIsSubmitting(false)
+      return
     }
+
+    // Client-side rate limiting
+    if (!canSubmitForm() || !throttleSubmission(lastSubmit)) {
+      setSubmitStatus('rate-limit')
+      setIsSubmitting(false)
+      return
+    }
+
+    setLastSubmit(Date.now())
+    recordSubmission()
+
+    // Use Formspree if enabled, else fallback to local API
+    let result;
+    if (FORMSPREE_CONFIG.enabled) {
+      result = await submitToFormspree(data as ExtendedFormspreePayload, FORMSPREE_CONFIG.endpoint)
+    } else {
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        if (response.ok) {
+          result = { ok: true, message: "Submission successful." }
+        } else {
+          result = { ok: false, error: "Local API error", status: response.status }
+        }
+      } catch (error) {
+        result = { ok: false, error: "Network error" }
+      }
+    }
+
+    if (result.ok) {
+      setSubmitStatus('success')
+      reset()
+    } else {
+      setSubmitStatus(result.error === "rate-limit" ? "rate-limit" : "error")
+    }
+    setIsSubmitting(false)
   }
 
   return (

@@ -75,11 +75,16 @@ A modern, professional company website built with Next.js 15, featuring bold ani
    ```
 
 3. **Set up environment variables**:
-   Create a `.env.local` file in the root directory:
+   Create a `.env.local` file in the root directory and add the following:
    ```env
+   # General
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
    CONTACT_EMAIL=your-email@example.com
    CALCOM_LINK=your-cal-link
+
+   # Formspree for contact form
+   NEXT_PUBLIC_USE_FORMSPREE=true
+   NEXT_PUBLIC_FORMSPREE_ENDPOINT=https://formspree.io/f/your-form-id
    ```
 
 4. **Run the development server**:
@@ -161,10 +166,9 @@ CONTACT_EMAIL=noah@arkbuilderlabs.com
 # Calendar Integration
 CALCOM_LINK=your-cal-link
 
-# Email Service (for contact form)
-# Add your email service configuration here
-# SENDGRID_API_KEY=your-sendgrid-key
-# MAILGUN_API_KEY=your-mailgun-key
+# Formspree Integration
+NEXT_PUBLIC_USE_FORMSPREE=true
+NEXT_PUBLIC_FORMSPREE_ENDPOINT=https://formspree.io/f/your-form-id
 ```
 
 ### Customization
