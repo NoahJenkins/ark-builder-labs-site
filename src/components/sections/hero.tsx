@@ -24,26 +24,26 @@ export function HeroSection() {
       {/* Dynamic Swiping Animation Background */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Primary Sweep */}
-        <div className="absolute w-full h-full animate-sweep-primary">
+        <div className="absolute w-full h-full animate-sweep-primary opacity-0">
           <div className="absolute top-0 -left-1/4 w-1/2 h-full bg-gradient-to-r from-transparent via-primary/10 to-transparent transform -skew-x-12" />
         </div>
         
         {/* Secondary Sweep */}
-        <div className="absolute w-full h-full animate-sweep-secondary">
+        <div className="absolute w-full h-full animate-sweep-secondary opacity-0">
           <div className="absolute top-0 -right-1/4 w-1/2 h-full bg-gradient-to-r from-transparent via-accent/8 to-transparent transform skew-x-12" />
         </div>
         
         {/* Tertiary Sweep */}
-        <div className="absolute w-full h-full animate-sweep-tertiary">
+        <div className="absolute w-full h-full animate-sweep-tertiary opacity-0">
           <div className="absolute top-0 -left-1/3 w-2/3 h-full bg-gradient-to-r from-transparent via-primary/6 to-transparent transform -skew-x-6" />
         </div>
         
         {/* Floating Particles */}
         <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-primary/20 animate-float-1" />
-          <div className="absolute top-3/4 right-1/3 w-1 h-1 rounded-full bg-accent/30 animate-float-2" />
-          <div className="absolute top-1/2 left-2/3 w-1.5 h-1.5 rounded-full bg-primary/15 animate-float-3" />
-          <div className="absolute top-1/3 right-1/4 w-1 h-1 rounded-full bg-accent/25 animate-float-4" />
+          <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-primary/20 animate-float-1 opacity-0" />
+          <div className="absolute top-3/4 right-1/3 w-1 h-1 rounded-full bg-accent/30 animate-float-2 opacity-0" />
+          <div className="absolute top-1/2 left-2/3 w-1.5 h-1.5 rounded-full bg-primary/15 animate-float-3 opacity-0" />
+          <div className="absolute top-1/3 right-1/4 w-1 h-1 rounded-full bg-accent/25 animate-float-4 opacity-0" />
         </div>
       </div>
       
@@ -87,6 +87,28 @@ export function HeroSection() {
                 />
               ))}
               
+              {/* Lightning Effects - positioned to avoid text areas */}
+              <div 
+                className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-blue-200/10 via-white/5 to-transparent animate-lightning opacity-0 invisible"
+                style={{
+                  animationDuration: `${8 + Math.random() * 4}s`,
+                  animationDelay: `${Math.random() * 5}s`,
+                }}
+              />
+              <div 
+                className="absolute top-0 right-0 w-2/3 h-1/4 bg-gradient-to-bl from-blue-100/8 via-white/3 to-transparent animate-lightning-2 opacity-0 invisible"
+                style={{
+                  animationDuration: `${10 + Math.random() * 6}s`,
+                  animationDelay: `${2 + Math.random() * 8}s`,
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-1/4 w-1/2 h-1/5 bg-gradient-to-t from-blue-200/6 via-white/2 to-transparent animate-lightning opacity-0 invisible"
+                style={{
+                  animationDuration: `${12 + Math.random() * 8}s`,
+                  animationDelay: `${4 + Math.random() * 6}s`,
+                }}
+              />
             </div>
           )}
         </>
