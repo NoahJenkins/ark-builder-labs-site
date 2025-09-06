@@ -105,6 +105,9 @@ test.describe('Responsive Design', () => {
     for (const viewport of viewports) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto('/contact');
+      
+      // Wait for responsive layout to settle, especially important for Firefox
+      await page.waitForTimeout(500);
 
       // Form should be visible
       const form = page.locator('form');
@@ -123,6 +126,8 @@ test.describe('Responsive Design', () => {
 
       // Form fields should be large enough for touch interaction on mobile
       if (viewport.width <= 768) {
+        // Wait a bit more for layout to fully stabilize before measuring
+        await page.waitForTimeout(200);
         const fieldHeight = await nameField.boundingBox();
         if (fieldHeight) {
           expect(fieldHeight.height).toBeGreaterThanOrEqual(40); // Minimum touch target size

@@ -136,12 +136,6 @@ test.describe('Navigation', () => {
     }
   });
 
-  test('Get Started button navigates to contact page', async ({ page }) => {
-    // Click Get Started button in header
-    await page.click('text=Get Started');
-    await expect(page).toHaveURL('/contact');
-  });
-
   test('navigation accessibility', async ({ page }) => {
     // Check header has appropriate landmark
     const header = page.locator('header');

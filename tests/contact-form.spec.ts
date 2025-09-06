@@ -57,7 +57,7 @@ test.describe('Contact Form', () => {
     await expect(page.locator('text=Message is required')).toBeVisible();
   });
 
-  test.skip('validates email format', async ({ page }) => {
+  test.skip('validates email format', async () => {
     // Skip this test for now - email validation might be handled differently
     // TODO: Investigate actual email validation implementation
   });

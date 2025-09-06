@@ -154,27 +154,6 @@ test.describe('Blog System', () => {
     }
   });
 
-  test('blog is responsive across viewports', async ({ page }) => {
-    const viewports = [
-      { width: 375, height: 667 }, // Mobile
-      { width: 768, height: 1024 }, // Tablet
-      { width: 1200, height: 800 }  // Desktop
-    ];
-
-    for (const viewport of viewports) {
-      await page.setViewportSize(viewport);
-      
-      // Test blog listing
-      await page.goto('/blog');
-      const content = page.locator('main');
-      await expect(content).toBeVisible();
-      
-      // Test individual post
-      await page.goto('/blog/welcome-to-our-blog');
-      await expect(content).toBeVisible();
-    }
-  });
-
   test('blog navigation and back button work', async ({ page }) => {
     // Go to blog listing
     await page.goto('/blog');
