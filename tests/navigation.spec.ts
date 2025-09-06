@@ -147,18 +147,43 @@ test.describe('Navigation', () => {
     const header = page.locator('header');
     await expect(header).toBeVisible();
 
-    // Check navigation has nav element
-    const nav = page.locator('nav');
-    await expect(nav).toBeVisible();
+    const viewport = page.viewportSize();
+    const isMobile = viewport && viewport.width < 768;
 
-    // Check all navigation links are keyboard accessible
-    const navLinks = page.locator('nav a');
-    const linkCount = await navLinks.count();
-    
-    for (let i = 0; i < linkCount; i++) {
-      const link = navLinks.nth(i);
-      await expect(link).toBeVisible();
-      await expect(link).toHaveAttribute('href');
+    if (isMobile) {
+      // On mobile, check mobile navigation button is accessible
+      const mobileNavButton = page.locator('button[aria-label*="menu"], button:has(span:has-text("Toggle menu"))');
+      await expect(mobileNavButton).toBeVisible();
+      
+      // Test that mobile nav can be opened
+      await mobileNavButton.click();
+      await page.waitForTimeout(500); // Wait for animation
+      
+      // Check mobile navigation links are accessible
+      const mobileNavLinks = page.locator('[data-mobile-menu="true"] a');
+      const linkCount = await mobileNavLinks.count();
+      
+      for (let i = 0; i < linkCount; i++) {
+        const link = mobileNavLinks.nth(i);
+        await expect(link).toHaveAttribute('href');
+      }
+      
+      // Close mobile nav
+      await page.keyboard.press('Escape');
+    } else {
+      // On desktop, check navigation has nav element
+      const nav = page.locator('nav');
+      await expect(nav).toBeVisible();
+
+      // Check all navigation links are keyboard accessible
+      const navLinks = page.locator('nav a');
+      const linkCount = await navLinks.count();
+      
+      for (let i = 0; i < linkCount; i++) {
+        const link = navLinks.nth(i);
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute('href');
+      }
     }
   });
 

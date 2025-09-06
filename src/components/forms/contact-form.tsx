@@ -77,6 +77,8 @@ export function ContactForm() {
         })
         if (response.ok) {
           result = { ok: true, message: "Submission successful." }
+        } else if (response.status === 429) {
+          result = { ok: false, error: "rate-limit", status: response.status }
         } else {
           result = { ok: false, error: "Local API error", status: response.status }
         }
@@ -203,6 +205,13 @@ export function ContactForm() {
             <div className="flex items-center space-x-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
               <AlertCircle className="h-5 w-5 text-destructive" />
               <p className="text-destructive">Something went wrong. Please try again or email us directly.</p>
+            </div>
+          )}
+
+          {submitStatus === 'rate-limit' && (
+            <div className="flex items-center space-x-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <p className="text-destructive">Rate limit exceeded</p>
             </div>
           )}
 
