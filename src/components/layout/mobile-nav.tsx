@@ -38,37 +38,7 @@ export function MobileNavigation() {
     return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
-    if (isOpen) {
-      console.log("🔍 Mobile Nav Debug Info (Aggressive):")
-      console.log("- Menu is open")
-
-      const backdropElement = document.querySelector('[data-mobile-backdrop="true"]')
-      const menuElement = document.querySelector('[data-mobile-menu="true"]')
-
-      if (backdropElement) {
-        const computedStyle = window.getComputedStyle(backdropElement)
-        console.log("  Backdrop:")
-        console.log("  - Background color:", computedStyle.backgroundColor)
-        console.log("  - Z-index:", computedStyle.zIndex)
-        console.log("  - Backdrop Filter:", computedStyle.backdropFilter)
-      } else {
-        console.log("  Backdrop element not found.")
-      }
-
-      if (menuElement) {
-        const computedStyle = window.getComputedStyle(menuElement)
-        console.log("  Menu Panel:")
-        console.log("  - Background color:", computedStyle.backgroundColor)
-        console.log("  - Z-index:", computedStyle.zIndex)
-        console.log("  - Backdrop Filter:", computedStyle.backdropFilter)
-        console.log("  - CSS --card variable:", getComputedStyle(document.documentElement).getPropertyValue('--card'))
-        console.log("  - CSS --color-card variable:", getComputedStyle(document.documentElement).getPropertyValue('--color-card'))
-      } else {
-        console.log("  Menu Panel element not found.")
-      }
-    }
-  }, [isOpen])
+  // Removed debug logging for cleaner console output
 
   return (
     <div className="md:hidden">
