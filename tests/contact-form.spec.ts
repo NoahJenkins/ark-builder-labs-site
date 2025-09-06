@@ -2,6 +2,29 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Contact Form', () => {
   test.beforeEach(async ({ page }) => {
+    // Mock form submission to prevent actual submissions
+    await page.route('**/api/contact', async (route) => {
+      const request = route.request();
+      if (request.method() === 'POST') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ success: true, message: 'Mock response - form not actually submitted' })
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    // Also mock external form services (like Formspree)
+    await page.route('**/formspree.io/**', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, message: 'Mock response - form not actually submitted' })
+      });
+    });
+
     await page.goto('/contact');
   });
 
@@ -84,28 +107,48 @@ test.describe('Contact Form', () => {
   });
 
   test('form shows rate limiting protection', async ({ page }) => {
-    // Fill out and submit form multiple times quickly
-    for (let i = 0; i < 3; i++) {
-      await page.fill('input[name="name"]', `Test User ${i}`);
-      await page.fill('input[name="email"]', `test${i}@example.com`);
-      await page.selectOption('select[name="service"]', 'general');
-      await page.fill('textarea[name="message"]', `Test message ${i}`);
-      
-      await page.click('button[type="submit"]');
-      await page.waitForTimeout(1000);
-      
-      // Reset form if needed
-      if (i < 2) {
-        const nameField = page.locator('input[name="name"]');
-        if (await nameField.inputValue() === '') {
-          // Form was reset, continue
-          continue;
+    // Mock rate limiting response after first submission
+    let submissionCount = 0;
+    await page.route('**/api/contact', async (route) => {
+      const request = route.request();
+      if (request.method() === 'POST') {
+        submissionCount++;
+        if (submissionCount > 1) {
+          await route.fulfill({
+            status: 429,
+            contentType: 'application/json',
+            body: JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' })
+          });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true, message: 'Mock response - form not actually submitted' })
+          });
         }
+      } else {
+        await route.continue();
       }
-    }
+    });
 
-    // Should show rate limiting after multiple submissions
-    // Note: This test might not work in all environments
+    // Fill and submit form once successfully
+    await page.fill('input[name="name"]', 'Test User');
+    await page.fill('input[name="email"]', 'test@example.com');
+    await page.selectOption('select[name="service"]', 'general');
+    await page.fill('textarea[name="message"]', 'Test message');
+    await page.click('button[type="submit"]');
+    await page.waitForTimeout(1000);
+
+    // Try to submit again - should hit rate limit
+    await page.fill('input[name="name"]', 'Test User 2');
+    await page.fill('input[name="email"]', 'test2@example.com');
+    await page.selectOption('select[name="service"]', 'general');
+    await page.fill('textarea[name="message"]', 'Test message 2');
+    await page.click('button[type="submit"]');
+    
+    // Should show rate limiting message
+    const rateLimitMessage = page.locator('text=Rate limit exceeded');
+    await expect(rateLimitMessage).toBeVisible({ timeout: 5000 });
   });
 
   test('honeypot field is present but hidden', async ({ page }) => {
