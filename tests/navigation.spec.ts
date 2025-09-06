@@ -117,6 +117,13 @@ test.describe('Navigation', () => {
     ];
 
     for (const testPagePath of pages) {
+      console.log(`\n[${new Date().toISOString()}] Starting navigation test for page: ${testPagePath}`);
+      try {
+        const response = await page.request.get('http://localhost:3000/');
+        console.log(`Server check response status: ${response.status()}`);
+      } catch (error) {
+        console.log(`Server not reachable before goto: ${(error as Error).message}`);
+      }
       await page.goto(testPagePath);
       
       // Verify page loaded correctly
