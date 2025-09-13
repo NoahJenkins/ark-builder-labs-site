@@ -67,7 +67,8 @@ describe('Blog functionality', () => {
 
     it('returns empty array when no MDX files exist', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['README.md', 'other-file.txt'] as fs.Dirent[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(mockFs.readdirSync as any).mockReturnValue(['README.md', 'other-file.txt'])
       
       const posts = getBlogPosts()
       expect(posts).toEqual([])
@@ -75,7 +76,8 @@ describe('Blog functionality', () => {
 
     it('returns blog posts sorted by date', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx'] as fs.Dirent[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(mockFs.readdirSync as any).mockReturnValue(['post1.mdx', 'post2.mdx'])
       mockFs.readFileSync
         .mockReturnValueOnce('title: Test Post 1\n---\nContent 1')
         .mockReturnValueOnce('title: Test Post 2\n---\nContent 2')
@@ -104,7 +106,8 @@ describe('Blog functionality', () => {
 
     it('applies default values for missing frontmatter', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['minimal-post.mdx'] as fs.Dirent[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(mockFs.readdirSync as any).mockReturnValue(['minimal-post.mdx'])
       mockFs.readFileSync.mockReturnValue('---\nContent only')
       
       const posts = getBlogPosts()
@@ -189,7 +192,8 @@ describe('Blog functionality', () => {
   describe('getBlogCategories', () => {
     it('returns categories with "All" as first option', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx'] as fs.Dirent[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(mockFs.readdirSync as any).mockReturnValue(['post1.mdx', 'post2.mdx'])
       mockFs.readFileSync
         .mockReturnValueOnce('title: Test Post 1\n---\nContent 1')
         .mockReturnValueOnce('title: Test Post 2\n---\nContent 2')
@@ -202,7 +206,8 @@ describe('Blog functionality', () => {
 
     it('removes duplicate categories', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx', 'post3.mdx'] as fs.Dirent[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(mockFs.readdirSync as any).mockReturnValue(['post1.mdx', 'post2.mdx', 'post3.mdx'])
       mockFs.readFileSync
         .mockReturnValueOnce('title: Test Post 1\n---\nContent 1') // Technology
         .mockReturnValueOnce('title: Test Post 2\n---\nContent 2') // Business
