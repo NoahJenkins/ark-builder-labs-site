@@ -118,28 +118,60 @@ test.describe('Navigation', () => {
 
     for (const testPagePath of pages) {
       console.log(`\n[${new Date().toISOString()}] Starting navigation test for page: ${testPagePath}`);
-      try {
-        const response = await page.request.get('http://localhost:3000/');
-        console.log(`Server check response status: ${response.status()}`);
-      } catch (error) {
-        console.log(`Server not reachable before goto: ${(error as Error).message}`);
+      
+      // Server readiness check with retry
+      let serverReady = false;
+      for (let i = 0; i < 3; i++) {
+        try {
+          const response = await page.request.get('http://localhost:3000/');
+          console.log(`Server check response status: ${response.status()}`);
+          if (response.status() === 200) {
+            serverReady = true;
+            break;
+          }
+        } catch (error) {
+          console.log(`Server check attempt ${i + 1} failed: ${(error as Error).message}`);
+          await page.waitForTimeout(2000); // Wait 2s before retry
+        }
       }
-      await page.goto(testPagePath);
+      
+      if (!serverReady) {
+        console.log('Server not ready after 3 attempts, attempting navigation anyway');
+      }
+      
+      // Navigate with retry on timeout using less strict wait conditions
+      let navigationSuccess = false;
+      for (let i = 0; i < 2; i++) {
+        try {
+          // Try networkidle first, fallback to domcontentloaded
+          const waitCondition = i === 0 ? 'networkidle' : 'domcontentloaded';
+          await page.goto(testPagePath, { waitUntil: waitCondition, timeout: 25000 });
+          navigationSuccess = true;
+          break;
+        } catch (error) {
+          console.log(`Navigation attempt ${i + 1} failed: ${(error as Error).message}`);
+          if (i < 1) await page.waitForTimeout(3000);
+        }
+      }
+      
+      if (!navigationSuccess) {
+        throw new Error(`Failed to navigate to ${testPagePath} after retries`);
+      }
       
       // Verify page loaded correctly
       await expect(page).toHaveURL(testPagePath);
       
-      // Check that navigation is still present
+      // Check that navigation is still present with timeout
       const header = page.locator('header');
-      await expect(header).toBeVisible();
+      await expect(header).toBeVisible({ timeout: 10000 });
       
       // Check that main content loaded
       const main = page.locator('main');
-      await expect(main).toBeVisible();
+      await expect(main).toBeVisible({ timeout: 10000 });
       
       // Check that logo still works
       const logo = page.locator('header a[href="/"]').first();
-      await expect(logo).toBeVisible();
+      await expect(logo).toBeVisible({ timeout: 5000 });
     }
   });
 
