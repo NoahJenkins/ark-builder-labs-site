@@ -31,6 +31,10 @@ export function ServicesPageContent() {
                 Comprehensive technology solutions to transform your ideas into powerful, 
                 scalable applications that drive business growth.
               </p>
+              <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto">
+                "Commit to the Lord whatever you do, and he will establish your plans."
+                <cite className="block text-xs mt-2 not-italic">— Proverbs 16:3</cite>
+              </blockquote>
             </FadeIn>
           </div>
         </div>

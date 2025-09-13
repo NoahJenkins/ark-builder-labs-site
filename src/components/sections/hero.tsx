@@ -125,12 +125,19 @@ export function HeroSection() {
           </FadeIn>
 
           <FadeIn direction="up" delay={0.2}>
+            <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto mb-6">
+              "Commit to the Lord whatever you do, and he will establish your plans."
+              <cite className="block text-xs mt-2 not-italic">— Proverbs 16:3</cite>
+            </blockquote>
+          </FadeIn>
+
+          <FadeIn direction="up" delay={0.25}>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {SITE_CONFIG.mission}
             </p>
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.3}>
+          <FadeIn direction="up" delay={0.35}>
             <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
               <Button size="lg" className="text-base" asChild>
                 <Link href="/contact" className="inline-flex items-center space-x-2">
@@ -147,7 +154,7 @@ export function HeroSection() {
             </div>
           </FadeIn>
 
-          <FadeIn direction="up" delay={0.4}>
+          <FadeIn direction="up" delay={0.45}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16">
               <div className="text-center">
                 <div className="text-3xl md:text-4xl font-bold gradient-text">3+</div>

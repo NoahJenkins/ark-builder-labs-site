@@ -48,6 +48,10 @@ export default function AboutPage() {
               <p className="text-lg md:text-xl text-muted-foreground mb-8">
                 {SITE_CONFIG.tagline}
               </p>
+              <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto">
+                "Here I am. Send me."
+                <cite className="block text-xs mt-2 not-italic">— Isaiah 6:8</cite>
+              </blockquote>
             </FadeIn>
           </div>
         </div>

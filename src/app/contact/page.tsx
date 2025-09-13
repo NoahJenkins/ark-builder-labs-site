@@ -77,6 +77,10 @@ export default function ContactPage() {
                 Ready to transform your ideas into powerful software solutions? 
                 We'd love to hear from you and discuss how we can help your business grow.
               </p>
+              <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto">
+                "Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, and teaching them to obey everything I have commanded you. And surely I am with you always, to the very end of the age."
+                <cite className="block text-xs mt-2 not-italic">— Matthew 28:19-20</cite>
+              </blockquote>
             </FadeIn>
           </div>
         </div>

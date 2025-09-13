@@ -50,6 +50,10 @@ export default function PartnershipsPage() {
                 Strategic alliances and professional certifications that enable us to deliver 
                 world-class solutions with the latest technologies and best practices.
               </p>
+              <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto">
+                "Where there is no counsel, the people fall; But in the multitude of counselors there is safety."
+                <cite className="block text-xs mt-2 not-italic">— Proverbs 11:14</cite>
+              </blockquote>
             </FadeIn>
           </div>
         </div>

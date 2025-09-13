@@ -26,6 +26,10 @@ export default function BlogPage() {
                 Stay updated with the latest in web development, cloud engineering, 
                 and AI technology through our technical insights and industry analysis.
               </p>
+              <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto">
+                "Commit to the Lord whatever you do, and he will establish your plans."
+                <cite className="block text-xs mt-2 not-italic">— Proverbs 16:3</cite>
+              </blockquote>
             </FadeIn>
           </div>
         </div>
