@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
 import { Card, CardContent } from "@/components/ui/card"
@@ -84,7 +85,7 @@ export default function AboutPage() {
                 </div>
                 <div className="relative">
                   <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                    <img src="/assets/images/logo.png" alt="Ark Builder Labs Logo" className="w-full h-full object-contain rounded-2xl" />
+                    <Image src="/assets/images/logo.png" alt="Ark Builder Labs Logo" width={400} height={400} className="w-full h-full object-contain rounded-2xl" />
                   </div>
                 </div>
               </div>
