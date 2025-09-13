@@ -67,7 +67,7 @@ describe('Blog functionality', () => {
 
     it('returns empty array when no MDX files exist', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['README.md', 'other-file.txt'] as string[])
+      mockFs.readdirSync.mockReturnValue(['README.md', 'other-file.txt'] as any)
       
       const posts = getBlogPosts()
       expect(posts).toEqual([])
@@ -75,7 +75,7 @@ describe('Blog functionality', () => {
 
     it('returns blog posts sorted by date', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx'] as string[])
+      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx'] as any)
       mockFs.readFileSync
         .mockReturnValueOnce('title: Test Post 1\n---\nContent 1')
         .mockReturnValueOnce('title: Test Post 2\n---\nContent 2')
@@ -104,7 +104,7 @@ describe('Blog functionality', () => {
 
     it('applies default values for missing frontmatter', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['minimal-post.mdx'] as string[])
+      mockFs.readdirSync.mockReturnValue(['minimal-post.mdx'] as any)
       mockFs.readFileSync.mockReturnValue('---\nContent only')
       
       const posts = getBlogPosts()
@@ -189,7 +189,7 @@ describe('Blog functionality', () => {
   describe('getBlogCategories', () => {
     it('returns categories with "All" as first option', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx'] as string[])
+      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx'] as any)
       mockFs.readFileSync
         .mockReturnValueOnce('title: Test Post 1\n---\nContent 1')
         .mockReturnValueOnce('title: Test Post 2\n---\nContent 2')
@@ -202,7 +202,7 @@ describe('Blog functionality', () => {
 
     it('removes duplicate categories', () => {
       mockFs.existsSync.mockReturnValue(true)
-      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx', 'post3.mdx'] as string[])
+      mockFs.readdirSync.mockReturnValue(['post1.mdx', 'post2.mdx', 'post3.mdx'] as any)
       mockFs.readFileSync
         .mockReturnValueOnce('title: Test Post 1\n---\nContent 1') // Technology
         .mockReturnValueOnce('title: Test Post 2\n---\nContent 2') // Business
