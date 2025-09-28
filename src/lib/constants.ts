@@ -70,24 +70,9 @@ export const PARTNERS = [
     logo: "/assets/images/Microsoft_logo.svg.png"
   },
   {
-    name: "Amazon",
-    description: "AWS cloud infrastructure and services",
-    logo: "/assets/images/29026e-aws-dark.svg"
-  },
-  {
     name: "Vercel",
     description: "Next.js hosting and edge computing",
     logo: "/assets/images/logo-vercel.svg"
-  },
-  {
-    name: "HashiCorp",
-    description: "Infrastructure as Code expertise",
-    logo: "/assets/images/hashicorp.svg"
-  },
-  {
-    name: "GitHub",
-    description: "DevOps and collaboration tools",
-    logo: "/assets/images/Octicons-mark-github.svg.png"
   },
   {
     name: "Google",

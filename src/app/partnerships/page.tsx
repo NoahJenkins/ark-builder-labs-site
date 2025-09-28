@@ -146,7 +146,7 @@ export default function PartnershipsPage() {
 
             <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold mb-2">6</div>
+                <div className="text-4xl md:text-5xl font-bold mb-2">3</div>
                 <div className="text-white/90">Technology Partners</div>
               </div>
               <div className="text-center">
