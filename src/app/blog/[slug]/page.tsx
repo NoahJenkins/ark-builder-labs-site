@@ -82,7 +82,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 <span>Back to Blog</span>
               </Link>
               
-              <Badge className="mb-4">{post.category}</Badge>
+              <Badge className="mb-4 ml-4">{post.category}</Badge>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
                 {post.title}
               </h1>
