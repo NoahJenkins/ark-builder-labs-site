@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 interface ContactFormData {
   name: string
@@ -8,54 +9,200 @@ interface ContactFormData {
   message: string
 }
 
+// Rate limiting store (in production, use Redis or similar)
+const submissions = new Map<string, { count: number; resetTime: number }>()
+
+// Input validation schema
+const contactSchema = z.object({
+  name: z.string()
+    .min(1, 'Name is required')
+    .max(100, 'Name too long')
+    .regex(/^[a-zA-Z\s'-]+$/, 'Name contains invalid characters'),
+  email: z.string()
+    .min(1, 'Email is required')
+    .max(320, 'Email too long')
+    .email('Invalid email format'),
+  company: z.string()
+    .max(100, 'Company name too long')
+    .optional(),
+  service: z.string()
+    .min(1, 'Service selection is required')
+    .max(50, 'Service selection too long'),
+  message: z.string()
+    .min(1, 'Message is required')
+    .max(5000, 'Message too long')
+    .refine(msg => {
+      // Check for common spam patterns
+      const spamPatterns = [
+        /<script/i,
+        /javascript:/i,
+        /vbscript:/i,
+        /onload\s*=/i,
+        /onerror\s*=/i,
+        /<iframe/i,
+        /<object/i,
+        /<embed/i
+      ]
+      return !spamPatterns.some(pattern => pattern.test(msg))
+    }, 'Message contains invalid content')
+})
+
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW = 10 * 60 * 1000 // 10 minutes
+const RATE_LIMIT_MAX = 3
+const IP_HEADER = 'x-forwarded-for' // Vercel-specific header
+
+function getClientIP(request: NextRequest): string {
+  const forwarded = request.headers.get(IP_HEADER)
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
+  return 'unknown'
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const userSubmissions = submissions.get(ip)
+
+  if (!userSubmissions || now > userSubmissions.resetTime) {
+    submissions.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW })
+    return false
+  }
+
+  if (userSubmissions.count >= RATE_LIMIT_MAX) {
+    return true
+  }
+
+  userSubmissions.count++
+  return false
+}
+
+// Basic input sanitization function (in production, use DOMPurify or similar)
+function sanitizeInput(data: ContactFormData): ContactFormData {
+  const sanitizeString = (str: string): string => {
+    return str
+      .trim()
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/javascript:/gi, '') // Remove javascript: URLs
+      .replace(/vbscript:/gi, '') // Remove vbscript: URLs
+      .replace(/on\w+=/gi, '') // Remove event handlers
+      .slice(0, 1000) // Limit length
+  }
+
+  return {
+    name: sanitizeString(data.name),
+    email: data.email.trim().toLowerCase(),
+    company: data.company ? sanitizeString(data.company) : undefined,
+    service: sanitizeString(data.service),
+    message: sanitizeString(data.message)
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body: ContactFormData = await request.json()
-    
-    // Validate required fields
-    if (!body.name || !body.email || !body.service || !body.message) {
+    // Rate limiting check
+    const clientIP = getClientIP(request)
+    if (isRateLimited(clientIP)) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Rate limit exceeded. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil(RATE_LIMIT_WINDOW / 1000).toString(),
+            'X-RateLimit-Limit': RATE_LIMIT_MAX.toString(),
+            'X-RateLimit-Remaining': '0'
+          }
+        }
+      )
+    }
+
+    const rawBody = await request.json()
+
+    // Validate and sanitize input
+    const validationResult = contactSchema.safeParse(rawBody)
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.issues.map(issue => ({
+            field: issue.path.join('.'),
+            message: issue.message
+          }))
+        },
         { status: 400 }
       )
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(body.email)) {
+    const body = sanitizeInput(validationResult.data)
+
+    // Additional security checks
+    if (body.message.length > 1000 && body.name.length < 3) {
       return NextResponse.json(
-        { error: 'Invalid email format' },
+        { error: 'Suspicious activity detected' },
         { status: 400 }
       )
     }
 
-    // In a production environment, you would:
-    // 1. Send an email using a service like SendGrid, Mailgun, or AWS SES
-    // 2. Store the inquiry in a database
-    // 3. Send notifications to your team
-    // 4. Set up automated follow-up sequences
-
-    // For now, we'll log the form submission and return success
+    // Log the form submission with sanitized data
     console.log('Contact form submission received:', {
       timestamp: new Date().toISOString(),
+      ip: clientIP,
       name: body.name,
       email: body.email,
       company: body.company || 'Not provided',
       service: body.service,
-      message: body.message.substring(0, 100) + '...' // Log first 100 chars for privacy
+      messageLength: body.message.length,
+      // Log first 100 chars for privacy as per existing rule
+      messagePreview: body.message.substring(0, 100) + (body.message.length > 100 ? '...' : '')
     })
 
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // In production, implement proper email sending and data storage
+    try {
+      // TODO: Implement secure email service integration
+      // - Use environment variables for API keys
+      // - Implement proper error handling
+      // - Add email template validation
+      // - Set up monitoring and alerting
 
-    // Return success response
-    return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Thank you for your inquiry! We will get back to you within 24 hours.' 
-      },
-      { status: 200 }
-    )
+      // TODO: Implement secure data storage
+      // - Use parameterized queries to prevent injection
+      // - Encrypt sensitive data at rest
+      // - Implement data retention policies
+      // - Add audit logging for compliance
+
+      // Simulate processing delay (maintain existing behavior)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Return success response with security headers
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Thank you for your inquiry! We will get back to you within 24 hours.',
+          timestamp: new Date().toISOString()
+        },
+        {
+          status: 200,
+          headers: {
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY',
+            'X-XSS-Protection': '1; mode=block',
+            'Referrer-Policy': 'strict-origin-when-cross-origin'
+          }
+        }
+      )
+    } catch (processingError) {
+      console.error('Error processing contact form submission:', processingError)
+      return NextResponse.json(
+        { error: 'Failed to process submission' },
+        {
+          status: 500,
+          headers: {
+            'X-Content-Type-Options': 'nosniff',
+            'X-Frame-Options': 'DENY'
+          }
+        }
+      )
+    }
 
   } catch (error) {
     console.error('Contact form error:', error)
@@ -66,14 +213,31 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle preflight requests for CORS
-export async function OPTIONS() {
+// Handle preflight requests for CORS with enhanced security
+export async function OPTIONS(request: NextRequest) {
+  // Get the origin of the request
+  const origin = request.headers.get('origin')
+  const allowedOrigins = [
+    'https://arkbuilderlabs.com',
+    'https://www.arkbuilderlabs.com',
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null,
+    process.env.NODE_ENV === 'development' ? 'http://127.0.0.1:3000' : null
+  ].filter(Boolean)
+
+  // Check if origin is allowed
+  const isAllowedOrigin = origin && allowedOrigins.includes(origin)
+
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': isAllowedOrigin ? origin : '',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400', // 24 hours
+      'Access-Control-Allow-Credentials': 'false',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'strict-origin-when-cross-origin'
     },
   })
 }
