@@ -24,7 +24,6 @@ test.describe('Navigation', () => {
       { name: 'Home', href: '/' },
       { name: 'About', href: '/about' },
       { name: 'Services', href: '/services' },
-      { name: 'Partnerships', href: '/partnerships' },
       { name: 'Blog', href: '/blog' },
       { name: 'Contact', href: '/contact' }
     ];
@@ -110,8 +109,7 @@ test.describe('Navigation', () => {
   test('navigation works across all pages', async ({ page }) => {
     const pages = [
       '/about',
-      '/services', 
-      '/partnerships',
+      '/services',
       '/blog',
       '/contact'
     ];

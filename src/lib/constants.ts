@@ -85,7 +85,6 @@ export const NAVIGATION_ITEMS = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
   { name: "Services", href: "/services" },
-  { name: "Partnerships", href: "/partnerships" },
   { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/contact" }
 ] as const
