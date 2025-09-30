@@ -16,12 +16,9 @@ test.describe('Blog System', () => {
   });
 
   test('individual blog posts load correctly', async ({ page }) => {
-    // Test specific blog posts that we know exist
+    // Test specific blog posts that we know exist in content/blog/
     const blogPosts = [
-      'welcome-to-our-blog',
-      'ai-integration-practical-guide', 
-      'cloud-infrastructure-best-practices',
-      'nextjs-performance-optimization'
+      'welcome-to-our-blog'
     ];
 
     for (const slug of blogPosts) {
@@ -74,7 +71,7 @@ test.describe('Blog System', () => {
   });
 
   test('blog content renders MDX correctly', async ({ page }) => {
-    await page.goto('/blog/ai-integration-practical-guide');
+    await page.goto('/blog/welcome-to-our-blog');
     
     // Check for common MDX elements
     const content = page.locator('main, article');
@@ -90,7 +87,7 @@ test.describe('Blog System', () => {
   });
 
   test('blog images load correctly', async ({ page }) => {
-    await page.goto('/blog/nextjs-performance-optimization');
+    await page.goto('/blog/welcome-to-our-blog');
     
     // Check for images in blog content
     const images = page.locator('img');
@@ -182,7 +179,7 @@ test.describe('Blog System', () => {
   });
 
   test('blog posts have proper semantic HTML', async ({ page }) => {
-    await page.goto('/blog/cloud-infrastructure-best-practices');
+    await page.goto('/blog/welcome-to-our-blog');
     
     // Check for main content area
     const main = page.locator('main');
