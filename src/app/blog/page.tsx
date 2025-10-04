@@ -27,8 +27,8 @@ export default function BlogPage() {
                 and AI technology through our technical insights and industry analysis.
               </p>
               <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto">
-                "Commit to the Lord whatever you do, and he will establish your plans."
-                <cite className="block text-xs mt-2 not-italic">— Proverbs 16:3</cite>
+                "A fool vents all his feelings, But a wise man holds them back."
+                <cite className="block text-xs mt-2 not-italic">— Proverbs 29:11</cite>
               </blockquote>
             </FadeIn>
           </div>
