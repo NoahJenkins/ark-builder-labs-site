@@ -18,16 +18,7 @@ interface ContactFormData {
   _hp?: string // honeypot field for spam protection
 }
 
-type ExtendedFormspreePayload = ContactFormData & { [key: string]: string | undefined }
 
-import { FORMSPREE_CONFIG } from "@/lib/constants"
-import {
-  submitToFormspree,
-  canSubmitForm,
-  recordSubmission,
-  throttleSubmission,
-  isHoneypotTripped,
-} from "@/lib/formspree"
 
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -41,57 +32,29 @@ export function ContactForm() {
     formState: { errors }
   } = useForm<ContactFormData & { _hp?: string }>()
 
-  const onSubmit = async (data: ContactFormData & { _hp?: string }) => {
+  const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
-    // Honeypot spam protection
-    if (isHoneypotTripped(data as ExtendedFormspreePayload)) {
-      setSubmitStatus('spam')
-      setIsSubmitting(false)
-      return
-    }
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
 
-    // Client-side rate limiting
-    if (!canSubmitForm() || !throttleSubmission(lastSubmit)) {
-      setSubmitStatus('rate-limit')
-      setIsSubmitting(false)
-      return
-    }
-
-    setLastSubmit(Date.now())
-    recordSubmission()
-
-    // Use Formspree if enabled, else fallback to local API
-    let result;
-    if (FORMSPREE_CONFIG.enabled) {
-      result = await submitToFormspree(data as ExtendedFormspreePayload, FORMSPREE_CONFIG.endpoint)
-    } else {
-      try {
-        const response = await fetch('/api/contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        })
-        if (response.ok) {
-          result = { ok: true, message: "Submission successful." }
-        } else if (response.status === 429) {
-          result = { ok: false, error: "rate-limit", status: response.status }
-        } else {
-          result = { ok: false, error: "Local API error", status: response.status }
-        }
-      } catch {
-        result = { ok: false, error: "Network error" }
+      if (response.ok) {
+        setSubmitStatus('success')
+        reset()
+      } else if (response.status === 429) {
+        setSubmitStatus('rate-limit')
+      } else {
+        setSubmitStatus('error')
       }
-    }
-
-    if (result.ok) {
-      setSubmitStatus('success')
-      reset()
-    } else {
-      setSubmitStatus(result.error === "rate-limit" ? "rate-limit" : "error")
+    } catch {
+      setSubmitStatus('error')
     }
     setIsSubmitting(false)
   }

@@ -12,11 +12,6 @@ export const SITE_CONFIG = {
     facebook: "https://www.facebook.com/people/Ark-Builder-Labs/61578219340498/"
   }
 } as const
-export const FORMSPREE_CONFIG = {
-  endpoint: process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT || "https://formspree.io/f/xovnwlwb",
-  formId: process.env.NEXT_PUBLIC_FORMSPREE_FORM_ID || "xovnwlwb",
-  enabled: process.env.NEXT_PUBLIC_USE_FORMSPREE === "true"
-} as const
 
 export const SERVICES = [
   {
