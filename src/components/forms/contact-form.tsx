@@ -199,8 +199,8 @@ export function ContactForm() {
 
           <p className="text-sm text-muted-foreground text-center">
             Or email us directly at{" "}
-            <a href="mailto:noah@arkbuilderlabs.com" className="text-primary hover:underline">
-              noah@arkbuilderlabs.com
+            <a href="mailto:contact@arkbuilderlabs.com" className="text-primary hover:underline">
+              contact@arkbuilderlabs.com
             </a>
           </p>
         </form>

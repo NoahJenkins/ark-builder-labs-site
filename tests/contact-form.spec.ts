@@ -180,9 +180,9 @@ test.describe('Contact Form', () => {
 
   test('form displays contact information', async ({ page }) => {
     // Check for direct contact email
-    const emailLink = page.locator('a[href="mailto:noah@arkbuilderlabs.com"]').first();
+    const emailLink = page.locator('a[href="mailto:contact@arkbuilderlabs.com"]').first();
     await expect(emailLink).toBeVisible();
-    await expect(emailLink).toContainText('noah@arkbuilderlabs.com');
+    await expect(emailLink).toContainText('contact@arkbuilderlabs.com');
   });
 
   test('form is responsive', async ({ page }) => {

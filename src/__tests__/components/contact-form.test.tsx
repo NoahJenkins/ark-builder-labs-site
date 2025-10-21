@@ -81,9 +81,9 @@ describe('ContactForm', () => {
   it('displays email contact information', () => {
     render(<ContactForm />)
     
-    const emailLink = screen.getByRole('link', { name: /noah@arkbuilderlabs.com/i })
+    const emailLink = screen.getByRole('link', { name: /contact@arkbuilderlabs.com/i })
     expect(emailLink).toBeInTheDocument()
-    expect(emailLink).toHaveAttribute('href', 'mailto:noah@arkbuilderlabs.com')
+    expect(emailLink).toHaveAttribute('href', 'mailto:contact@arkbuilderlabs.com')
   })
 
   it('renders submit button', () => {

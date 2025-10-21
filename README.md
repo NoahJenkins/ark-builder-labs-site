@@ -161,7 +161,7 @@ The following environment variables can be configured in `.env.local`:
 ```env
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=https://arkbuilderlabs.com
-CONTACT_EMAIL=noah@arkbuilderlabs.com
+CONTACT_EMAIL=contact@arkbuilderlabs.com
 
 # Calendar Integration
 CALCOM_LINK=your-cal-link
@@ -256,5 +256,5 @@ npm start
 ## 🙋‍♂️ Support
 
 For questions or support:
-- Email: noah@arkbuilderlabs.com
+- Email: contact@arkbuilderlabs.com
 - Website: [arkbuilderlabs.com](https://arkbuilderlabs.com)
