@@ -22,10 +22,10 @@ export const SERVICES = [
     technologies: ["Next.js", "React Native", "Expo", "Node JS", "Express", "TypeScript", "Tailwind CSS", "Jest", "Playwright"],
     features: [
       "Full Stack Web Application",
-      "Progressive Web Apps",
-      "SEO Optimization",
-      "E-commerce Solution",
+      "Mobile App Development",
       "Landing Pages",
+      "E-commerce Solution",
+      "SEO Optimization",
       "API Development"
     ]
   },
