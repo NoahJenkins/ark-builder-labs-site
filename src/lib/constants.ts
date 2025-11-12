@@ -19,7 +19,7 @@ export const SERVICES = [
     title: "Web & Mobile Development",
     description: "Need a landing page for your business, a custom website, or even a mobile app? We've got you covered.",
     icon: "Code2",
-    technologies: ["React", "Next.js", "React Native", "TypeScript", "Tailwind CSS", "Jest", "Playwright"],
+    technologies: ["Next.js", "React Native", "Expo", "Node JS", "Express", "TypeScript", "Tailwind CSS", "Jest", "Playwright"],
     features: [
       "Full Stack Web Application",
       "Progressive Web Apps",
