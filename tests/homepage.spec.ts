@@ -51,7 +51,7 @@ test.describe('Homepage', () => {
     // Check for services section
     await expect(page.locator('text=Web & Mobile Development').first()).toBeVisible();
     await expect(page.locator('text=Cloud Engineering & Consulting').first()).toBeVisible();
-    await expect(page.locator('text=AI Technology Consulting').first()).toBeVisible();
+    await expect(page.locator('text=AI and Automation Consulting').first()).toBeVisible();
   });
 
   test('displays weather animations based on theme', async ({ page }) => {
