@@ -48,7 +48,7 @@ export const SERVICES = [
     title: "AI and Automation Consulting",
     description: "Automate your business processes with AI-powered solutions, from custom chatbots and intelligent agents to workflow automation and AI integration.",
     icon: "Brain",
-    technologies: ["Gemini", "Azure AI", "OpenAI", "CrewAI", "Ollama", "n8n", "Logic Apps"],
+    technologies: ["Gemini", "OpenAI", "CrewAI", "Ollama", "Langchain", "Langsmith"],
     features: [
       "Automate Buisness Workflows",
       "AI Integration Strategies",
