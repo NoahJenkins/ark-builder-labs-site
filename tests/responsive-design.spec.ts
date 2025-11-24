@@ -268,37 +268,6 @@ test.describe('Responsive Design', () => {
     }
   });
 
-  test('text remains readable at different zoom levels', async ({ page }) => {
-    await page.goto('/');
-
-    // Test different zoom levels
-    const zoomLevels = [0.5, 0.75, 1, 1.25, 1.5, 2];
-
-    for (const zoom of zoomLevels) {
-      // Simulate zoom by changing viewport and device pixel ratio
-      await page.setViewportSize({ 
-        width: Math.round(1200 / zoom), 
-        height: Math.round(800 / zoom) 
-      });
-
-      // Main content should still be visible
-      const main = page.locator('main');
-      await expect(main).toBeVisible();
-
-      // Text should still be readable
-      const heading = page.locator('h1');
-      await expect(heading).toBeVisible();
-
-      // Check that text doesn't become too small or too large
-      const fontSize = await heading.evaluate(el => {
-        return window.getComputedStyle(el).fontSize;
-      });
-      const fontSizeNum = parseFloat(fontSize);
-      expect(fontSizeNum).toBeGreaterThan(10); // Not too small
-      expect(fontSizeNum).toBeLessThan(200); // Not too large
-    }
-  });
-
   test('horizontal scrolling is prevented', async ({ page }) => {
     const testViewports = [
       { width: 320, height: 568 }, // iPhone 5

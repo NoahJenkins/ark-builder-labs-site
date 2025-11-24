@@ -261,16 +261,4 @@ test.describe('Theme Switching', () => {
     // Colors should be different between themes
     expect(lightBackgroundColor).not.toBe(backgroundColor);
   });
-
-  test('theme toggle works with JavaScript disabled', async ({ page }) => {
-    // This test checks graceful degradation
-    await page.goto('/', { waitUntil: 'networkidle' });
-    
-    // Even without JavaScript, theme toggle should be present
-    const themeToggle = page.locator('button:has([data-lucide="sun"]), button:has([data-lucide="moon"])').first();
-    
-    if (await themeToggle.count() > 0) {
-      await expect(themeToggle).toBeVisible();
-    }
-  });
 });

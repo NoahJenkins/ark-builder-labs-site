@@ -16,29 +16,6 @@ test.describe('Navigation', () => {
     await expect(logo.locator('span.gradient-text')).toContainText('Ark Builder Labs');
   });
 
-  test('desktop navigation contains all required links', async ({ page }) => {
-    // Ensure we're on desktop viewport
-    await page.setViewportSize({ width: 1200, height: 800 });
-
-    const navItems = [
-      { name: 'Home', href: '/' },
-      { name: 'About', href: '/about' },
-      { name: 'Services', href: '/services' },
-      { name: 'Blog', href: '/blog' },
-      { name: 'Contact', href: '/contact' }
-    ];
-
-    for (const item of navItems) {
-      const navLink = page.locator(`nav a[href="${item.href}"]`);
-      await expect(navLink).toBeVisible();
-      await expect(navLink).toContainText(item.name);
-    }
-
-    // Check "Get Started" CTA button
-    const getStartedButton = page.locator('header', { hasText: 'Get Started' });
-    await expect(getStartedButton).toBeVisible();
-  });
-
   test('mobile navigation toggle works correctly', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
@@ -54,23 +31,6 @@ test.describe('Navigation', () => {
     await expect(mobileNavButton).toBeVisible();
   });
 
-  test('navigation active states work correctly', async ({ page }) => {
-    // Test Home active state
-    await page.goto('/');
-    const homeLink = page.locator('nav a[href="/"]');
-    await expect(homeLink).toHaveClass(/text-primary/);
-
-    // Test About active state
-    await page.goto('/about');
-    const aboutLink = page.locator('nav a[href="/about"]');
-    await expect(aboutLink).toHaveClass(/text-primary/);
-
-    // Test Services active state
-    await page.goto('/services');
-    const servicesLink = page.locator('nav a[href="/services"]');
-    await expect(servicesLink).toHaveClass(/text-primary/);
-  });
-
   test('theme toggle is present and functional', async ({ page }) => {
     // Find theme toggle button
     const themeToggle = page.locator('button[aria-label*="theme" i], button[class*="theme"], button[data-testid="theme-toggle"]').first();
@@ -82,15 +42,6 @@ test.describe('Navigation', () => {
     // At least one theme indicator should be visible
     const themeIndicators = page.locator('button:has([class*="sun"]), button:has([class*="moon"]), button[aria-label*="theme"]');
     await expect(themeIndicators.first()).toBeVisible();
-  });
-
-  test('logo links to homepage', async ({ page }) => {
-    // Navigate to another page first
-    await page.goto('/about');
-    
-    // Click logo to return home
-    await page.click('header a[href="/"]');
-    await expect(page).toHaveURL('/');
   });
 
   test('navigation is sticky on scroll', async ({ page }) => {

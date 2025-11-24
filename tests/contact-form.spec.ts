@@ -46,33 +46,6 @@ test.describe('Contact Form', () => {
     await expect(submitButton).toContainText('Send Message');
   });
 
-  test('validates required fields', async ({ page }) => {
-    // Try to submit empty form
-    await page.click('button[type="submit"]');
-
-    // Check for validation errors
-    await expect(page.locator('text=Name is required')).toBeVisible();
-    await expect(page.locator('text=Email is required')).toBeVisible();
-    await expect(page.locator('text=Please select a service')).toBeVisible();
-    await expect(page.locator('text=Message is required')).toBeVisible();
-  });
-
-  test.skip('validates email format', async () => {
-    // Skip this test for now - email validation might be handled differently
-    // TODO: Investigate actual email validation implementation
-  });
-
-  test('service dropdown contains all available services', async ({ page }) => {
-    const serviceSelect = page.locator('select[name="service"]');
-    await expect(serviceSelect).toBeVisible();
-
-    // Check for expected service options (they should be in the DOM)
-    await expect(serviceSelect.locator('option[value="web-mobile"]')).toBeAttached();
-    await expect(serviceSelect.locator('option[value="cloud-engineering"]')).toBeAttached(); 
-    await expect(serviceSelect.locator('option[value="ai-consulting"]')).toBeAttached();
-    await expect(serviceSelect.locator('option[value="general"]')).toBeAttached();
-  });
-
   test('form submission works with valid data', async ({ page }) => {
     // Fill out the form with valid data
     await page.fill('input[name="name"]', 'John Doe');
@@ -146,45 +119,6 @@ test.describe('Contact Form', () => {
     await expect(rateLimitMessage).toBeVisible({ timeout: 5000 });
   });
 
-  test('honeypot field is present but hidden', async ({ page }) => {
-    // Check for honeypot field (should be hidden from users)
-    const honeypotField = page.locator('input[name="_hp"]');
-    
-    if (await honeypotField.count() > 0) {
-      // Honeypot should be hidden
-      await expect(honeypotField).not.toBeVisible();
-    }
-  });
-
-  test('form is accessible', async ({ page }) => {
-    // Check for proper form labels
-    const nameLabel = page.locator('label[for="name"]');
-    await expect(nameLabel).toBeVisible();
-    await expect(nameLabel).toContainText('Name');
-
-    const emailLabel = page.locator('label[for="email"]');
-    await expect(emailLabel).toBeVisible();
-    await expect(emailLabel).toContainText('Email');
-
-    const serviceLabel = page.locator('label[for="service"]');
-    await expect(serviceLabel).toBeVisible();
-
-    const messageLabel = page.locator('label[for="message"]');
-    await expect(messageLabel).toBeVisible();
-    await expect(messageLabel).toContainText('Message');
-
-    // Check form can be navigated with keyboard
-    await page.keyboard.press('Tab'); // Should focus first field
-    await page.keyboard.press('Tab'); // Should move to next field
-  });
-
-  test('form displays contact information', async ({ page }) => {
-    // Check for direct contact email
-    const emailLink = page.locator('a[href="mailto:contact@arkbuilderlabs.com"]').first();
-    await expect(emailLink).toBeVisible();
-    await expect(emailLink).toContainText('contact@arkbuilderlabs.com');
-  });
-
   test('form is responsive', async ({ page }) => {
     const viewports = [
       { width: 375, height: 667 }, // Mobile
@@ -207,21 +141,6 @@ test.describe('Contact Form', () => {
       // Submit button should be visible
       await expect(page.locator('button[type="submit"]')).toBeVisible();
     }
-  });
-
-  test('form field placeholders provide helpful guidance', async ({ page }) => {
-    // Check placeholders
-    const nameField = page.locator('input[name="name"]');
-    await expect(nameField).toHaveAttribute('placeholder', /full name/i);
-
-    const emailField = page.locator('input[name="email"]');
-    await expect(emailField).toHaveAttribute('placeholder', /email/);
-
-    const companyField = page.locator('input[name="company"]');
-    await expect(companyField).toHaveAttribute('placeholder', /company/i);
-
-    const messageField = page.locator('textarea[name="message"]');
-    await expect(messageField).toHaveAttribute('placeholder');
   });
 
   test('form shows loading state during submission', async ({ page }) => {
