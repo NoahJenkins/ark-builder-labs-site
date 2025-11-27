@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Script from "next/script"
 import { SITE_CONFIG, NAVIGATION_ITEMS, SERVICES } from "@/lib/constants"
 
 export function Footer() {
@@ -90,6 +91,9 @@ export function Footer() {
           </div>
         </div>
       </div>
+      <Script id="metricool-tracker">
+        {`function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"2e574dd558b62d2d3de38cb1b88ed73a"})});`}
+      </Script>
     </footer>
   )
 }
