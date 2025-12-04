@@ -73,7 +73,7 @@ const contactSchema = z.object({
   message: z.string()
     .min(1, 'Message is required')
     .max(5000, 'Message too long')
-    .refine(msg => {
+    .refine((msg: string) => {
       // Check for common spam patterns
       const spamPatterns = [
         /<script/i,
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: validationResult.error.issues.map(issue => ({
+          details: validationResult.error.issues.map((issue: z.ZodIssue) => ({
             field: issue.path.join('.'),
             message: issue.message
           }))
