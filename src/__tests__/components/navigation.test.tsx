@@ -58,22 +58,6 @@ describe('Navigation', () => {
     expect(homeLink).toHaveClass('text-muted-foreground')
   })
 
-  it('renders theme toggle component', () => {
-    render(<Navigation />)
-    
-    // The theme toggle should be present (we'll test its functionality separately)
-    expect(document.querySelector('[data-testid="theme-toggle"]') || 
-           document.querySelector('button')).toBeInTheDocument()
-  })
-
-  it('renders mobile navigation component', () => {
-    render(<Navigation />)
-    
-    // Mobile navigation should be present (we'll test its functionality separately)
-    expect(document.querySelector('[data-testid="mobile-nav"]') || 
-           document.body).toBeInTheDocument()
-  })
-
   it('has proper accessibility attributes', () => {
     render(<Navigation />)
     

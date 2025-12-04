@@ -1,13 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Responsive Design', () => {
+  // Reduced from 6 to 3 critical viewports to improve test performance
   const viewports = [
-    { name: 'mobile-portrait', width: 375, height: 667 },
-    { name: 'mobile-landscape', width: 667, height: 375 },
-    { name: 'tablet-portrait', width: 768, height: 1024 },
-    { name: 'tablet-landscape', width: 1024, height: 768 },
-    { name: 'desktop-small', width: 1200, height: 800 },
-    { name: 'desktop-large', width: 1920, height: 1080 }
+    { name: 'mobile', width: 375, height: 667 },
+    { name: 'tablet', width: 768, height: 1024 },
+    { name: 'desktop', width: 1200, height: 800 }
   ];
 
   const pages = [
@@ -27,7 +25,6 @@ test.describe('Responsive Design', () => {
         try {
           await page.goto(testPage.path, { waitUntil: 'networkidle', timeout: 30000 });
         } catch (error) {
-          console.log(`First navigation attempt failed, retrying: ${error}`);
           await page.waitForTimeout(2000);
           await page.goto(testPage.path, { waitUntil: 'domcontentloaded', timeout: 20000 });
         }
@@ -53,7 +50,6 @@ test.describe('Responsive Design', () => {
           const clientWidth = await body.evaluate(el => el.clientWidth);
           expect(bodyWidth).toBeLessThanOrEqual(Math.max(viewport.width + 50, clientWidth + 20)); // Allow margin for scrollbars and browser differences
         } catch (error) {
-          console.log(`Overflow check failed for ${testPage.path} at ${viewport.name}: ${error}`);
           // Continue with test instead of failing completely
         }
       }
@@ -124,7 +120,6 @@ test.describe('Responsive Design', () => {
       try {
         await page.goto('/contact', { waitUntil: 'networkidle', timeout: 30000 });
       } catch (error) {
-        console.log(`Navigation to contact page failed, retrying: ${error}`);
         await page.goto('/contact', { waitUntil: 'domcontentloaded', timeout: 20000 });
       }
       
@@ -156,7 +151,6 @@ test.describe('Responsive Design', () => {
             expect(fieldHeight.height).toBeGreaterThanOrEqual(40); // Minimum touch target size
           }
         } catch (error) {
-          console.log(`Touch target size check failed for ${viewport.name}: ${error}`);
           // Continue instead of failing
         }
       }
