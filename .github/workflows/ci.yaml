@@ -11,6 +11,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Restrict GITHUB_TOKEN permissions to least privilege
+permissions:
+  contents: read
+
 jobs:
   jest-tests:
     name: Jest Tests

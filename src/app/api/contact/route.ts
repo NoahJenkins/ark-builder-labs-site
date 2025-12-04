@@ -119,27 +119,6 @@ function isRateLimited(ip: string): boolean {
   return false
 }
 
-// Basic input sanitization function (in production, use DOMPurify or similar)
-function sanitizeInput(data: ContactFormData): ContactFormData {
-  const sanitizeString = (str: string): string => {
-    return str
-      .trim()
-      .replace(/[<>]/g, '') // Remove potential HTML tags
-      .replace(/javascript:/gi, '') // Remove javascript: URLs
-      .replace(/vbscript:/gi, '') // Remove vbscript: URLs
-      .replace(/on\w+=/gi, '') // Remove event handlers
-      .slice(0, 1000) // Limit length
-  }
-
-  return {
-    name: sanitizeString(data.name),
-    email: data.email.trim().toLowerCase(),
-    company: data.company ? sanitizeString(data.company) : undefined,
-    service: sanitizeString(data.service),
-    message: sanitizeString(data.message)
-  }
-}
-
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting check
@@ -175,7 +154,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = sanitizeInput(validationResult.data)
+    // Use Zod-validated data directly - Zod schema already blocks malicious patterns
+    const body = {
+      ...validationResult.data,
+      email: validationResult.data.email.trim().toLowerCase()
+    }
 
     // Additional security checks
     if (body.message.length > 1000 && body.name.length < 3) {
