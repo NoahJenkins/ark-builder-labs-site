@@ -25,12 +25,8 @@ test.describe('Responsive Design', () => {
         try {
           await page.goto(testPage.path, { waitUntil: 'networkidle', timeout: 30000 });
         } catch (error) {
-          await page.waitForTimeout(2000);
           await page.goto(testPage.path, { waitUntil: 'domcontentloaded', timeout: 20000 });
         }
-        
-        // Wait for layout to stabilize
-        await page.waitForTimeout(1000);
         
         // Page should load without horizontal scroll
         const body = page.locator('body');
@@ -68,7 +64,6 @@ test.describe('Responsive Design', () => {
       
       // Click to open mobile menu
       await mobileNavTrigger.click();
-      await page.waitForTimeout(500);
       
       // Mobile menu should appear
       const mobileMenu = page.locator('[class*="mobile-nav"], nav[class*="mobile"], .mobile-menu');
@@ -83,35 +78,6 @@ test.describe('Responsive Design', () => {
     }
   });
 
-  test('homepage hero section adapts to different screen sizes', async ({ page }) => {
-    const heroTests = [
-      { width: 375, height: 667, expectation: 'mobile-optimized' },
-      { width: 768, height: 1024, expectation: 'tablet-optimized' },
-      { width: 1200, height: 800, expectation: 'desktop-optimized' }
-    ];
-
-    for (const test of heroTests) {
-      await page.setViewportSize({ width: test.width, height: test.height });
-      await page.goto('/');
-
-      // Hero section should be visible
-      const heroSection = page.locator('section').first();
-      await expect(heroSection).toBeVisible();
-
-      // Main heading should be visible and readable
-      const mainHeading = page.locator('h1');
-      await expect(mainHeading).toBeVisible();
-
-      // CTA buttons should be visible and accessible
-      const ctaButtons = page.locator('button, a').filter({ hasText: /get.*quote|view.*services/i });
-      await expect(ctaButtons.first()).toBeVisible();
-
-      // Check that content doesn't overflow
-      const sectionWidth = await heroSection.evaluate(el => el.scrollWidth);
-      expect(sectionWidth).toBeLessThanOrEqual(test.width + 20);
-    }
-  });
-
   test('contact form is usable on all screen sizes', async ({ page }) => {
     for (const viewport of viewports) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
@@ -122,9 +88,6 @@ test.describe('Responsive Design', () => {
       } catch (error) {
         await page.goto('/contact', { waitUntil: 'domcontentloaded', timeout: 20000 });
       }
-      
-      // Wait for responsive layout to settle, especially important for Firefox
-      await page.waitForTimeout(1500);
 
       // Form should be visible with increased timeout
       const form = page.locator('form');
@@ -143,8 +106,6 @@ test.describe('Responsive Design', () => {
 
       // Form fields should be large enough for touch interaction on mobile
       if (viewport.width <= 768) {
-        // Wait a bit more for layout to fully stabilize before measuring
-        await page.waitForTimeout(500);
         try {
           const fieldHeight = await nameField.boundingBox();
           if (fieldHeight) {

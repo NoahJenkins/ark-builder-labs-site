@@ -57,21 +57,14 @@ test.describe('Contact Form', () => {
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // Wait for form submission to complete (might show success or error)
-    await page.waitForTimeout(3000);
-
     // Check for success or error message
     const successMessage = page.locator('text=Thank you! We\'ll get back to you within 24 hours.');
     const errorMessage = page.locator('text=Something went wrong');
-    
-    // Either success or error should appear (depending on backend setup)
-    const responseVisible = await Promise.race([
-      successMessage.isVisible().then(() => 'success'),
-      errorMessage.isVisible().then(() => 'error'),
-      page.waitForTimeout(5000).then(() => 'timeout')
-    ]);
 
-    expect(['success', 'error']).toContain(responseVisible);
+    await Promise.race([
+      successMessage.waitFor({ state: 'visible' }),
+      errorMessage.waitFor({ state: 'visible' })
+    ]);
   });
 
   test('form shows rate limiting protection', async ({ page }) => {
@@ -105,7 +98,8 @@ test.describe('Contact Form', () => {
     await page.selectOption('select[name="service"]', 'general');
     await page.fill('textarea[name="message"]', 'Test message');
     await page.click('button[type="submit"]');
-    await page.waitForTimeout(500);
+    const successMessage = page.locator('text=Thank you! We\'ll get back to you within 24 hours.');
+    await expect(successMessage).toBeVisible();
 
     // Try to submit again immediately - should hit client-side rate limit
     await page.fill('input[name="name"]', 'Test User 2');
@@ -117,30 +111,6 @@ test.describe('Contact Form', () => {
     // Should show rate limiting message
     const rateLimitMessage = page.locator('text=Rate limit exceeded');
     await expect(rateLimitMessage).toBeVisible({ timeout: 5000 });
-  });
-
-  test('form is responsive', async ({ page }) => {
-    const viewports = [
-      { width: 375, height: 667 }, // Mobile
-      { width: 768, height: 1024 }, // Tablet
-      { width: 1200, height: 800 }  // Desktop
-    ];
-
-    for (const viewport of viewports) {
-      await page.setViewportSize(viewport);
-      
-      // Form should be visible and usable
-      const form = page.locator('form');
-      await expect(form).toBeVisible();
-      
-      // All fields should be accessible
-      await expect(page.locator('input[name="name"]')).toBeVisible();
-      await expect(page.locator('input[name="email"]')).toBeVisible();
-      await expect(page.locator('textarea[name="message"]')).toBeVisible();
-      
-      // Submit button should be visible
-      await expect(page.locator('button[type="submit"]')).toBeVisible();
-    }
   });
 
   test('form shows loading state during submission', async ({ page }) => {
@@ -155,10 +125,6 @@ test.describe('Contact Form', () => {
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // The loading state is very brief, so we'll just verify the form processes the submission
-    // and shows some result (success or error) rather than checking the exact loading state
-    await page.waitForTimeout(2000);
-    
     // After submission, either success message or error should appear, or button should be enabled again
     const hasSuccessMessage = await page.locator('text=Thank you!').isVisible();
     const hasErrorMessage = await page.locator('text=Something went wrong').isVisible();

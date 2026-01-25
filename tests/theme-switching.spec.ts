@@ -14,7 +14,6 @@ test.describe('Theme Switching', () => {
     
     // Should be clickable
     await themeToggle.click();
-    await page.waitForTimeout(500);
   });
 
   test('switching to dark mode applies dark theme', async ({ page }) => {
@@ -24,12 +23,11 @@ test.describe('Theme Switching', () => {
       window.dispatchEvent(new StorageEvent('storage', { key: 'theme', newValue: 'light' }));
     });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Find and click theme toggle
     const themeToggle = page.locator('button:has(.lucide-sun), button:has(.lucide-moon)').first();
     await themeToggle.click();
-    await page.waitForTimeout(1000);
 
     // Check that dark mode is applied
     const htmlElement = page.locator('html');
@@ -53,12 +51,11 @@ test.describe('Theme Switching', () => {
       window.dispatchEvent(new StorageEvent('storage', { key: 'theme', newValue: 'dark' }));
     });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Find and click theme toggle
     const themeToggle = page.locator('button:has(.lucide-sun), button:has(.lucide-moon)').first();
     await themeToggle.click();
-    await page.waitForTimeout(1000);
 
     // Check that light mode is applied
     const isLightMode = await page.evaluate(() => {
@@ -75,7 +72,7 @@ test.describe('Theme Switching', () => {
       localStorage.setItem('theme', 'dark');
     });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Check dark mode is applied
     const isDarkAfterReload = await page.evaluate(() => {
@@ -89,7 +86,7 @@ test.describe('Theme Switching', () => {
       localStorage.setItem('theme', 'light');
     });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Check light mode is applied
     const isLightAfterReload = await page.evaluate(() => {
@@ -105,7 +102,7 @@ test.describe('Theme Switching', () => {
       localStorage.setItem('theme', 'light');
     });
     await page.reload();
-    await page.waitForTimeout(2000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Check for snow animation elements
     const snowElements = page.locator('[class*="animate-snowfall"]');
@@ -118,7 +115,7 @@ test.describe('Theme Switching', () => {
       localStorage.setItem('theme', 'dark');
     });
     await page.reload();
-    await page.waitForTimeout(2000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Check for rain animation elements
     const rainElements = page.locator('[class*="animate-rainfall"]');
@@ -162,7 +159,6 @@ test.describe('Theme Switching', () => {
         
         // Test theme switching
         await themeToggle.click();
-        await page.waitForTimeout(500);
         
         // Theme should have changed
         const themeChanged = await page.evaluate(() => {
@@ -182,7 +178,7 @@ test.describe('Theme Switching', () => {
     // Mock system dark mode preference
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Should respect system dark mode
     const respectsSystemDark = await page.evaluate(() => {
@@ -193,7 +189,7 @@ test.describe('Theme Switching', () => {
     // Mock system light mode preference
     await page.emulateMedia({ colorScheme: 'light' });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Should respect system light mode
     const respectsSystemLight = await page.evaluate(() => {
@@ -221,7 +217,6 @@ test.describe('Theme Switching', () => {
       // Should be keyboard accessible
       await themeToggle.focus();
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(500);
       
       // Theme should have changed
       const themeChanged = await page.evaluate(() => {
@@ -237,7 +232,7 @@ test.describe('Theme Switching', () => {
       localStorage.setItem('theme', 'dark');
     });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     // Check that background colors have changed to dark
     const backgroundColor = await page.locator('body').evaluate(el => {
@@ -252,7 +247,7 @@ test.describe('Theme Switching', () => {
       localStorage.setItem('theme', 'light');
     });
     await page.reload();
-    await page.waitForTimeout(1000);
+    await expect(page.locator('main')).toBeVisible();
 
     const lightBackgroundColor = await page.locator('body').evaluate(el => {
       return window.getComputedStyle(el).backgroundColor;

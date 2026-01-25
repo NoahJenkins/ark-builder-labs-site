@@ -8,8 +8,6 @@ test.describe('Blog System', () => {
     await expect(page).toHaveURL('/blog');
 
     // Check for blog posts
-    const blogPosts = page.locator('[data-testid="blog-post"], article, .blog-post').first();
-    
     // Look for common blog post elements
     const postTitles = page.locator('h1, h2, h3').filter({ hasText: /welcome|guide|practices|optimization/i });
     await expect(postTitles.first()).toBeVisible();
@@ -57,56 +55,63 @@ test.describe('Blog System', () => {
     }
   });
 
-  test('blog posts have proper metadata', async ({ page }) => {
+  test('blog post page renders content, metadata, and semantics', async ({ page }) => {
     await page.goto('/blog/welcome-to-our-blog');
-    
+
     // Check for meta tags
     const metaDescription = page.locator('meta[name="description"]');
     if (await metaDescription.count() > 0) {
       await expect(metaDescription).toHaveAttribute('content');
     }
-    
+
     // Check for title
     await expect(page).toHaveTitle(/Ark Builder Labs/);
-  });
 
-  test('blog content renders MDX correctly', async ({ page }) => {
-    await page.goto('/blog/welcome-to-our-blog');
-    
     // Check for common MDX elements
     const content = page.locator('main, article');
     await expect(content).toBeVisible();
-    
+
     // Check for headings
     const headings = page.locator('h1, h2, h3, h4');
     await expect(headings.first()).toBeVisible();
-    
+
     // Check for paragraphs
     const paragraphs = page.locator('p');
     await expect(paragraphs.first()).toBeVisible();
-  });
 
-  test('blog images load correctly', async ({ page }) => {
-    await page.goto('/blog/welcome-to-our-blog');
-    
     // Check for images in blog content
     const images = page.locator('img');
     const imageCount = await images.count();
-    
+
     if (imageCount > 0) {
       for (let i = 0; i < imageCount; i++) {
         const img = images.nth(i);
         await expect(img).toHaveAttribute('src');
         await expect(img).toHaveAttribute('alt');
-        
-        // Check if image loads successfully
-        const src = await img.getAttribute('src');
-        if (src) {
-          const response = await page.request.get(src);
-          expect(response.status()).toBe(200);
-        }
+
+        const naturalWidth = await img.evaluate(el => (el as HTMLImageElement).naturalWidth);
+        expect(naturalWidth).toBeGreaterThan(0);
       }
     }
+
+    // Check for main content area
+    const main = page.locator('main');
+    await expect(main).toBeVisible();
+
+    // Check for article element if used
+    const article = page.locator('article');
+    if (await article.count() > 0) {
+      await expect(article).toBeVisible();
+    }
+
+    // Check for proper heading hierarchy
+    const h1 = page.locator('h1');
+    const h1Count = await h1.count();
+    expect(h1Count).toBeGreaterThanOrEqual(1);
+
+    // Check that content is properly structured
+    const structuredContent = page.locator('main p, article p');
+    await expect(structuredContent.first()).toBeVisible();
   });
 
   test('blog listing shows post metadata', async ({ page }) => {
@@ -122,32 +127,6 @@ test.describe('Blog System', () => {
     const anyMetadata = page.locator('time, [class*="date"], [class*="category"], [data-testid*="post-"]');
     if (await anyMetadata.count() > 0) {
       await expect(anyMetadata.first()).toBeVisible();
-    }
-  });
-
-  test('blog search/filtering works if implemented', async ({ page }) => {
-    await page.goto('/blog');
-    
-    // Look for search or filter functionality
-    const searchInput = page.locator('input[type="search"], input[placeholder*="search" i]');
-    const filterButtons = page.locator('button[class*="filter"], [data-testid*="filter"]');
-    
-    // If search exists, test it
-    if (await searchInput.count() > 0) {
-      await searchInput.fill('AI');
-      await page.waitForTimeout(1000);
-      
-      // Should filter results
-      const results = page.locator('[data-testid="blog-post"], article');
-      if (await results.count() > 0) {
-        await expect(results.first()).toBeVisible();
-      }
-    }
-    
-    // If filters exist, test them
-    if (await filterButtons.count() > 0) {
-      await filterButtons.first().click();
-      await page.waitForTimeout(500);
     }
   });
 

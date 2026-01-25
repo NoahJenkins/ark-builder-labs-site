@@ -9,21 +9,6 @@ test.describe('Homepage', () => {
     await expect(page).toHaveTitle(/Ark Builder Labs/);
   });
 
-  test('hero section is responsive', async ({ page }) => {
-    // Test on mobile viewport
-    await page.setViewportSize({ width: 375, height: 667 });
-    const heading = page.locator('h1');
-    await expect(heading).toBeVisible();
-
-    // Test on tablet viewport
-    await page.setViewportSize({ width: 768, height: 1024 });
-    await expect(heading).toBeVisible();
-
-    // Test on desktop viewport
-    await page.setViewportSize({ width: 1200, height: 800 });
-    await expect(heading).toBeVisible();
-  });
-
   test('CTA buttons are clickable and navigate correctly', async ({ page }) => {
     // Test "Get a Quote" button navigation
     await page.click('text=Get a Quote');

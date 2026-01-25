@@ -20,12 +20,6 @@ test.describe('Navigation', () => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
-    // Check that desktop nav is hidden
-    const desktopNav = page.locator('nav.hidden.md\\:flex');
-    
-    // Mobile navigation button should be visible
-    const mobileNavToggle = page.locator('button[aria-label*="menu" i], button[aria-label*="navigation" i], button[class*="mobile"]').first();
-    
     // If mobile nav button doesn't exist, try alternative selectors
     const mobileNavButton = page.locator('header button').last();
     await expect(mobileNavButton).toBeVisible();
@@ -51,7 +45,6 @@ test.describe('Navigation', () => {
 
     // Scroll down to test sticky behavior
     await page.evaluate(() => window.scrollTo(0, 1000));
-    await page.waitForTimeout(500);
 
     // Header should still be visible
     await expect(header).toBeVisible();
@@ -66,46 +59,7 @@ test.describe('Navigation', () => {
     ];
 
     for (const testPagePath of pages) {
-      console.log(`\n[${new Date().toISOString()}] Starting navigation test for page: ${testPagePath}`);
-      
-      // Server readiness check with retry
-      let serverReady = false;
-      for (let i = 0; i < 3; i++) {
-        try {
-          const response = await page.request.get('http://localhost:3000/');
-          console.log(`Server check response status: ${response.status()}`);
-          if (response.status() === 200) {
-            serverReady = true;
-            break;
-          }
-        } catch (error) {
-          console.log(`Server check attempt ${i + 1} failed: ${(error as Error).message}`);
-          await page.waitForTimeout(2000); // Wait 2s before retry
-        }
-      }
-      
-      if (!serverReady) {
-        console.log('Server not ready after 3 attempts, attempting navigation anyway');
-      }
-      
-      // Navigate with retry on timeout using less strict wait conditions
-      let navigationSuccess = false;
-      for (let i = 0; i < 2; i++) {
-        try {
-          // Try networkidle first, fallback to domcontentloaded
-          const waitCondition = i === 0 ? 'networkidle' : 'domcontentloaded';
-          await page.goto(testPagePath, { waitUntil: waitCondition, timeout: 25000 });
-          navigationSuccess = true;
-          break;
-        } catch (error) {
-          console.log(`Navigation attempt ${i + 1} failed: ${(error as Error).message}`);
-          if (i < 1) await page.waitForTimeout(3000);
-        }
-      }
-      
-      if (!navigationSuccess) {
-        throw new Error(`Failed to navigate to ${testPagePath} after retries`);
-      }
+      await page.goto(testPagePath, { waitUntil: 'domcontentloaded', timeout: 25000 });
       
       // Verify page loaded correctly
       await expect(page).toHaveURL(testPagePath);
@@ -139,7 +93,6 @@ test.describe('Navigation', () => {
       
       // Test that mobile nav can be opened
       await mobileNavButton.click();
-      await page.waitForTimeout(500); // Wait for animation
       
       // Check mobile navigation links are accessible
       const mobileNavLinks = page.locator('[data-mobile-menu="true"] a');

@@ -159,11 +159,6 @@ describe('BlogContent', () => {
   })
 
   it('shows "No Posts Found" message when filtered category has no posts', async () => {
-    const emptyCategories = ['All', 'Empty Category']
-    render(<BlogContent blogPosts={mockBlogPosts} categories={emptyCategories} />)
-    
-    // This would need a category that doesn't exist in posts
-    // Let's simulate by using a custom category
     const customBlogPosts: BlogPost[] = []
     render(<BlogContent blogPosts={customBlogPosts} categories={['All', 'Nonexistent']} />)
     
