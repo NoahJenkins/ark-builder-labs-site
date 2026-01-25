@@ -12,7 +12,7 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <div className="h-8 w-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center">
                 <span className="text-white font-bold text-sm">A</span>
               </div>
               <span className="font-bold text-xl gradient-text">{SITE_CONFIG.name}</span>
