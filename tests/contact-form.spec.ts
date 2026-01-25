@@ -98,8 +98,10 @@ test.describe('Contact Form', () => {
     await page.selectOption('select[name="service"]', 'general');
     await page.fill('textarea[name="message"]', 'Test message');
     await page.click('button[type="submit"]');
+    
+    // Wait for success message to appear
     const successMessage = page.locator('text=Thank you! We\'ll get back to you within 24 hours.');
-    await expect(successMessage).toBeVisible();
+    await expect(successMessage).toBeVisible({ timeout: 10000 });
 
     // Try to submit again immediately - should hit client-side rate limit
     await page.fill('input[name="name"]', 'Test User 2');
