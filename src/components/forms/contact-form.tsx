@@ -23,7 +23,7 @@ interface ContactFormData {
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error' | 'rate-limit' | 'spam'>('idle')
-  const [lastSubmit, setLastSubmit] = useState(0)
+  
 
   const {
     register,
