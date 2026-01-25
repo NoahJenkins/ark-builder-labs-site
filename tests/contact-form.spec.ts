@@ -57,13 +57,13 @@ test.describe('Contact Form', () => {
     // Submit the form
     await page.click('button[type="submit"]');
 
-    // Check for success or error message
+    // Check for success or error message (with longer timeout for Firefox)
     const successMessage = page.locator('text=Thank you! We\'ll get back to you within 24 hours.');
     const errorMessage = page.locator('text=Something went wrong');
 
     await Promise.race([
-      successMessage.waitFor({ state: 'visible' }),
-      errorMessage.waitFor({ state: 'visible' })
+      successMessage.waitFor({ state: 'visible', timeout: 30000 }),
+      errorMessage.waitFor({ state: 'visible', timeout: 30000 })
     ]);
   });
 

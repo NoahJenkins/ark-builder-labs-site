@@ -137,10 +137,13 @@ test.describe('Blog System', () => {
     // Click on a blog post if available
     const firstPost = page.locator('a[href^="/blog/"]').first();
     if (await firstPost.count() > 0) {
-      await firstPost.click();
+      // Wait for navigation to complete after clicking
+      await Promise.all([
+        page.waitForURL(/\/blog\/.+/, { timeout: 30000 }),
+        firstPost.click()
+      ]);
       
-      // Should be on blog post page (check that URL changed from /blog)
-      await page.waitForURL(/\/blog\/.+/);
+      // Verify we're on a blog post page
       const currentUrl = page.url();
       expect(currentUrl).toMatch(/\/blog\/.+/);
       
