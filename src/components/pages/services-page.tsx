@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SERVICES } from "@/lib/constants"
+import { encodePathSegment } from "@/lib/security"
 import { ArrowRight, Code2, Cloud, Brain, CheckCircle } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -95,7 +96,7 @@ export function ServicesPageContent() {
 
                       <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                         <Button asChild>
-                          <Link href={`/services/${service.id}`} className="inline-flex items-center space-x-2">
+                          <Link href={`/services/${encodePathSegment(service.id)}`} className="inline-flex items-center space-x-2">
                             <span>Learn More</span>
                             <ArrowRight className="h-4 w-4" />
                           </Link>

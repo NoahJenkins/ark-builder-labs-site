@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { SITE_CONFIG, NAVIGATION_ITEMS, SERVICES } from "@/lib/constants"
+import { encodePathSegment } from "@/lib/security"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -49,7 +50,7 @@ export function Footer() {
               {SERVICES.map((service) => (
                 <li key={service.id}>
                   <Link 
-                    href={`/services/${service.id}`}
+                    href={`/services/${encodePathSegment(service.id)}`}
                     className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   >
                     {service.title}

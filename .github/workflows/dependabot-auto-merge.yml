@@ -1,0 +1,148 @@
+name: Dependabot Auto-Merge
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependabot-auto-merge:
+    name: Dependabot Auto-Merge
+    runs-on: ubuntu-latest
+    if: >-
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.draft == false
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate changed files against allowlist
+        id: changed-files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            const allowedPatterns = [
+              /(^|\/)package\.json$/,
+              /(^|\/)pnpm-lock\.yaml$/,
+              /(^|\/)package-lock\.json$/,
+              /(^|\/)yarn\.lock$/,
+              /(^|\/)bun\.lockb$/,
+              /(^|\/)npm-shrinkwrap\.json$/,
+              /^\.github\/workflows\/[^/]+\.ya?ml$/,
+              /^\.github\/dependabot\.ya?ml$/,
+            ];
+
+            const changed = files.map((file) => file.filename);
+            const disallowed = changed.filter((file) => !allowedPatterns.some((pattern) => pattern.test(file)));
+
+            core.info(`Changed files (${changed.length}): ${changed.join(', ')}`);
+            if (disallowed.length > 0) {
+              core.warning(`Disallowed files detected: ${disallowed.join(', ')}`);
+            }
+
+            core.setOutput('eligible', disallowed.length === 0 ? 'true' : 'false');
+
+      - name: Compute eligibility
+        id: eligibility
+        env:
+          PACKAGE_ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+          FILES_ELIGIBLE: ${{ steps.changed-files.outputs.eligible }}
+        run: |
+          set -euo pipefail
+
+          ecosystem_ok=false
+          update_ok=false
+
+          case "$PACKAGE_ECOSYSTEM" in
+            npm|github-actions)
+              ecosystem_ok=true
+              ;;
+          esac
+
+          case "$UPDATE_TYPE" in
+            version-update:semver-patch|version-update:semver-minor)
+              update_ok=true
+              ;;
+          esac
+
+          eligible=false
+          if [[ "$ecosystem_ok" == "true" && "$update_ok" == "true" && "$FILES_ELIGIBLE" == "true" ]]; then
+            eligible=true
+          fi
+
+          echo "ecosystem_ok=$ecosystem_ok" >> "$GITHUB_OUTPUT"
+          echo "update_ok=$update_ok" >> "$GITHUB_OUTPUT"
+          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+
+          echo "package-ecosystem=$PACKAGE_ECOSYSTEM"
+          echo "update-type=$UPDATE_TYPE"
+          echo "files-eligible=$FILES_ELIGIBLE"
+          echo "eligible=$eligible"
+
+      - name: Auto-approve Dependabot PR
+        if: steps.eligibility.outputs.eligible == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number,
+                event: 'APPROVE',
+                body: 'Auto-approved: Dependabot patch/minor update in allowed ecosystem and file scope.',
+              });
+            } catch (error) {
+              if (error.status === 422) {
+                core.info('Approval already exists or review not required; continuing.');
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Enable native auto-merge (squash)
+        if: steps.eligibility.outputs.eligible == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullRequestId = context.payload.pull_request.node_id;
+            await github.graphql(
+              `mutation($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(input: {
+                  pullRequestId: $pullRequestId,
+                  mergeMethod: SQUASH
+                }) {
+                  pullRequest {
+                    number
+                    autoMergeRequest {
+                      enabledAt
+                    }
+                  }
+                }
+              }`,
+              { pullRequestId }
+            );
+            core.info(`Enabled auto-merge (squash) for PR #${context.payload.pull_request.number}`);
+
+      - name: Log ineligible PR reason
+        if: steps.eligibility.outputs.eligible != 'true'
+        run: |
+          echo "PR is not eligible for auto-merge based on ecosystem, update type, or changed file scope."

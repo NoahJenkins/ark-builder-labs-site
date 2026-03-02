@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
+import { encodePathSegment } from '@/lib/security'
 
 export interface BlogPost {
   id: string
@@ -57,7 +58,8 @@ export function getBlogPosts(): BlogPost[] {
 
 export function getBlogPost(slug: string): BlogPost | null {
   try {
-    const fullPath = path.join(postsDirectory, `${slug}.mdx`)
+    const safeSlug = encodePathSegment(slug)
+    const fullPath = path.join(postsDirectory, `${safeSlug}.mdx`)
     
     if (!fs.existsSync(fullPath)) {
       return null

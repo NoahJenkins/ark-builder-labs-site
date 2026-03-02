@@ -114,6 +114,15 @@ A modern, professional company website built with Next.js 15, featuring bold ani
 - **Unit tests (Jest)**: Tests live under `src/__tests__/`. Jest is configured via `jest.config.js` (wrapping `next/jest`) with setup in `jest.setup.js` (mocks router, animations, IntersectionObserver, matchMedia, and global fetch). Example: `npx jest src/__tests__/components/blog-content.test.tsx`.
 - **E2E (Playwright)**: Tests live under `tests/`. `playwright.config.ts` starts the dev server (`npm run dev`), uses baseURL `http://localhost:3000`, and reuses an existing server locally. Run: `npm run test:e2e`.
 
+### CI and Branch Protection
+
+- CI required checks for `main`: `TypeScript & Lint`, `Jest Tests`, `Build Check`, `Playwright Tests`.
+- Dependabot auto-merge policy is implemented in `.github/workflows/dependabot-auto-merge.yml` with strict actor/base/update/file gates.
+- Branch protection source of truth is `.github/branch-protection/main.json`.
+- Apply/verify branch protection locally with: `bash scripts/apply-branch-protection.sh NoahJenkins ark-builder-labs-site main`.
+- Manual workflow option: `.github/workflows/branch-protection.yml` (uses `GITHUB_TOKEN`; local `scripts/apply-branch-protection.sh` remains the authoritative apply/verify path).
+- Architecture details and policy notes: `docs/architecture/ci.md`.
+
 ## 📁 Project Structure
 
 ```

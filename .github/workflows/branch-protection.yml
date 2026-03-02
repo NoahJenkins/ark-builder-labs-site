@@ -1,0 +1,28 @@
+name: Branch Protection Sync
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apply-main-protection:
+    name: Apply Main Branch Protection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install gh CLI
+        run: |
+          type -p gh >/dev/null || {
+            sudo apt update
+            sudo apt install gh -y
+          }
+
+      - name: Apply and verify branch protection
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash scripts/apply-branch-protection.sh "${{ github.repository_owner }}" "${{ github.event.repository.name }}" "main"

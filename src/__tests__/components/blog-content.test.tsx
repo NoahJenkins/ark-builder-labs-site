@@ -188,7 +188,7 @@ describe('BlogContent', () => {
       // Verify they have correct hrefs
       mockBlogPosts.forEach(post => {
         const postLink = readLinks.find(link => 
-          link.getAttribute('href') === `/blog/${post.slug}`
+          link.getAttribute('href') === `/blog/${encodeURIComponent(post.slug)}`
         )
         expect(postLink).toBeDefined()
       })

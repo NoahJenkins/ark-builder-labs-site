@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, ArrowRight } from "lucide-react"
 import type { BlogPost } from "@/lib/blog"
+import { encodePathSegment } from "@/lib/security"
 
 interface BlogContentProps {
   blogPosts: BlogPost[]
@@ -92,7 +93,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
                         </div>
                       </div>
                       <Link 
-                        href={`/blog/${post.slug}`}
+                        href={`/blog/${encodePathSegment(post.slug)}`}
                         className="inline-flex items-center space-x-2 text-primary hover:underline font-medium group"
                       >
                         <span>Read More</span>
@@ -146,7 +147,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
                           </div>
                         </div>
                         <Link 
-                          href={`/blog/${post.slug}`}
+                          href={`/blog/${encodePathSegment(post.slug)}`}
                           className="text-primary hover:underline text-sm font-medium group/link"
                         >
                           <span className="inline-flex items-center space-x-1">

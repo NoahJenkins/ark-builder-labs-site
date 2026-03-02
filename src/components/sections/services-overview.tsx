@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
 import { SERVICES } from "@/lib/constants"
+import { encodePathSegment } from "@/lib/security"
 import { ArrowRight, Code2, Cloud, Brain } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -71,7 +72,7 @@ export function ServicesOverview() {
                       </ul>
 
                       <Button variant="ghost" className="w-full group/btn mt-auto" asChild>
-                        <Link href={`/services/${service.id}`}>
+                        <Link href={`/services/${encodePathSegment(service.id)}`}>
                           Learn More
                           <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
                         </Link>
