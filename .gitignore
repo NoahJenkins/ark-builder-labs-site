@@ -52,3 +52,29 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Added by OnboardCopilot: IDE / editor files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Added by OnboardCopilot: environment and secrets
+.env
+.env.local
+.env.*.local
+*.key
+secrets.yml
+
+# Added by OnboardCopilot: logs and build artifacts
+*.log
+logs/
+dist/
+
+# Added by OnboardCopilot: OS files
+Thumbs.db
+desktop.ini

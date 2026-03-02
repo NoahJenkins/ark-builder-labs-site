@@ -56,63 +56,46 @@ A modern, professional company website built with Next.js 15, featuring bold ani
 
 ## 🚀 Getting Started
 
+## Quick Start
+
 ### Prerequisites
-- Node.js 18.x or later
-- npm or yarn package manager
-- Git
+- Node.js 22.x
+- pnpm 10.x
 
-### Local Development Setup
+### Installation
+1. Clone the repository
+2. Install dependencies: `pnpm install`
+3. `.env.example` is intentionally not present because this repo does not include a root `.env` file; use `.env.local` for local configuration
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/your-username/ark-builder-labs-site.git
-   cd ark-builder-labs-site
-   ```
+### Running Locally
+Development server: `pnpm run dev`
+Application runs at: `http://localhost:3000`
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+### Testing
+Run tests: `pnpm test`
+Run with coverage: `pnpm run test:coverage`
 
-3. **Set up environment variables**:
-   Create a `.env.local` file in the root directory and add the following:
-   ```env
-   # General
-   NEXT_PUBLIC_SITE_URL=http://localhost:3000
-   CONTACT_EMAIL=your-email@example.com
-   CALCOM_LINK=your-cal-link
-
-   # Formspree for contact form
-   NEXT_PUBLIC_USE_FORMSPREE=true
-   NEXT_PUBLIC_FORMSPREE_ENDPOINT=https://formspree.io/f/your-form-id
-   ```
-
-4. **Run the development server**:
-   ```bash
-   npm run dev
-   ```
-
-5. **Open your browser**:
-   Navigate to [http://localhost:3000](http://localhost:3000)
+### Building
+Production build: `pnpm run build`
 
 ### Available Scripts
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint for code quality
-- `npm test` - Run unit tests (Jest)
-- `npm run test:watch` - Watch mode for unit tests
-- `npm run test:coverage` - Unit test coverage report
-- `npm run test:e2e` - Run Playwright end-to-end tests
-- `npm run test:e2e:ui` - Run Playwright with UI test runner
-- `npm run test:e2e:headed` - Run Playwright tests in headed browsers
-- `npm run test:e2e:report` - Open the last Playwright HTML report
+- `pnpm run dev` - Start development server
+- `pnpm run build` - Build for production
+- `pnpm run start` - Start production server
+- `pnpm run lint` - Run ESLint for code quality
+- `pnpm test` - Run unit tests (Jest)
+- `pnpm run test:watch` - Watch mode for unit tests
+- `pnpm run test:coverage` - Unit test coverage report
+- `pnpm run test:e2e` - Run Playwright end-to-end tests
+- `pnpm run test:e2e:ui` - Run Playwright with UI test runner
+- `pnpm run test:e2e:headed` - Run Playwright tests in headed browsers
+- `pnpm run test:e2e:report` - Open the last Playwright HTML report
 
 ### Testing
 
 - **Unit tests (Jest)**: Tests live under `src/__tests__/`. Jest is configured via `jest.config.js` (wrapping `next/jest`) with setup in `jest.setup.js` (mocks router, animations, IntersectionObserver, matchMedia, and global fetch). Example: `npx jest src/__tests__/components/blog-content.test.tsx`.
-- **E2E (Playwright)**: Tests live under `tests/`. `playwright.config.ts` starts the dev server (`npm run dev`), uses baseURL `http://localhost:3000`, and reuses an existing server locally. Run: `npm run test:e2e`.
+- **E2E (Playwright)**: Tests live under `tests/`. `playwright.config.ts` starts the dev server (`pnpm run dev`), uses baseURL `http://localhost:3000`, and reuses an existing server locally. Run: `pnpm run test:e2e`.
 
 ### CI and Branch Protection
 
@@ -199,6 +182,13 @@ Notes:
 - **Animations**: Customize motion effects in `src/components/animations/`
 - **Blog Content**: Add/edit MDX files in `content/blog/` (see content/blog/README.md for guide)
 
+## Documentation
+
+- [Architecture Documentation](./docs/architecture/)
+- [Architecture Decision Records](./docs/adr/)
+- [Planning & Research Notes](./docs/context/)
+- [Project Task Tracker](./docs/TODO.md)
+
 ## 📝 Content Management
 
 ### Blog System
@@ -256,8 +246,8 @@ Compatible with any Next.js hosting platform:
 ### Build Verification
 Before deploying, ensure your build works locally:
 ```bash
-npm run build
-npm start
+pnpm run build
+pnpm run start
 ```
 
 ## 📈 Performance
@@ -274,6 +264,15 @@ npm start
 3. Make your changes
 4. Test thoroughly
 5. Submit a pull request
+
+Contribution templates:
+- Pull Request Template: `.github/PULL_REQUEST_TEMPLATE.md`
+- Bug Report Template: `.github/ISSUE_TEMPLATE/bug_report.md`
+- Feature Request Template: `.github/ISSUE_TEMPLATE/feature_request.md`
+
+## License
+
+No `LICENSE` file is currently present in the repository. Add one to define project usage and contribution terms.
 
 ## 🙋‍♂️ Support
 
