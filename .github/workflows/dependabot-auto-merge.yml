@@ -72,7 +72,7 @@ jobs:
           update_ok=false
 
           case "$PACKAGE_ECOSYSTEM" in
-            npm|github-actions)
+            npm|npm_and_yarn|github-actions)
               ecosystem_ok=true
               ;;
           esac
