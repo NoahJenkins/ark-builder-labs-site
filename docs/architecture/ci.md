@@ -22,8 +22,8 @@ Eligibility gates:
 - PR author is `dependabot[bot]`
 - base branch is `main`
 - PR is not draft
-- ecosystem is `npm` or `github-actions`
-- update type is `version-update:semver-patch` or `version-update:semver-minor`
+- ecosystem is `npm`, `npm_and_yarn`, or `github-actions`
+- update type is `version-update:semver-patch`, `version-update:semver-minor`, or `version-update:semver-major`
 - changed files are limited to dependency/workflow allowlist
 
 Eligible behavior:

@@ -31,7 +31,7 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 5) Dependabot Auto-Merge Policy
 - **Trigger conditions:** `pull_request_target` events for Dependabot PRs (`opened`, `reopened`, `synchronize`, `ready_for_review`)
-- **Actions performed:** Fetch metadata, validate file allowlist, enforce ecosystem/update-type gates, auto-approve, enable native squash auto-merge
+- **Actions performed:** Fetch metadata, validate file allowlist, enforce ecosystem/update-type gates (patch, minor, and major for `npm_and_yarn` and `github-actions`), auto-approve, enable native squash auto-merge
 - **Success criteria:** Eligibility rules pass and auto-merge is enabled
 - **Typical duration:** <1 minute
 
@@ -66,7 +66,7 @@ Referenced by tooling/runtime in repository configuration:
 - **TypeScript/lint failures:** Run `pnpm exec tsc --noEmit` and `pnpm lint` locally before pushing
 - **Playwright failures due to browser setup:** Ensure `pnpm exec playwright install --with-deps` ran successfully in CI
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
-- **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs
+- **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled in repository settings
 
 ## Maintenance
 - Update workflow action versions periodically (e.g., `actions/checkout`, `actions/setup-node`)

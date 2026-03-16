@@ -1,7 +1,7 @@
 ---
 title: "ADR-0001: Dependabot Auto-Merge Policy"
-status: "Accepted"
-date: "2026-03-02"
+status: "Amended"
+date: "2026-03-16"
 authors: "Maintainer"
 tags: ["architecture", "decision", "ci", "security", "dependabot"]
 supersedes: ""
@@ -12,20 +12,24 @@ superseded_by: ""
 
 ## Status
 
-Accepted
+Amended (2026-03-16: expanded to include semver-major and corrected ecosystem name)
 
 ## Context
 
-Dependency updates improve security and maintenance but unattended merging can introduce regressions. The repository needs automated merges for low-risk Dependabot updates while preserving strict guardrails.
+Dependency updates improve security and maintenance but unattended merging can introduce regressions. The repository needs automated merges for Dependabot updates while preserving strict guardrails.
+
+Two bugs were also discovered and fixed on 2026-03-16:
+1. The ecosystem gate matched `npm` but `dependabot/fetch-metadata` reports `npm_and_yarn` — all npm PRs were permanently ineligible.
+2. Repository `allow_auto_merge` was `false`, causing the `enablePullRequestAutoMerge` GraphQL mutation to silently fail.
 
 ## Decision
 
-Enable auto-merge only for Dependabot pull requests that satisfy all constraints:
+Enable auto-merge for Dependabot pull requests that satisfy all constraints:
 - PR actor and author are `dependabot[bot]`
 - Base branch is `main`
 - PR is not draft
-- Ecosystem is `npm` or `github-actions`
-- Update type is `version-update:semver-patch` or `version-update:semver-minor`
+- Ecosystem is `npm`, `npm_and_yarn`, or `github-actions`
+- Update type is `version-update:semver-patch`, `version-update:semver-minor`, or `version-update:semver-major`
 - Changed files are restricted to dependency/workflow allowlist
 
 If eligible, the workflow auto-approves and enables native GitHub auto-merge with squash.
@@ -34,15 +38,15 @@ If eligible, the workflow auto-approves and enables native GitHub auto-merge wit
 
 ### Positive
 
-- **POS-001**: Reduces maintainer toil for low-risk dependency updates.
+- **POS-001**: Reduces maintainer toil for all Dependabot updates.
 - **POS-002**: Keeps update velocity high for security and maintenance patches.
-- **POS-003**: Preserves review/control boundaries through strict file and update-type gates.
+- **POS-003**: Preserves review/control boundaries through strict file scope gates.
 
 ### Negative
 
-- **NEG-001**: Non-allowlisted updates still require manual intervention.
+- **NEG-001**: Non-allowlisted file changes still require manual intervention.
 - **NEG-002**: Misconfigured allowlists can block legitimate updates.
-- **NEG-003**: Workflow logic requires periodic policy review.
+- **NEG-003**: Major version auto-merges rely on CI coverage catching regressions.
 
 ## Alternatives Considered
 
@@ -53,8 +57,8 @@ If eligible, the workflow auto-approves and enables native GitHub auto-merge wit
 
 ### Unrestricted Dependabot Auto-Merge
 
-- **ALT-003**: **Description**: Auto-merge all Dependabot PRs.
-- **ALT-004**: **Rejection Reason**: Risk profile too high without ecosystem/type/file scope constraints.
+- **ALT-003**: **Description**: Auto-merge all Dependabot PRs without any gates.
+- **ALT-004**: **Rejection Reason**: Risk profile too high without ecosystem and file scope constraints.
 
 ## Implementation Notes
 
