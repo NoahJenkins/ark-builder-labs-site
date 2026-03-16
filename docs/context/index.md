@@ -1,8 +1,12 @@
 # Context Notes Index
 
-Last Updated: 2026-03-02
+Last Updated: 2026-03-16
 
 ## Security & Automation
+
+- [2026-03-16 Dependabot Auto-Merge Bug Fixes and Policy Expansion](./2026-03-16-dependabot-auto-merge-fix.md)
+  - Related ADRs:
+    - [ADR-0001 Dependabot Auto-Merge Policy (amended)](../adr/adr-0001-dependabot-auto-merge-policy.md)
 
 - [2026-03-02 Security and Automation Hardening](./2026-03-02-security-and-automation.md)
   - Related ADRs:
