@@ -78,7 +78,7 @@ jobs:
           esac
 
           case "$UPDATE_TYPE" in
-            version-update:semver-patch|version-update:semver-minor)
+            version-update:semver-patch|version-update:semver-minor|version-update:semver-major)
               update_ok=true
               ;;
           esac
