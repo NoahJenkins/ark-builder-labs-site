@@ -5,7 +5,7 @@ on:
     types: [opened, reopened, synchronize, ready_for_review]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -72,7 +72,7 @@ jobs:
           update_ok=false
 
           case "$PACKAGE_ECOSYSTEM" in
-            npm|npm_and_yarn|github-actions)
+            npm|npm_and_yarn|github_actions)
               ecosystem_ok=true
               ;;
           esac
