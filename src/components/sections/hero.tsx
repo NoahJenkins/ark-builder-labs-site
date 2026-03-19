@@ -1,5 +1,27 @@
 "use client"
 
+// Animation timings are fixed at module load to satisfy render purity rules
+const LIGHTNING_DURATIONS = [
+  `${8 + Math.random() * 4}s`,
+  `${10 + Math.random() * 6}s`,
+  `${12 + Math.random() * 8}s`,
+] as const;
+const LIGHTNING_DELAYS = [
+  `${Math.random() * 5}s`,
+  `${2 + Math.random() * 8}s`,
+  `${4 + Math.random() * 6}s`,
+] as const;
+const SNOW_PARTICLES = Array.from({ length: 50 }, () => ({
+  left: `${Math.random() * 100}%`,
+  animationDelay: `${Math.random() * 10}s`,
+  animationDuration: `${3 + Math.random() * 4}s`,
+}));
+const RAIN_PARTICLES = Array.from({ length: 80 }, () => ({
+  left: `${Math.random() * 100}%`,
+  animationDelay: `${Math.random() * 3}s`,
+  animationDuration: `${0.8 + Math.random() * 0.4}s`,
+}));
+
 import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/animations/fade-in"
 import { SITE_CONFIG } from "@/lib/constants"
@@ -53,17 +75,11 @@ export function HeroSection() {
           {/* Snow Animation for Light Mode */}
           {theme === 'light' && (
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {Array.from({ length: 50 }, (_, i) => (
+              {SNOW_PARTICLES.map((particle, i) => (
                 <div
                   key={`snow-${i}`}
                   className="absolute w-1 h-1 bg-blue-400 rounded-full animate-snowfall"
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    top: '-20px',
-                    opacity: 0,
-                    animationDelay: `${Math.random() * 10}s`,
-                    animationDuration: `${3 + Math.random() * 4}s`
-                  }}
+                  style={{ top: '-20px', opacity: 0, ...particle }}
                 />
               ))}
             </div>
@@ -73,17 +89,11 @@ export function HeroSection() {
           {theme === 'dark' && (
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
               {/* Rain */}
-              {Array.from({ length: 80 }, (_, i) => (
+              {RAIN_PARTICLES.map((particle, i) => (
                 <div
                   key={`rain-${i}`}
                   className="absolute w-0.5 h-4 bg-blue-200/50 animate-rainfall"
-                  style={{
-                    left: `${Math.random() * 100}%`,
-                    top: '-20px',
-                    opacity: 0,
-                    animationDelay: `${Math.random() * 3}s`,
-                    animationDuration: `${0.8 + Math.random() * 0.4}s`
-                  }}
+                  style={{ top: '-20px', opacity: 0, ...particle }}
                 />
               ))}
               
@@ -91,22 +101,22 @@ export function HeroSection() {
               <div 
                 className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-blue-200/10 via-white/5 to-transparent animate-lightning opacity-0 invisible"
                 style={{
-                  animationDuration: `${8 + Math.random() * 4}s`,
-                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: LIGHTNING_DURATIONS[0],
+                  animationDelay: LIGHTNING_DELAYS[0],
                 }}
               />
               <div 
                 className="absolute top-0 right-0 w-2/3 h-1/4 bg-gradient-to-bl from-blue-100/8 via-white/3 to-transparent animate-lightning-2 opacity-0 invisible"
                 style={{
-                  animationDuration: `${10 + Math.random() * 6}s`,
-                  animationDelay: `${2 + Math.random() * 8}s`,
+                  animationDuration: LIGHTNING_DURATIONS[1],
+                  animationDelay: LIGHTNING_DELAYS[1],
                 }}
               />
               <div 
                 className="absolute bottom-0 left-1/4 w-1/2 h-1/5 bg-gradient-to-t from-blue-200/6 via-white/2 to-transparent animate-lightning opacity-0 invisible"
                 style={{
-                  animationDuration: `${12 + Math.random() * 8}s`,
-                  animationDelay: `${4 + Math.random() * 6}s`,
+                  animationDuration: LIGHTNING_DURATIONS[2],
+                  animationDelay: LIGHTNING_DELAYS[2],
                 }}
               />
             </div>

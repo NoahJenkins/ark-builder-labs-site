@@ -8,8 +8,7 @@
 const _playwright = (() => {
   try {
     // Use CommonJS require inside try/catch so missing module doesn't throw at top-level.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    // @ts-ignore - runtime require, this file is excluded from tsconfig checks
+    // @ts-expect-error - runtime require, this file is excluded from tsconfig checks
     return require('@playwright/test');
   } catch (e) {
     return {
