@@ -110,11 +110,14 @@ jobs:
                 event: 'APPROVE',
                 body: 'Auto-approved: Dependabot patch/minor update in allowed ecosystem and file scope.',
               });
+              core.info('Successfully approved PR.');
             } catch (error) {
-              if (error.status === 422) {
-                core.info('Approval already exists or review not required; continuing.');
+              if (error.status === 422 && error.message?.includes('already exists')) {
+                core.info('Approval already exists; continuing.');
               } else {
-                throw error;
+                core.setFailed(`Failed to approve PR: ${error.message} (status: ${error.status}). ` +
+                  'If using GITHUB_TOKEN, ensure "Allow GitHub Actions reviews to count toward required approval" ' +
+                  'is enabled in repo Settings > Actions > General.');
               }
             }
 
