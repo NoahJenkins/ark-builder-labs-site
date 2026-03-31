@@ -23,7 +23,10 @@ jobs:
     steps:
       - name: Refresh behind Dependabot PRs with auto-merge enabled
         uses: actions/github-script@v8
+        env:
+          HAS_ADMIN_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN != '' }}
         with:
+          github-token: ${{ secrets.REPO_ADMIN_TOKEN != '' && secrets.REPO_ADMIN_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const owner = context.repo.owner;
             const repo = context.repo.repo;
@@ -105,6 +108,10 @@ jobs:
             if (context.eventName === 'push') {
               core.info('Waiting 20s for GitHub to recompute mergeability after main advanced.');
               await sleep(20000);
+            }
+
+            if (process.env.HAS_ADMIN_TOKEN !== 'true') {
+              core.warning('REPO_ADMIN_TOKEN is not configured. GitHub may reject update-branch requests on Dependabot-owned branches.');
             }
 
             const openPrs = await github.paginate(github.rest.pulls.list, {

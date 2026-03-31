@@ -37,7 +37,7 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 6) Dependabot Behind Refresh
 - **Trigger conditions:** `push` to `main`, scheduled every 6 hours, and manual `workflow_dispatch`
-- **Actions performed:** After `main` pushes, wait briefly for GitHub to recalculate PR mergeability, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`
+- **Actions performed:** After `main` pushes, wait briefly for GitHub to recalculate PR mergeability, authenticate with `REPO_ADMIN_TOKEN` when available, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`
 - **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed immediately after `main` advances, while genuinely failing dependency updates remain open for manual follow-up
 - **Typical duration:** <1 minute
 
@@ -79,7 +79,7 @@ Referenced by tooling/runtime in repository configuration:
 - **Playwright failures due to browser setup:** Ensure `pnpm exec playwright install --with-deps` ran successfully in CI
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
 - **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled and `can_approve_pull_request_reviews` is true in repository settings
-- **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran on the latest `main` push; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
+- **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran on the latest `main` push, and confirm `REPO_ADMIN_TOKEN` is configured; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
 
 ## Maintenance
 - Update workflow action versions periodically (e.g., `actions/checkout`, `actions/setup-node`)
