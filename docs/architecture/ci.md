@@ -53,18 +53,20 @@ Workflow: `.github/workflows/dependabot-behind-refresh.yml`
 
 Trigger:
 - `push` to `main`
+- merged PRs targeting `main` via `pull_request_target: closed`
 - scheduled every 6 hours
 - manual `workflow_dispatch`
 
 Behavior:
 - finds open Dependabot PRs against `main`
-- waits briefly on `main` pushes so GitHub can recalculate PR mergeability
+- waits briefly after `main` advances so GitHub can recalculate PR mergeability
 - uses `REPO_ADMIN_TOKEN` when configured because the default workflow token cannot reliably call the update-branch API on Dependabot-owned branches
 - filters to PRs with native auto-merge already enabled
 - refreshes only PRs whose latest checks are currently green
 - skips PRs with real failed or still-pending checks to avoid re-running known-bad dependency updates on every merge to `main`
 - retries when GitHub initially reports `mergeable_state=unknown`
 - updates branches whose mergeable state is `behind` so strict required checks can re-run immediately after `main` advances
+- handles merged-PR events because Dependabot auto-merges did not reliably produce follow-on `push` workflow runs on `main` during the 2026-03-31 investigation
 
 ## Repository Settings Health
 
