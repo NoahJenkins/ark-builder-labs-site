@@ -58,9 +58,11 @@ Trigger:
 
 Behavior:
 - finds open Dependabot PRs against `main`
+- waits briefly on `main` pushes so GitHub can recalculate PR mergeability
 - filters to PRs with native auto-merge already enabled
 - refreshes only PRs whose latest checks are currently green
 - skips PRs with real failed or still-pending checks to avoid re-running known-bad dependency updates on every merge to `main`
+- retries when GitHub initially reports `mergeable_state=unknown`
 - updates branches whose mergeable state is `behind` so strict required checks can re-run immediately after `main` advances
 
 ## Repository Settings Health

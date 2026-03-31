@@ -36,6 +36,36 @@ jobs:
               'timed_out',
             ]);
 
+            async function sleep(ms) {
+              return new Promise((resolve) => setTimeout(resolve, ms));
+            }
+
+            async function fetchPrDetails(pullNumber) {
+              let response;
+
+              for (let attempt = 1; attempt <= 3; attempt += 1) {
+                response = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  pull_number: pullNumber,
+                });
+
+                const mergeableState = response.data.mergeable_state;
+                if (mergeableState && mergeableState !== 'unknown') {
+                  return response;
+                }
+
+                if (attempt < 3) {
+                  core.info(
+                    `PR #${pullNumber} mergeable_state is ${mergeableState ?? 'null'} on attempt ${attempt}; retrying in 5s.`
+                  );
+                  await sleep(5000);
+                }
+              }
+
+              return response;
+            }
+
             async function collectCheckState(ref) {
               const [checkRuns, combinedStatus] = await Promise.all([
                 github.paginate(github.rest.checks.listForRef, {
@@ -72,6 +102,11 @@ jobs:
               };
             }
 
+            if (context.eventName === 'push') {
+              core.info('Waiting 20s for GitHub to recompute mergeability after main advanced.');
+              await sleep(20000);
+            }
+
             const openPrs = await github.paginate(github.rest.pulls.list, {
               owner,
               repo,
@@ -90,11 +125,7 @@ jobs:
                 continue;
               }
 
-              const details = await github.rest.pulls.get({
-                owner,
-                repo,
-                pull_number: pr.number,
-              });
+              const details = await fetchPrDetails(pr.number);
 
               const autoMergeEnabled = details.data.auto_merge !== null;
               const mergeableState = details.data.mergeable_state;

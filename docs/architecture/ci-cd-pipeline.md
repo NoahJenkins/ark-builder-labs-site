@@ -37,7 +37,7 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 6) Dependabot Behind Refresh
 - **Trigger conditions:** `push` to `main`, scheduled every 6 hours, and manual `workflow_dispatch`
-- **Actions performed:** Inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, and call the update-branch API for PRs that are clean but `behind`
+- **Actions performed:** After `main` pushes, wait briefly for GitHub to recalculate PR mergeability, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`
 - **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed immediately after `main` advances, while genuinely failing dependency updates remain open for manual follow-up
 - **Typical duration:** <1 minute
 

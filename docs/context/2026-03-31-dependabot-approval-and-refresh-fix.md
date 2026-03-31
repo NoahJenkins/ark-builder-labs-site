@@ -40,6 +40,7 @@ The live failure was different from the 2026-03-16 issue:
    - left CI-failing PRs open for manual dependency follow-up
 8. After observing that only one PR merged while eight remained open, tightened `.github/workflows/dependabot-behind-refresh.yml` so it now:
    - runs on every push to `main` in addition to schedule/manual dispatch
+   - waits briefly after `main` pushes and retries `mergeable_state=unknown` so GitHub has time to recalculate which PRs are `behind`
    - refreshes only auto-merge-enabled Dependabot PRs whose latest checks are green
    - skips PRs with real failing or still-pending checks so broken dependency updates are not re-run on every merge to `main`
 
