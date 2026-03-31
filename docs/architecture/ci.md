@@ -1,6 +1,6 @@
 # CI and Branch Protection Architecture
 
-Last updated: 2026-03-02
+Last updated: 2026-03-31
 
 ## CI Required Checks
 
@@ -29,10 +29,56 @@ Eligibility gates:
 Eligible behavior:
 - auto-approve PR
 - enable native GitHub auto-merge with `squash`
+- fail early if repository-level auto-merge prerequisites drift
+
+Repository prerequisites:
+- repository `allow_auto_merge == true`
+- repository `allow_squash_merge == true`
+- Actions workflow permissions `can_approve_pull_request_reviews == true`
+
+Configuration source of truth:
+- `.github/repository-settings/repository.json`
+- `.github/repository-settings/workflow-permissions.json`
+
+Local apply + verify:
+- `scripts/apply-repository-settings.sh`
 
 Workflow token permissions:
-- `contents: read`
+- `contents: write`
 - `pull-requests: write`
+
+## Dependabot Behind Refresh
+
+Workflow: `.github/workflows/dependabot-behind-refresh.yml`
+
+Trigger:
+- `push` to `main`
+- merged PRs targeting `main` via `pull_request_target: closed`
+- scheduled every 6 hours
+- manual `workflow_dispatch`
+
+Behavior:
+- finds open Dependabot PRs against `main`
+- waits briefly after `main` advances so GitHub can recalculate PR mergeability
+- uses `REPO_ADMIN_TOKEN` when configured because the default workflow token cannot reliably call the update-branch API on Dependabot-owned branches
+- filters to PRs with native auto-merge already enabled
+- refreshes only PRs whose latest checks are currently green
+- skips PRs with real failed or still-pending checks to avoid re-running known-bad dependency updates on every merge to `main`
+- retries when GitHub initially reports `mergeable_state=unknown`
+- updates branches whose mergeable state is `behind` so strict required checks can re-run immediately after `main` advances
+- handles merged-PR events because Dependabot auto-merges did not reliably produce follow-on `push` workflow runs on `main` during the 2026-03-31 investigation
+
+## Repository Settings Health
+
+Workflow: `.github/workflows/repository-settings-health.yml`
+
+Trigger:
+- daily schedule
+- manual `workflow_dispatch`
+
+Behavior:
+- if `REPO_ADMIN_TOKEN` is configured, re-applies and verifies `.github/repository-settings/*` through `scripts/apply-repository-settings.sh`
+- if `REPO_ADMIN_TOKEN` is not configured, succeeds with a notice explaining that admin-only verification was skipped
 
 ## Branch Protection Apply + Verify
 

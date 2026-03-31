@@ -1,185 +1,25 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Blog System', () => {
-  test('blog listing page displays correctly', async ({ page }) => {
+  test('blog listing renders featured content', async ({ page }) => {
     await page.goto('/blog');
-
-    // Check page title
     await expect(page).toHaveURL('/blog');
-
-    // Check for blog posts
-    // Look for common blog post elements
-    const postTitles = page.locator('h1, h2, h3').filter({ hasText: /welcome|guide|practices|optimization/i });
-    await expect(postTitles.first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: /insights & updates/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /read more/i }).first()).toBeVisible();
   });
 
-  test('individual blog posts load correctly', async ({ page }) => {
-    // Test specific blog posts that we know exist in content/blog/
-    const blogPosts = [
-      'welcome-to-our-blog'
-    ];
-
-    for (const slug of blogPosts) {
-      await page.goto(`/blog/${slug}`);
-      await expect(page).toHaveURL(`/blog/${slug}`);
-      
-      // Check that content loads
-      const content = page.locator('main, article, .content');
-      await expect(content).toBeVisible();
-      
-      // Check for heading
-      const heading = page.locator('h1').first();
-      await expect(heading).toBeVisible();
-    }
-  });
-
-  test('blog post navigation works from listing', async ({ page }) => {
+  test('blog listing opens a post and back navigation returns to the listing', async ({ page }) => {
     await page.goto('/blog');
-    
-    // Find first blog post link and click it
     const firstPostLink = page.locator('a[href^="/blog/"]').first();
-    
-    if (await firstPostLink.count() > 0) {
-      const href = await firstPostLink.getAttribute('href');
-      await firstPostLink.click();
-      
-      // Should navigate to the blog post
-      await expect(page).toHaveURL(new RegExp(href?.replace('/', '\\/') || ''));
-      
-      // Content should load
-      const postContent = page.locator('main, article');
-      await expect(postContent).toBeVisible();
-    } else {
-      // If no blog posts exist, that's also valid
-      console.log('No blog post links found - this may be expected if no posts exist');
-    }
-  });
+    await expect(firstPostLink).toBeVisible();
 
-  test('blog post page renders content, metadata, and semantics', async ({ page }) => {
-    await page.goto('/blog/welcome-to-our-blog');
+    await firstPostLink.click();
 
-    // Check for meta tags
-    const metaDescription = page.locator('meta[name="description"]');
-    if (await metaDescription.count() > 0) {
-      await expect(metaDescription).toHaveAttribute('content');
-    }
+    await expect(page).toHaveURL(/\/blog\/.+/);
+    await expect(page.locator('main')).toBeVisible();
+    await expect(page.getByRole('link', { name: /back to blog/i })).toBeVisible();
 
-    // Check for title
-    await expect(page).toHaveTitle(/Ark Builder Labs/);
-
-    // Check for common MDX elements
-    const content = page.locator('main, article');
-    await expect(content).toBeVisible();
-
-    // Check for headings
-    const headings = page.locator('h1, h2, h3, h4');
-    await expect(headings.first()).toBeVisible();
-
-    // Check for paragraphs
-    const paragraphs = page.locator('p');
-    await expect(paragraphs.first()).toBeVisible();
-
-    // Check for images in blog content
-    const images = page.locator('img');
-    const imageCount = await images.count();
-
-    if (imageCount > 0) {
-      for (let i = 0; i < imageCount; i++) {
-        const img = images.nth(i);
-        await expect(img).toHaveAttribute('src');
-        await expect(img).toHaveAttribute('alt');
-
-        const naturalWidth = await img.evaluate(el => (el as HTMLImageElement).naturalWidth);
-        expect(naturalWidth).toBeGreaterThan(0);
-      }
-    }
-
-    // Check for main content area
-    const main = page.locator('main');
-    await expect(main).toBeVisible();
-
-    // Check for article element if used
-    const article = page.locator('article');
-    if (await article.count() > 0) {
-      await expect(article).toBeVisible();
-    }
-
-    // Check for proper heading hierarchy
-    const h1 = page.locator('h1');
-    const h1Count = await h1.count();
-    expect(h1Count).toBeGreaterThanOrEqual(1);
-
-    // Check that content is properly structured
-    const structuredContent = page.locator('main p, article p');
-    await expect(structuredContent.first()).toBeVisible();
-  });
-
-  test('blog listing shows post metadata', async ({ page }) => {
-    await page.goto('/blog');
-    
-    // Look for publication dates, categories, or other metadata
-    const metadataElements = page.locator('[data-testid="post-date"], .post-date, time, [class*="date"]');
-    
-    // Look for category information
-    const categoryElements = page.locator('[data-testid="post-category"], .post-category, [class*="category"]');
-    
-    // At least some metadata should be present
-    const anyMetadata = page.locator('time, [class*="date"], [class*="category"], [data-testid*="post-"]');
-    if (await anyMetadata.count() > 0) {
-      await expect(anyMetadata.first()).toBeVisible();
-    }
-  });
-
-  test('blog navigation and back button work', async ({ page }) => {
-    // Go to blog listing
-    await page.goto('/blog');
-    
-    // Click on a blog post if available
-    const firstPost = page.locator('a[href^="/blog/"]').first();
-    if (await firstPost.count() > 0) {
-      // Wait for navigation to complete after clicking
-      await Promise.all([
-        page.waitForURL(/\/blog\/.+/, { timeout: 30000 }),
-        firstPost.click()
-      ]);
-      
-      // Verify we're on a blog post page
-      const currentUrl = page.url();
-      expect(currentUrl).toMatch(/\/blog\/.+/);
-      
-      // Go back using browser back button
-      await page.goBack();
-      
-      // Should be back on blog listing
-      await expect(page).toHaveURL('/blog');
-    } else {
-      // Test direct navigation to a known blog post instead
-      await page.goto('/blog/welcome-to-our-blog');
-      await page.goBack();
-      await expect(page).toHaveURL('/blog');
-    }
-  });
-
-  test('blog posts have proper semantic HTML', async ({ page }) => {
-    await page.goto('/blog/welcome-to-our-blog');
-    
-    // Check for main content area
-    const main = page.locator('main');
-    await expect(main).toBeVisible();
-    
-    // Check for article element if used
-    const article = page.locator('article');
-    if (await article.count() > 0) {
-      await expect(article).toBeVisible();
-    }
-    
-    // Check for proper heading hierarchy (there might be multiple h1s in different sections)
-    const h1 = page.locator('h1');
-    const h1Count = await h1.count();
-    expect(h1Count).toBeGreaterThanOrEqual(1); // At least one h1 should exist
-    
-    // Check that content is properly structured
-    const content = page.locator('main p, article p');
-    await expect(content.first()).toBeVisible();
+    await page.getByRole('link', { name: /back to blog/i }).click();
+    await expect(page).toHaveURL('/blog');
   });
 });

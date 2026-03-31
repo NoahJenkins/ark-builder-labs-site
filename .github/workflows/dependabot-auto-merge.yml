@@ -25,9 +25,37 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Validate repository auto-merge prerequisites
+        id: repo-prereqs
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const repoResponse = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const problems = [];
+            if (!repoResponse.data.allow_auto_merge) {
+              problems.push('Repository setting allow_auto_merge=false');
+            }
+            if (!repoResponse.data.allow_squash_merge) {
+              problems.push('Repository setting allow_squash_merge=false');
+            }
+
+            if (problems.length > 0) {
+              core.setFailed(
+                `Dependabot auto-merge prerequisites are not satisfied: ${problems.join('; ')}. ` +
+                'Apply .github/repository-settings/* with scripts/apply-repository-settings.sh.'
+              );
+              return;
+            }
+
+            core.info('Repository auto-merge prerequisites are satisfied. Workflow approval permission is enforced by the approval step itself.');
+
       - name: Validate changed files against allowlist
         id: changed-files
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
@@ -99,7 +127,7 @@ jobs:
 
       - name: Auto-approve Dependabot PR
         if: steps.eligibility.outputs.eligible == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             try {
@@ -108,39 +136,50 @@ jobs:
                 repo: context.repo.repo,
                 pull_number: context.payload.pull_request.number,
                 event: 'APPROVE',
-                body: 'Auto-approved: Dependabot patch/minor update in allowed ecosystem and file scope.',
+                body: 'Auto-approved: eligible Dependabot dependency update in allowed ecosystem and file scope.',
               });
+              core.info('Successfully approved PR.');
             } catch (error) {
-              if (error.status === 422) {
-                core.info('Approval already exists or review not required; continuing.');
+              if (error.status === 422 && error.message?.includes('already exists')) {
+                core.info('Approval already exists; continuing.');
               } else {
-                throw error;
+                core.setFailed(`Failed to approve PR: ${error.message} (status: ${error.status}). ` +
+                  'If using GITHUB_TOKEN, ensure "Allow GitHub Actions reviews to count toward required approval" ' +
+                  'is enabled in repo Settings > Actions > General.');
               }
             }
 
       - name: Enable native auto-merge (squash)
         if: steps.eligibility.outputs.eligible == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const pullRequestId = context.payload.pull_request.node_id;
-            await github.graphql(
-              `mutation($pullRequestId: ID!) {
-                enablePullRequestAutoMerge(input: {
-                  pullRequestId: $pullRequestId,
-                  mergeMethod: SQUASH
-                }) {
-                  pullRequest {
-                    number
-                    autoMergeRequest {
-                      enabledAt
+            try {
+              await github.graphql(
+                `mutation($pullRequestId: ID!) {
+                  enablePullRequestAutoMerge(input: {
+                    pullRequestId: $pullRequestId,
+                    mergeMethod: SQUASH
+                  }) {
+                    pullRequest {
+                      number
+                      autoMergeRequest {
+                        enabledAt
+                      }
                     }
                   }
-                }
-              }`,
-              { pullRequestId }
-            );
-            core.info(`Enabled auto-merge (squash) for PR #${context.payload.pull_request.number}`);
+                }`,
+                { pullRequestId }
+              );
+              core.info(`Enabled auto-merge (squash) for PR #${context.payload.pull_request.number}`);
+            } catch (error) {
+              if (error.message?.includes('Auto merge is already enabled')) {
+                core.info(`Auto-merge is already enabled for PR #${context.payload.pull_request.number}.`);
+              } else {
+                throw error;
+              }
+            }
 
       - name: Log ineligible PR reason
         if: steps.eligibility.outputs.eligible != 'true'
