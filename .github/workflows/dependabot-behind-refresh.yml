@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - closed
   schedule:
     - cron: '23 */6 * * *'
   workflow_dispatch:
@@ -105,7 +110,17 @@ jobs:
               };
             }
 
-            if (context.eventName === 'push') {
+            const mergedMainPullRequestEvent =
+              context.eventName === 'pull_request_target' &&
+              context.payload.action === 'closed' &&
+              context.payload.pull_request?.merged === true;
+
+            if (context.eventName === 'pull_request_target' && !mergedMainPullRequestEvent) {
+              core.info('Pull request was closed without merge; skipping refresh.');
+              return;
+            }
+
+            if (context.eventName === 'push' || mergedMainPullRequestEvent) {
               core.info('Waiting 20s for GitHub to recompute mergeability after main advanced.');
               await sleep(20000);
             }

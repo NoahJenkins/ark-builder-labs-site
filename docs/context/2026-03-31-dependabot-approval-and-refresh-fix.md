@@ -44,6 +44,13 @@ The live failure was different from the 2026-03-16 issue:
    - uses `REPO_ADMIN_TOKEN` for update-branch calls because the default workflow token was rejected with `user doesn't have permission to update head repository`
    - refreshes only auto-merge-enabled Dependabot PRs whose latest checks are green
    - skips PRs with real failing or still-pending checks so broken dependency updates are not re-run on every merge to `main`
+9. A later live check on 2026-03-31 found a second trigger gap:
+   - PR `#35` merged successfully at commit `dd839ca9d3ee7d73e217dde49a6e1693b9ffd6e5`
+   - PR `#36` then showed all required checks green, auto-merge enabled, and `mergeStateStatus=BEHIND`
+   - neither `CI` nor `Dependabot Behind Refresh` ran on the new `main` head after that auto-merge, so no workflow was available to refresh `#36`
+10. `.github/workflows/dependabot-behind-refresh.yml` was amended again so it also runs on merged PRs to `main` via `pull_request_target: closed`.
+    - this closes the gap observed when Dependabot auto-merges did not reliably produce follow-on `push` workflow runs on `main`
+    - the workflow ignores closed-but-unmerged PRs and reuses the same guarded refresh logic after a merged PR event
 
 ## PR State During Fix
 
@@ -55,6 +62,10 @@ The live failure was different from the 2026-03-16 issue:
   - PR `#36` was `BEHIND` and had a failing Playwright run
   - PR `#33` failed `TypeScript & Lint` due to the `eslint-config-next` 16 upgrade path
   - PR `#40` failed `TypeScript & Lint` because `lucide-react` 1.7.0 removed the imported `Linkedin`, `Instagram`, and `Facebook` exports used by `src/app/contact/page.tsx`
+- Another live check later the same day showed 4 open PRs total:
+  - PR `#36` had been refreshed successfully, all required checks were green, auto-merge was enabled, and it remained open only because it was `BEHIND` after PR `#35` merged
+  - PR `#33` and PR `#40` remained legitimate CI failures
+  - PR `#29` was a maintainer PR with merge conflicts and no auto-merge configured
 
 ## Related
 

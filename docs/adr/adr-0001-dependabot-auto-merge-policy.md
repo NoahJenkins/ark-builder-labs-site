@@ -12,7 +12,7 @@ superseded_by: ""
 
 ## Status
 
-Amended (2026-03-31: codified repository automation settings and added behind-branch refresh)
+Amended (2026-03-31: codified repository automation settings, added behind-branch refresh, and covered merged-PR trigger gaps)
 
 ## Context
 
@@ -23,7 +23,9 @@ Three bugs were discovered across the 2026-03-16 and 2026-03-31 investigations:
 2. Repository `allow_auto_merge` was `false`, causing the `enablePullRequestAutoMerge` GraphQL mutation to silently fail.
 3. Actions workflow permissions had `can_approve_pull_request_reviews=false`, causing the auto-approval step to fail with `GitHub Actions is not permitted to approve pull requests`.
 
-An operational gap was also identified on 2026-03-31: eligible PRs with auto-merge enabled could remain open indefinitely once they became `behind` `main` under strict status checks.
+Two operational gaps were also identified on 2026-03-31:
+4. Eligible PRs with auto-merge enabled could remain open indefinitely once they became `behind` `main` under strict status checks.
+5. Dependabot auto-merges did not reliably produce follow-on `push` workflow runs on `main`, so a refresh workflow that only listened to `push` events could miss the exact merge that made the next PR become `behind`.
 
 ## Decision
 
@@ -44,7 +46,7 @@ Repository automation settings are part of the policy and must remain aligned wi
 - `default_workflow_permissions == read`
 - `can_approve_pull_request_reviews == true`
 
-Eligible Dependabot PRs with auto-merge already enabled should be refreshed automatically when they become `behind` `main`.
+Eligible Dependabot PRs with auto-merge already enabled should be refreshed automatically when they become `behind` `main`, whether `main` advances through a normal push or a merged pull request event.
 
 ## Consequences
 
@@ -81,6 +83,7 @@ Eligible Dependabot PRs with auto-merge already enabled should be refreshed auto
 - **IMP-004**: Repository settings are tracked in `.github/repository-settings/`.
 - **IMP-005**: `scripts/apply-repository-settings.sh` applies and verifies repo-level automation settings, including the admin-only workflow approval permission.
 - **IMP-006**: `.github/workflows/dependabot-behind-refresh.yml` refreshes auto-merge-enabled Dependabot PRs when they fall behind `main`.
+- **IMP-006A**: The refresh workflow listens to both `push` on `main` and merged `pull_request_target` events for `main` so it still runs when an auto-merge does not emit a follow-on push workflow run.
 - **IMP-007**: `.github/workflows/repository-settings-health.yml` re-applies and verifies tracked settings when `REPO_ADMIN_TOKEN` is available, and otherwise exits with an explicit notice instead of creating permanent false-negative failures.
 
 ## References
