@@ -11,7 +11,7 @@ The live failure was different from the 2026-03-16 issue:
 1. **Actions approval permission drift** — `GET /repos/NoahJenkins/ark-builder-labs-site/actions/permissions/workflow` returned `can_approve_pull_request_reviews=false`.
 2. **Branch protection still required one approval** — `main` still enforced `required_approving_review_count == 1`.
 3. **Workflow failure mode** — the `Dependabot Auto-Merge` job reached the approval step, then failed with `GitHub Actions is not permitted to approve pull requests` (HTTP 422). The failed check was not itself required, but it prevented the bot approval from being created.
-4. **Behind-branch stall** — several PRs already had native auto-merge enabled, but remained open because strict status checks require the branch to stay current with `main`. Once `main` advanced, those PRs stayed `BEHIND` until manually refreshed.
+4. **Behind-branch stall** — several PRs already had native auto-merge enabled, but remained open because strict status checks require the branch to stay current with `main`. Once `main` advanced, those PRs stayed `BEHIND` until manually refreshed because the first version of the refresh workflow only ran on a 6-hour timer or manual dispatch.
 
 ## Work Completed
 
@@ -38,12 +38,21 @@ The live failure was different from the 2026-03-16 issue:
    - approved and re-enabled the merge path for eligible passing PRs
    - refreshed behind branches with the update-branch API
    - left CI-failing PRs open for manual dependency follow-up
+8. After observing that only one PR merged while eight remained open, tightened `.github/workflows/dependabot-behind-refresh.yml` so it now:
+   - runs on every push to `main` in addition to schedule/manual dispatch
+   - refreshes only auto-merge-enabled Dependabot PRs whose latest checks are green
+   - skips PRs with real failing or still-pending checks so broken dependency updates are not re-run on every merge to `main`
 
 ## PR State During Fix
 
 - PR `#30` merged after approval was restored.
 - PRs `#31`, `#32`, `#35`, `#36`, and `#41` were approved and refreshed so CI could resume on up-to-date branches.
 - PRs `#33` and `#40` still had real CI failures and were intentionally not forced through.
+- A later live check on 2026-03-31 showed 8 open Dependabot PRs:
+  - PRs `#31`, `#32`, `#35`, and `#41` were healthy but still `BEHIND`
+  - PR `#36` was `BEHIND` and had a failing Playwright run
+  - PR `#33` failed `TypeScript & Lint` due to the `eslint-config-next` 16 upgrade path
+  - PR `#40` failed `TypeScript & Lint` because `lucide-react` 1.7.0 removed the imported `Linkedin`, `Instagram`, and `Facebook` exports used by `src/app/contact/page.tsx`
 
 ## Related
 

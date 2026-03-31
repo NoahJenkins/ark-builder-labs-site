@@ -1,6 +1,9 @@
 name: Dependabot Behind Refresh
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: '23 */6 * * *'
   workflow_dispatch:
@@ -8,6 +11,10 @@ on:
 permissions:
   contents: read
   pull-requests: write
+
+concurrency:
+  group: dependabot-behind-refresh
+  cancel-in-progress: false
 
 jobs:
   refresh-behind-prs:
@@ -18,9 +25,56 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const blockingCheckConclusions = new Set([
+              'action_required',
+              'cancelled',
+              'failure',
+              'stale',
+              'startup_failure',
+              'timed_out',
+            ]);
+
+            async function collectCheckState(ref) {
+              const [checkRuns, combinedStatus] = await Promise.all([
+                github.paginate(github.rest.checks.listForRef, {
+                  owner,
+                  repo,
+                  ref,
+                  per_page: 100,
+                }),
+                github.rest.repos.getCombinedStatusForRef({
+                  owner,
+                  repo,
+                  ref,
+                }),
+              ]);
+
+              const failedChecks = checkRuns.filter((check) =>
+                check.status === 'completed' &&
+                blockingCheckConclusions.has(check.conclusion ?? '')
+              );
+              const pendingChecks = checkRuns.filter((check) => check.status !== 'completed');
+
+              const failedStatuses = (combinedStatus.data.statuses ?? []).filter((status) =>
+                ['error', 'failure'].includes(status.state)
+              );
+              const pendingStatuses = (combinedStatus.data.statuses ?? []).filter((status) =>
+                status.state === 'pending'
+              );
+
+              return {
+                failedChecks,
+                failedStatuses,
+                pendingChecks,
+                pendingStatuses,
+              };
+            }
+
             const openPrs = await github.paginate(github.rest.pulls.list, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               state: 'open',
               base: 'main',
               per_page: 100,
@@ -37,8 +91,8 @@ jobs:
               }
 
               const details = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner,
+                repo,
                 pull_number: pr.number,
               });
 
@@ -50,10 +104,28 @@ jobs:
                 continue;
               }
 
+              const checkState = await collectCheckState(pr.head.sha);
+              if (
+                checkState.failedChecks.length > 0 ||
+                checkState.failedStatuses.length > 0 ||
+                checkState.pendingChecks.length > 0 ||
+                checkState.pendingStatuses.length > 0
+              ) {
+                const reasons = [
+                  checkState.failedChecks.length > 0 ? `failed-checks=${checkState.failedChecks.length}` : null,
+                  checkState.failedStatuses.length > 0 ? `failed-statuses=${checkState.failedStatuses.length}` : null,
+                  checkState.pendingChecks.length > 0 ? `pending-checks=${checkState.pendingChecks.length}` : null,
+                  checkState.pendingStatuses.length > 0 ? `pending-statuses=${checkState.pendingStatuses.length}` : null,
+                ].filter(Boolean);
+
+                skipped.push(`#${pr.number}:blocked-${reasons.join('+')}`);
+                continue;
+              }
+
               try {
                 await github.rest.pulls.updateBranch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner,
+                  repo,
                   pull_number: pr.number,
                 });
                 refreshed.push(pr.number);

@@ -52,13 +52,16 @@ Workflow token permissions:
 Workflow: `.github/workflows/dependabot-behind-refresh.yml`
 
 Trigger:
+- `push` to `main`
 - scheduled every 6 hours
 - manual `workflow_dispatch`
 
 Behavior:
 - finds open Dependabot PRs against `main`
 - filters to PRs with native auto-merge already enabled
-- updates branches whose mergeable state is `behind` so strict required checks can re-run
+- refreshes only PRs whose latest checks are currently green
+- skips PRs with real failed or still-pending checks to avoid re-running known-bad dependency updates on every merge to `main`
+- updates branches whose mergeable state is `behind` so strict required checks can re-run immediately after `main` advances
 
 ## Repository Settings Health
 
