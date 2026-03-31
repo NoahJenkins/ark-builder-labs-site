@@ -1,0 +1,35 @@
+name: Repository Settings Health
+
+on:
+  schedule:
+    - cron: '11 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-repository-settings:
+    name: Verify Repository Automation Settings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install gh CLI
+        run: |
+          type -p gh >/dev/null || {
+            sudo apt update
+            sudo apt install gh -y
+          }
+
+      - name: Sync and verify repository automation settings
+        env:
+          GH_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
+        run: |
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "::notice::REPO_ADMIN_TOKEN is not configured. Skipping admin-only repository settings verification. Use scripts/apply-repository-settings.sh locally or configure REPO_ADMIN_TOKEN for automated verification."
+            exit 0
+          fi
+
+          ./scripts/apply-repository-settings.sh "${{ github.repository_owner }}" "${{ github.event.repository.name }}"
