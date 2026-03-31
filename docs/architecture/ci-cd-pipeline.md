@@ -43,8 +43,8 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 7) Repository Settings Health
 - **Trigger conditions:** Daily schedule and manual `workflow_dispatch`
-- **Actions performed:** Compare live repository automation settings with `.github/repository-settings/repository.json` and `.github/repository-settings/workflow-permissions.json`
-- **Success criteria:** `allow_auto_merge`, `allow_update_branch`, `allow_squash_merge`, and `can_approve_pull_request_reviews` all match tracked config
+- **Actions performed:** Compare live repo-visible automation settings with `.github/repository-settings/repository.json` and emit a notice that workflow approval permissions must be verified with the admin `gh` script
+- **Success criteria:** `allow_auto_merge`, `allow_update_branch`, and `allow_squash_merge` match tracked config; operator has an explicit reminder for the admin-only workflow-permissions check
 - **Typical duration:** <1 minute
 
 ### 8) Branch Protection Sync

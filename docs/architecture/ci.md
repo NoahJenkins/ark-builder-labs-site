@@ -44,7 +44,6 @@ Local apply + verify:
 - `scripts/apply-repository-settings.sh`
 
 Workflow token permissions:
-- `actions: read`
 - `contents: write`
 - `pull-requests: write`
 
@@ -71,8 +70,8 @@ Trigger:
 
 Behavior:
 - compares live repository automation settings to `.github/repository-settings/*`
-- fails if `allow_auto_merge`, `allow_update_branch`, `allow_squash_merge`, or `can_approve_pull_request_reviews` drift
-- provides an explicit remediation path via `scripts/apply-repository-settings.sh`
+- fails if repo-visible settings such as `allow_auto_merge`, `allow_update_branch`, or `allow_squash_merge` drift
+- emits a notice that `can_approve_pull_request_reviews` must be verified through `scripts/apply-repository-settings.sh` because the Actions token cannot read that admin-only endpoint
 
 ## Branch Protection Apply + Verify
 

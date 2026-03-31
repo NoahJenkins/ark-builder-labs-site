@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  actions: read
   contents: read
 
 jobs:
@@ -24,30 +23,16 @@ jobs:
             const fs = require('node:fs');
 
             const expectedRepo = JSON.parse(fs.readFileSync('.github/repository-settings/repository.json', 'utf8'));
-            const expectedWorkflow = JSON.parse(fs.readFileSync('.github/repository-settings/workflow-permissions.json', 'utf8'));
 
             const repoResponse = await github.rest.repos.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
-            const workflowPermissionsResponse = await github.request(
-              'GET /repos/{owner}/{repo}/actions/permissions/workflow',
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-              }
-            );
 
             const mismatches = [];
             for (const [key, value] of Object.entries(expectedRepo)) {
               if (repoResponse.data[key] !== value) {
                 mismatches.push(`repo.${key}: expected ${value}, got ${repoResponse.data[key]}`);
-              }
-            }
-
-            for (const [key, value] of Object.entries(expectedWorkflow)) {
-              if (workflowPermissionsResponse.data[key] !== value) {
-                mismatches.push(`workflow.${key}: expected ${value}, got ${workflowPermissionsResponse.data[key]}`);
               }
             }
 
@@ -60,4 +45,9 @@ jobs:
               return;
             }
 
-            core.info('Repository automation settings match the tracked config.');
+            core.notice(
+              'Workflow permission verification is not available to GITHUB_TOKEN because ' +
+              'GET /actions/permissions/workflow requires administration:read. ' +
+              'Use scripts/apply-repository-settings.sh for full admin verification.'
+            );
+            core.info('Repository automation settings match the repo-visible tracked config.');

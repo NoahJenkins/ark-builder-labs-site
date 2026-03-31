@@ -31,6 +31,8 @@ The live failure was different from the 2026-03-16 issue:
    - makes auto-merge enabling idempotent
 5. Added `.github/workflows/dependabot-behind-refresh.yml` to refresh auto-merge-enabled Dependabot PRs that become `behind`.
 6. Added `.github/workflows/repository-settings-health.yml` to detect future settings drift.
+   - The live workflow can verify repo-visible settings directly.
+   - Full verification of `can_approve_pull_request_reviews` remains in `scripts/apply-repository-settings.sh` because GitHub restricts that endpoint to admin-scoped tokens.
 7. Reconciled the current open PR backlog:
    - approved and re-enabled the merge path for eligible passing PRs
    - refreshed behind branches with the update-branch API
