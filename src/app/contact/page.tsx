@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/forms/contact-form"
 import { ConsultationCalendar } from "@/components/calendar/consultation-calendar"
 import { Card, CardContent } from "@/components/ui/card"
 import { SITE_CONFIG } from "@/lib/constants"
-import { Mail, Clock, MessageCircle, Calendar, MapPin, Linkedin, X, Instagram, Facebook } from "lucide-react"
+import { Mail, Clock, MessageCircle, Calendar, MapPin } from "lucide-react"
 
 export const metadata: Metadata = {
   title: "Contact Us",
@@ -29,12 +29,12 @@ const contactMethods = [
   },
 ]
 
-const socialIcons = {
-  linkedin: Linkedin,
-  twitter: X,
-  instagram: Instagram,
-  facebook: Facebook,
-}
+const socialBadges = {
+  linkedin: "in",
+  twitter: "X",
+  instagram: "ig",
+  facebook: "f",
+} as const
 
 const socialLabels = {
   linkedin: "linkedin",
@@ -217,7 +217,7 @@ export default function ContactPage() {
                     </p>
                     <div className="space-y-3">
                       {Object.entries(SITE_CONFIG.social).map(([platform, url]) => {
-                        const IconComponent = socialIcons[platform as keyof typeof socialIcons]
+                        const badge = socialBadges[platform as keyof typeof socialBadges]
                         return (
                           <a 
                             key={platform}
@@ -225,7 +225,11 @@ export default function ContactPage() {
                             className="flex items-center space-x-3 text-muted-foreground hover:text-primary transition-colors group"
                           >
                             <div className="w-8 h-8 rounded-full bg-muted group-hover:bg-primary/10 flex items-center justify-center">
-                              {IconComponent && <IconComponent className="w-4 h-4" />}
+                              {badge && (
+                                <span className="text-[11px] font-semibold uppercase tracking-wide" aria-hidden="true">
+                                  {badge}
+                                </span>
+                              )}
                             </div>
                             <span className="capitalize font-medium">{socialLabels[platform as keyof typeof socialLabels]}</span>
                           </a>
