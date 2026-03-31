@@ -1,6 +1,6 @@
 # CI and Branch Protection Architecture
 
-Last updated: 2026-03-02
+Last updated: 2026-03-31
 
 ## CI Required Checks
 
@@ -29,10 +29,50 @@ Eligibility gates:
 Eligible behavior:
 - auto-approve PR
 - enable native GitHub auto-merge with `squash`
+- fail early if repository-level auto-merge prerequisites drift
+
+Repository prerequisites:
+- repository `allow_auto_merge == true`
+- repository `allow_squash_merge == true`
+- Actions workflow permissions `can_approve_pull_request_reviews == true`
+
+Configuration source of truth:
+- `.github/repository-settings/repository.json`
+- `.github/repository-settings/workflow-permissions.json`
+
+Local apply + verify:
+- `scripts/apply-repository-settings.sh`
 
 Workflow token permissions:
-- `contents: read`
+- `actions: read`
+- `contents: write`
 - `pull-requests: write`
+
+## Dependabot Behind Refresh
+
+Workflow: `.github/workflows/dependabot-behind-refresh.yml`
+
+Trigger:
+- scheduled every 6 hours
+- manual `workflow_dispatch`
+
+Behavior:
+- finds open Dependabot PRs against `main`
+- filters to PRs with native auto-merge already enabled
+- updates branches whose mergeable state is `behind` so strict required checks can re-run
+
+## Repository Settings Health
+
+Workflow: `.github/workflows/repository-settings-health.yml`
+
+Trigger:
+- daily schedule
+- manual `workflow_dispatch`
+
+Behavior:
+- compares live repository automation settings to `.github/repository-settings/*`
+- fails if `allow_auto_merge`, `allow_update_branch`, `allow_squash_merge`, or `can_approve_pull_request_reviews` drift
+- provides an explicit remediation path via `scripts/apply-repository-settings.sh`
 
 ## Branch Protection Apply + Verify
 

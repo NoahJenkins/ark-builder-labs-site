@@ -31,11 +31,23 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 5) Dependabot Auto-Merge Policy
 - **Trigger conditions:** `pull_request_target` events for Dependabot PRs (`opened`, `reopened`, `synchronize`, `ready_for_review`)
-- **Actions performed:** Fetch metadata, validate file allowlist, enforce ecosystem/update-type gates (patch, minor, and major for `npm_and_yarn` and `github-actions`), auto-approve, enable native squash auto-merge
+- **Actions performed:** Fetch metadata, verify repository-level auto-merge prerequisites, validate file allowlist, enforce ecosystem/update-type gates (patch, minor, and major for `npm_and_yarn` and `github-actions`), auto-approve, enable native squash auto-merge
 - **Success criteria:** Eligibility rules pass and auto-merge is enabled
 - **Typical duration:** <1 minute
 
-### 6) Branch Protection Sync
+### 6) Dependabot Behind Refresh
+- **Trigger conditions:** Scheduled every 6 hours and manual `workflow_dispatch`
+- **Actions performed:** Inspect open Dependabot PRs with auto-merge enabled and call the update-branch API for PRs that are `behind`
+- **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed so required checks re-run
+- **Typical duration:** <1 minute
+
+### 7) Repository Settings Health
+- **Trigger conditions:** Daily schedule and manual `workflow_dispatch`
+- **Actions performed:** Compare live repository automation settings with `.github/repository-settings/repository.json` and `.github/repository-settings/workflow-permissions.json`
+- **Success criteria:** `allow_auto_merge`, `allow_update_branch`, `allow_squash_merge`, and `can_approve_pull_request_reviews` all match tracked config
+- **Typical duration:** <1 minute
+
+### 8) Branch Protection Sync
 - **Trigger conditions:** Manual `workflow_dispatch`
 - **Actions performed:** Run `scripts/apply-branch-protection.sh` against `main` via `gh` CLI
 - **Success criteria:** Branch protection configuration and verification pass
@@ -66,10 +78,12 @@ Referenced by tooling/runtime in repository configuration:
 - **TypeScript/lint failures:** Run `pnpm exec tsc --noEmit` and `pnpm lint` locally before pushing
 - **Playwright failures due to browser setup:** Ensure `pnpm exec playwright install --with-deps` ran successfully in CI
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
-- **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled in repository settings
+- **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled and `can_approve_pull_request_reviews` is true in repository settings
+- **Dependabot PRs stuck behind `main`:** Run `.github/workflows/dependabot-behind-refresh.yml` or update the branch manually so strict checks re-run
 
 ## Maintenance
 - Update workflow action versions periodically (e.g., `actions/checkout`, `actions/setup-node`)
 - Keep Node and pnpm versions aligned with `package.json` and project tooling
 - Review required status checks whenever CI job names change
 - Review Dependabot allowlist and update rules as dependency management strategy evolves
+- Re-apply `scripts/apply-repository-settings.sh` after repository automation setting drift or repo recreation

@@ -1,0 +1,63 @@
+name: Repository Settings Health
+
+on:
+  schedule:
+    - cron: '11 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  verify-repository-settings:
+    name: Verify Repository Automation Settings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify repository automation settings
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('node:fs');
+
+            const expectedRepo = JSON.parse(fs.readFileSync('.github/repository-settings/repository.json', 'utf8'));
+            const expectedWorkflow = JSON.parse(fs.readFileSync('.github/repository-settings/workflow-permissions.json', 'utf8'));
+
+            const repoResponse = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const workflowPermissionsResponse = await github.request(
+              'GET /repos/{owner}/{repo}/actions/permissions/workflow',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              }
+            );
+
+            const mismatches = [];
+            for (const [key, value] of Object.entries(expectedRepo)) {
+              if (repoResponse.data[key] !== value) {
+                mismatches.push(`repo.${key}: expected ${value}, got ${repoResponse.data[key]}`);
+              }
+            }
+
+            for (const [key, value] of Object.entries(expectedWorkflow)) {
+              if (workflowPermissionsResponse.data[key] !== value) {
+                mismatches.push(`workflow.${key}: expected ${value}, got ${workflowPermissionsResponse.data[key]}`);
+              }
+            }
+
+            if (mismatches.length > 0) {
+              core.setFailed(
+                'Repository automation settings drift detected. ' +
+                `${mismatches.join('; ')}. ` +
+                'Re-apply scripts/apply-repository-settings.sh with repo admin credentials.'
+              );
+              return;
+            }
+
+            core.info('Repository automation settings match the tracked config.');

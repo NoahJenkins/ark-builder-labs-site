@@ -1,0 +1,72 @@
+name: Dependabot Behind Refresh
+
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  refresh-behind-prs:
+    name: Refresh Auto-Merge Dependabot PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh behind Dependabot PRs with auto-merge enabled
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const openPrs = await github.paginate(github.rest.pulls.list, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              base: 'main',
+              per_page: 100,
+            });
+
+            const refreshed = [];
+            const skipped = [];
+
+            for (const pr of openPrs) {
+              const author = pr.user?.login ?? '';
+              const isDependabot = author === 'dependabot[bot]' || author === 'app/dependabot';
+              if (!isDependabot) {
+                continue;
+              }
+
+              const details = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+              });
+
+              const autoMergeEnabled = details.data.auto_merge !== null;
+              const mergeableState = details.data.mergeable_state;
+
+              if (!autoMergeEnabled || mergeableState !== 'behind') {
+                skipped.push(`#${pr.number}:${autoMergeEnabled ? mergeableState : 'auto-merge-disabled'}`);
+                continue;
+              }
+
+              try {
+                await github.rest.pulls.updateBranch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                });
+                refreshed.push(pr.number);
+                core.info(`Requested branch update for PR #${pr.number}.`);
+              } catch (error) {
+                core.warning(`Failed to update PR #${pr.number}: ${error.message}`);
+              }
+            }
+
+            core.summary
+              .addHeading('Dependabot Behind Refresh')
+              .addRaw(`Refreshed PRs: ${refreshed.length > 0 ? refreshed.map((number) => `#${number}`).join(', ') : 'none'}`)
+              .addEOL()
+              .addRaw(`Skipped PRs: ${skipped.length > 0 ? skipped.join(', ') : 'none'}`)
+              .addEOL();
+            await core.summary.write();
