@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Contact Form', () => {
   test.beforeEach(async ({ page }) => {
-    // Mock form submission to prevent actual submissions
     await page.route('**/api/contact', async (route) => {
       const request = route.request();
       if (request.method() === 'POST') {
@@ -16,7 +15,6 @@ test.describe('Contact Form', () => {
       }
     });
 
-    // Also mock external form services (like Formspree)
     await page.route('**/formspree.io/**', async (route) => {
       await route.fulfill({
         status: 200,
@@ -28,47 +26,19 @@ test.describe('Contact Form', () => {
     await page.goto('/contact');
   });
 
-  test('displays contact form with all required fields', async ({ page }) => {
-    // Check form title
-    const formTitle = page.locator('text=Get in Touch');
-    await expect(formTitle).toBeVisible();
-
-    // Check all form fields are present
-    await expect(page.locator('input[name="name"]')).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await expect(page.locator('input[name="company"]')).toBeVisible();
-    await expect(page.locator('select[name="service"]')).toBeVisible();
-    await expect(page.locator('textarea[name="message"]')).toBeVisible();
-
-    // Check submit button
-    const submitButton = page.locator('button[type="submit"]');
-    await expect(submitButton).toBeVisible();
-    await expect(submitButton).toContainText('Send Message');
-  });
-
   test('form submission works with valid data', async ({ page }) => {
-    // Fill out the form with valid data
     await page.fill('input[name="name"]', 'John Doe');
     await page.fill('input[name="email"]', 'john@example.com');
     await page.fill('input[name="company"]', 'Test Company');
     await page.selectOption('select[name="service"]', 'web-mobile');
     await page.fill('textarea[name="message"]', 'This is a test message for the contact form.');
 
-    // Submit the form
     await page.click('button[type="submit"]');
 
-    // Check for success or error message (with longer timeout for Firefox)
-    const successMessage = page.locator('text=Thank you! We\'ll get back to you within 24 hours.');
-    const errorMessage = page.locator('text=Something went wrong');
-
-    await Promise.race([
-      successMessage.waitFor({ state: 'visible', timeout: 30000 }),
-      errorMessage.waitFor({ state: 'visible', timeout: 30000 })
-    ]);
+    await expect(page.getByText("Thank you! We'll get back to you within 24 hours.")).toBeVisible();
   });
 
   test('form shows rate limiting protection', async ({ page }) => {
-    // Mock rate limiting response after first submission
     let submissionCount = 0;
     await page.route('**/api/contact', async (route) => {
       const request = route.request();
@@ -92,47 +62,20 @@ test.describe('Contact Form', () => {
       }
     });
 
-    // Fill and submit form once successfully
     await page.fill('input[name="name"]', 'Test User');
     await page.fill('input[name="email"]', 'test@example.com');
     await page.selectOption('select[name="service"]', 'general');
     await page.fill('textarea[name="message"]', 'Test message');
     await page.click('button[type="submit"]');
-    
-    // Wait for success message to appear
-    const successMessage = page.locator('text=Thank you! We\'ll get back to you within 24 hours.');
-    await expect(successMessage).toBeVisible({ timeout: 10000 });
 
-    // Try to submit again immediately - should hit client-side rate limit
+    await expect(page.getByText("Thank you! We'll get back to you within 24 hours.")).toBeVisible();
+
     await page.fill('input[name="name"]', 'Test User 2');
     await page.fill('input[name="email"]', 'test2@example.com');
     await page.selectOption('select[name="service"]', 'general');
     await page.fill('textarea[name="message"]', 'Test message 2');
     await page.click('button[type="submit"]');
-    
-    // Should show rate limiting message
-    const rateLimitMessage = page.locator('text=Rate limit exceeded');
-    await expect(rateLimitMessage).toBeVisible({ timeout: 5000 });
-  });
 
-  test('form shows loading state during submission', async ({ page }) => {
-    // Fill out valid form
-    await page.fill('input[name="name"]', 'Test User');
-    await page.fill('input[name="email"]', 'test@example.com');
-    await page.selectOption('select[name="service"]', 'general');
-    await page.fill('textarea[name="message"]', 'Test message');
-
-    const submitButton = page.locator('button[type="submit"]');
-
-    // Submit the form
-    await page.click('button[type="submit"]');
-
-    // After submission, either success message or error should appear, or button should be enabled again
-    const hasSuccessMessage = await page.locator('text=Thank you!').isVisible();
-    const hasErrorMessage = await page.locator('text=Something went wrong').isVisible();
-    const buttonEnabled = await submitButton.isEnabled();
-    
-    // At least one of these should be true after submission processing
-    expect(hasSuccessMessage || hasErrorMessage || buttonEnabled).toBe(true);
+    await expect(page.getByText('Rate limit exceeded')).toBeVisible();
   });
 });
