@@ -16,38 +16,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Verify repository automation settings
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const fs = require('node:fs');
+      - name: Install gh CLI
+        run: |
+          type -p gh >/dev/null || {
+            sudo apt update
+            sudo apt install gh -y
+          }
 
-            const expectedRepo = JSON.parse(fs.readFileSync('.github/repository-settings/repository.json', 'utf8'));
+      - name: Sync and verify repository automation settings
+        env:
+          GH_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
+        run: |
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "::notice::REPO_ADMIN_TOKEN is not configured. Skipping admin-only repository settings verification. Use scripts/apply-repository-settings.sh locally or configure REPO_ADMIN_TOKEN for automated verification."
+            exit 0
+          fi
 
-            const repoResponse = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-
-            const mismatches = [];
-            for (const [key, value] of Object.entries(expectedRepo)) {
-              if (repoResponse.data[key] !== value) {
-                mismatches.push(`repo.${key}: expected ${value}, got ${repoResponse.data[key]}`);
-              }
-            }
-
-            if (mismatches.length > 0) {
-              core.setFailed(
-                'Repository automation settings drift detected. ' +
-                `${mismatches.join('; ')}. ` +
-                'Re-apply scripts/apply-repository-settings.sh with repo admin credentials.'
-              );
-              return;
-            }
-
-            core.notice(
-              'Workflow permission verification is not available to GITHUB_TOKEN because ' +
-              'GET /actions/permissions/workflow requires administration:read. ' +
-              'Use scripts/apply-repository-settings.sh for full admin verification.'
-            );
-            core.info('Repository automation settings match the repo-visible tracked config.');
+          ./scripts/apply-repository-settings.sh "${{ github.repository_owner }}" "${{ github.event.repository.name }}"

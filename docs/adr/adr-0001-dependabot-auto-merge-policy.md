@@ -81,7 +81,7 @@ Eligible Dependabot PRs with auto-merge already enabled should be refreshed auto
 - **IMP-004**: Repository settings are tracked in `.github/repository-settings/`.
 - **IMP-005**: `scripts/apply-repository-settings.sh` applies and verifies repo-level automation settings, including the admin-only workflow approval permission.
 - **IMP-006**: `.github/workflows/dependabot-behind-refresh.yml` refreshes auto-merge-enabled Dependabot PRs when they fall behind `main`.
-- **IMP-007**: `.github/workflows/repository-settings-health.yml` detects repo-visible settings drift and points operators back to the admin verification script for workflow approval permissions.
+- **IMP-007**: `.github/workflows/repository-settings-health.yml` re-applies and verifies tracked settings when `REPO_ADMIN_TOKEN` is available, and otherwise exits with an explicit notice instead of creating permanent false-negative failures.
 
 ## References
 

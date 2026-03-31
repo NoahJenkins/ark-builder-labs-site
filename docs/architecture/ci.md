@@ -69,9 +69,8 @@ Trigger:
 - manual `workflow_dispatch`
 
 Behavior:
-- compares live repository automation settings to `.github/repository-settings/*`
-- fails if repo-visible settings such as `allow_auto_merge`, `allow_update_branch`, or `allow_squash_merge` drift
-- emits a notice that `can_approve_pull_request_reviews` must be verified through `scripts/apply-repository-settings.sh` because the Actions token cannot read that admin-only endpoint
+- if `REPO_ADMIN_TOKEN` is configured, re-applies and verifies `.github/repository-settings/*` through `scripts/apply-repository-settings.sh`
+- if `REPO_ADMIN_TOKEN` is not configured, succeeds with a notice explaining that admin-only verification was skipped
 
 ## Branch Protection Apply + Verify
 
