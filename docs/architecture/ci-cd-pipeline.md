@@ -75,6 +75,7 @@ Referenced by tooling/runtime in repository configuration:
 
 ## Troubleshooting
 - **pnpm install failures:** Confirm lockfile consistency and registry access; re-run with clean cache
+- **Dependabot security alerts remain open after dependency PRs merge:** Check whether `pnpm-lock.yaml` is still pinning vulnerable transitive versions; if so, add targeted `pnpm.overrides`, regenerate the lockfile, and re-run `pnpm audit`
 - **TypeScript/lint failures:** Run `pnpm exec tsc --noEmit` and `pnpm lint` locally before pushing
 - **Playwright failures due to browser setup:** Ensure `pnpm exec playwright install --with-deps` ran successfully in CI
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
@@ -86,4 +87,5 @@ Referenced by tooling/runtime in repository configuration:
 - Keep Node and pnpm versions aligned with `package.json` and project tooling
 - Review required status checks whenever CI job names change
 - Review Dependabot allowlist and update rules as dependency management strategy evolves
+- Review `pnpm.overrides` when Dependabot security alerts are cleared or when upstream packages catch up, so temporary transitive pins do not become stale policy
 - Re-apply `scripts/apply-repository-settings.sh` after repository automation setting drift or repo recreation
