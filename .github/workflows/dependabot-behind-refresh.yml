@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Refresh behind Dependabot PRs with auto-merge enabled
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           HAS_ADMIN_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN != '' }}
         with:
