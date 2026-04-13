@@ -27,7 +27,7 @@ jobs:
 
       - name: Validate repository auto-merge prerequisites
         id: repo-prereqs
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const repoResponse = await github.rest.repos.get({
@@ -55,7 +55,7 @@ jobs:
 
       - name: Validate changed files against allowlist
         id: changed-files
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
@@ -127,7 +127,7 @@ jobs:
 
       - name: Auto-approve Dependabot PR
         if: steps.eligibility.outputs.eligible == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             try {
@@ -151,7 +151,7 @@ jobs:
 
       - name: Enable native auto-merge (squash)
         if: steps.eligibility.outputs.eligible == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const pullRequestId = context.payload.pull_request.node_id;
