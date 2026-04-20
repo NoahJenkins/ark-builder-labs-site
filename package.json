@@ -55,7 +55,7 @@
     "eslint-config-next": "16.2.3",
     "jest": "^30.3.0",
     "jest-environment-jsdom": "^30.3.0",
-    "tailwindcss": "^4.2.1",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3"
   },
   "pnpm": {
