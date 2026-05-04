@@ -76,8 +76,8 @@ importers:
         version: 4.3.6
     devDependencies:
       '@playwright/mcp':
-        specifier: ^0.0.70
-        version: 0.0.70
+        specifier: ^0.0.73
+        version: 0.0.73
       '@playwright/test':
         specifier: ^1.59.1
         version: 1.59.1
@@ -805,8 +805,8 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@playwright/mcp@0.0.70':
-    resolution: {integrity: sha512-Kl0a6l9VL8rvT1oBou3hS5yArjwWV9UlwAkq+0skfK1YVg8XfmmNaAmwZhMeNx/ZhGiWXfCllo6rD/jvZz+WuA==}
+  '@playwright/mcp@0.0.73':
+    resolution: {integrity: sha512-2hq+nPq8esA3mi3bjEpBH5A3LkVqnSCJXw7NO2N7frJTzKsu8qdTQyvPl1jk83rPuIY6ALCdEBI60tdTODeNEA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3058,8 +3058,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright-core@1.60.0-alpha-1774999321000:
-    resolution: {integrity: sha512-ams3Zo4VXxeOg5ZTTh16GkE8g48Bmxo/9pg9gXl9SVKlVohCU7Jaog7XntY8yFuzENA6dJc1Fz7Z/NNTm9nGEw==}
+  playwright-core@1.60.0-alpha-1777669338000:
+    resolution: {integrity: sha512-CbBF+YtjGGK2mWKdH6iiSNIB9v9Sq8owcUrTy1cw6FgMZavspM6ZSpidQQgQXz/1scQFrM110jrtJqTYwnjbeA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3068,8 +3068,8 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.60.0-alpha-1774999321000:
-    resolution: {integrity: sha512-Bd5DkzYKG+2g1jLO6NeTXmGLbBYSFffJIOsR4l4hUBkJvzvGGdLZ7jZb2tOtb0WIoWXQKdQj3Ap6WthV4DBS8w==}
+  playwright@1.60.0-alpha-1777669338000:
+    resolution: {integrity: sha512-r5G2ZvpIJZHj53GKmUfoQiXHix5bjeObqysV4flfmFNykTjebI9bwdRBuW37pOQP25yjbArkxlsnT5APaWT8zg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -4476,10 +4476,10 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@playwright/mcp@0.0.70':
+  '@playwright/mcp@0.0.73':
     dependencies:
-      playwright: 1.60.0-alpha-1774999321000
-      playwright-core: 1.60.0-alpha-1774999321000
+      playwright: 1.60.0-alpha-1777669338000
+      playwright-core: 1.60.0-alpha-1777669338000
 
   '@playwright/test@1.59.1':
     dependencies:
@@ -7281,7 +7281,7 @@ snapshots:
 
   playwright-core@1.59.1: {}
 
-  playwright-core@1.60.0-alpha-1774999321000: {}
+  playwright-core@1.60.0-alpha-1777669338000: {}
 
   playwright@1.59.1:
     dependencies:
@@ -7289,9 +7289,9 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
-  playwright@1.60.0-alpha-1774999321000:
+  playwright@1.60.0-alpha-1777669338000:
     dependencies:
-      playwright-core: 1.60.0-alpha-1774999321000
+      playwright-core: 1.60.0-alpha-1777669338000
     optionalDependencies:
       fsevents: 2.3.2
 
