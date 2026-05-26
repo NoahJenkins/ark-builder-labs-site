@@ -3,18 +3,18 @@
 This file provides guidance to agents when working with code in this repository.
 
 - Build / run
-  - Dev server: npm run dev
-  - Build: npm run build
-  - Lint: npm run lint
+  - Dev server: pnpm run dev
+  - Build: pnpm run build
+  - Lint: pnpm run lint
 
 - Testing (non-obvious)
   - Unit tests: Jest is configured; run a single unit test file with:
-    [`npx jest src/__tests__/components/blog-content.test.tsx`](src/__tests__/components/blog-content.test.tsx:1)
+    [`pnpm exec jest src/__tests__/components/blog-content.test.tsx`](src/__tests__/components/blog-content.test.tsx:1)
     (Jest is wrapped with `next/jest` - see [`jest.config.js`](jest.config.js:1) and setup mocks in [`jest.setup.js`](jest.setup.js:1))
   - E2E: Playwright is configured under [`tests/`] and uses a dev server. Run a single E2E file:
-    [`npx playwright test tests/navigation.spec.ts`](tests/navigation.spec.ts:1) or
-    npm run test:e2e -- tests/navigation.spec.ts
-    (See [`playwright.config.ts`](playwright.config.ts:1) — it starts the app with `npm run dev` and uses baseURL http://localhost:3000)
+    [`pnpm exec playwright test tests/navigation.spec.ts`](tests/navigation.spec.ts:1) or
+    pnpm run test:e2e -- tests/navigation.spec.ts
+    (See [`playwright.config.ts`](playwright.config.ts:1) — it starts the app with `pnpm run dev` and uses baseURL http://localhost:3000)
 
 - Key non-obvious rules (avoid mistakes)
   - Unit tests must live under src/__tests__ (Jest). The Playwright tests live under tests/ and are ignored by Jest — do not mix locations. See [`jest.config.js`](jest.config.js:7-11) and [`playwright.config.ts`](playwright.config.ts:7).

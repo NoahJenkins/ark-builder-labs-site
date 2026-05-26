@@ -1,8 +1,12 @@
 # Context Notes Index
 
-Last Updated: 2026-03-31
+Last Updated: 2026-05-26
 
 ## Security & Automation
+
+- [2026-05-26 Dependabot Alert Cleanup via pnpm-Only Lockfile Policy](./2026-05-26-dependabot-pnpm-lockfile-cleanup.md)
+  - Related ADRs:
+    - [ADR-0001 Dependabot Auto-Merge Policy (amended)](../adr/adr-0001-dependabot-auto-merge-policy.md)
 
 - [2026-03-31 Dependabot Security Alert Remediation via pnpm Overrides](./2026-03-31-dependabot-security-overrides-fix.md)
   - Related ADRs:
