@@ -94,7 +94,7 @@ Production build: `pnpm run build`
 
 ### Testing
 
-- **Unit tests (Jest)**: Tests live under `src/__tests__/`. Jest is configured via `jest.config.js` (wrapping `next/jest`) with setup in `jest.setup.js` (mocks router, animations, IntersectionObserver, matchMedia, and global fetch). Example: `npx jest src/__tests__/components/blog-content.test.tsx`.
+- **Unit tests (Jest)**: Tests live under `src/__tests__/`. Jest is configured via `jest.config.js` (wrapping `next/jest`) with setup in `jest.setup.js` (mocks router, animations, IntersectionObserver, matchMedia, and global fetch). Example: `pnpm exec jest src/__tests__/components/blog-content.test.tsx`.
 - **E2E (Playwright)**: Tests live under `tests/`. `playwright.config.ts` starts the dev server (`pnpm run dev`), uses baseURL `http://localhost:3000`, and reuses an existing server locally. Run: `pnpm run test:e2e`.
 
 ### CI and Branch Protection
