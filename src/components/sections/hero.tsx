@@ -6,16 +6,20 @@ import { SERVICES } from "@/lib/constants"
 import { encodePathSegment } from "@/lib/security"
 import {
   ArrowRight,
+  BarChart3,
   Bot,
   Brain,
   CheckCircle2,
   Cloud,
   Code2,
+  Cog,
   Database,
+  HardDrive,
   Lock,
   MessageCircle,
   Server,
   Smartphone,
+  Users,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -29,32 +33,65 @@ const serviceNotes = {
   "web-mobile": {
     line: "Build fast, ship with confidence.",
     description: "Custom web and mobile apps that are maintainable, scalable, and built for your users.",
-    sketch: [
-      { label: "Web and mobile UI", detail: "Next.js plus React Native" },
-      { label: "API boundary", detail: "Node routes, auth, integrations" },
-      { label: "Data layer", detail: "Database, storage, reporting" },
-    ],
     stamp: "ready to build",
   },
   "cloud-engineering": {
     line: "Run securely. Scale reliably.",
     description: "Cloud infrastructure and DevOps practices that improve performance, security, and resilience.",
-    sketch: [
-      { label: "Users and traffic", detail: "Requests, sessions, edge rules" },
-      { label: "Load balancing", detail: "Routing, scaling, availability" },
-      { label: "App services", detail: "Secure runtime and observability" },
-    ],
     stamp: "ready to scale",
   },
   "ai-consulting": {
     line: "Automate with purpose.",
     description: "AI-powered workflows and agents that streamline operations and create real business value.",
-    sketch: [
-      { label: "Data sources", detail: "Docs, systems, customer context" },
-      { label: "Agent workflow", detail: "Models, tools, approval gates" },
-      { label: "Business actions", detail: "Draft, route, update, report" },
-    ],
     stamp: "ready to improve",
+  },
+} as const
+
+const topologyScenes = {
+  "web-mobile": {
+    paths: [
+      "M73 44 H112",
+      "M172 44 H216",
+      "M145 67 V95",
+      "M74 118 H105",
+      "M191 118 H224 V72",
+    ],
+    nodes: [
+      { label: "Web / Mobile", icon: "phone", x: 8, y: 18, width: 76 },
+      { label: "API", icon: "server", x: 116, y: 18, width: 60 },
+      { label: "Database", icon: "database", x: 220, y: 18, width: 74 },
+      { label: "Auth Service", icon: "lock", x: 108, y: 96, width: 92 },
+    ],
+  },
+  "cloud-engineering": {
+    paths: [
+      "M74 44 H104",
+      "M188 44 H216",
+      "M146 67 V88 H78 V96",
+      "M256 67 V88 H226 V96",
+    ],
+    nodes: [
+      { label: "Users", icon: "users", x: 8, y: 18, width: 76 },
+      { label: "Load Balancer", icon: "server", x: 108, y: 18, width: 84 },
+      { label: "App Services", icon: "cloud", x: 216, y: 18, width: 84 },
+      { label: "Object Storage", icon: "storage", x: 34, y: 96, width: 94 },
+      { label: "Monitoring", icon: "chart", x: 196, y: 96, width: 88 },
+    ],
+  },
+  "ai-consulting": {
+    paths: [
+      "M86 44 H118",
+      "M182 44 H220",
+      "M150 67 V88 H82 V96",
+      "M150 67 V88 H220 V96",
+    ],
+    nodes: [
+      { label: "Data Sources", icon: "database", x: 8, y: 18, width: 88 },
+      { label: "AI / Agent", icon: "bot", x: 122, y: 18, width: 64 },
+      { label: "Actions", icon: "cog", x: 224, y: 18, width: 68 },
+      { label: "Vector Store", icon: "storage", x: 44, y: 96, width: 92 },
+      { label: "Observability", icon: "chart", x: 188, y: 96, width: 102 },
+    ],
   },
 } as const
 
@@ -165,7 +202,7 @@ export function HeroSection() {
           </div>
 
           <div id="service-ledger" className="rounded-xl border border-border bg-card/90 shadow-sm">
-            <div className="grid grid-cols-[150px_minmax(180px,1fr)_280px_76px] border-b border-border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary max-lg:hidden">
+            <div className="grid grid-cols-[140px_minmax(160px,1fr)_300px_68px] border-b border-border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary max-lg:hidden">
               <span>Path</span>
               <span>What it solves</span>
               <span>Topology sketch</span>
@@ -179,7 +216,7 @@ export function HeroSection() {
               return (
                 <article
                   key={service.id}
-                  className="grid gap-4 border-b border-border p-5 last:border-b-0 lg:grid-cols-[150px_minmax(180px,1fr)_280px_76px]"
+                  className="grid gap-4 border-b border-border p-5 last:border-b-0 lg:grid-cols-[140px_minmax(160px,1fr)_300px_68px]"
                 >
                   <div className="flex gap-4 lg:block">
                     <span className="font-mono text-sm text-primary">
@@ -209,36 +246,11 @@ export function HeroSection() {
                     </div>
                   </div>
 
-                  <div className="rounded-lg border border-[var(--ledger-line)] bg-background/70 p-3">
-                    <ol className="space-y-2">
-                      {note.sketch.map((step, sketchIndex) => (
-                        <li key={step.label}>
-                          <div className="grid grid-cols-[2.25rem_1fr] gap-3 rounded-md border border-[var(--ledger-line)] bg-card p-2.5">
-                            <div className="flex h-9 w-9 items-center justify-center rounded border border-[var(--ledger-line)] bg-background text-primary">
-                              <TopologyIcon serviceId={service.id} index={sketchIndex} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold leading-4 text-foreground">
-                                {step.label}
-                              </p>
-                              <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
-                                {step.detail}
-                              </p>
-                            </div>
-                          </div>
-                          {sketchIndex < note.sketch.length - 1 && (
-                            <div className="flex h-4 items-center pl-[1.1rem] text-primary/60">
-                              <ArrowRight className="h-3.5 w-3.5 rotate-90" />
-                            </div>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
+                  <TopologySketch serviceId={service.id as keyof typeof topologyScenes} />
 
                   <Link
                     href={`/services/${encodePathSegment(service.id)}`}
-                    className="flex h-16 w-16 rotate-[-8deg] items-center justify-center rounded-full border border-success/70 text-center font-[family-name:var(--font-ledger)] text-[10px] font-semibold uppercase leading-3 text-success transition-transform hover:rotate-0"
+                    className="flex h-14 w-14 rotate-[-8deg] items-center justify-center rounded-full border border-success/70 text-center font-[family-name:var(--font-ledger)] text-[9px] font-semibold uppercase leading-3 text-success transition-transform hover:rotate-0"
                   >
                     {note.stamp}
                   </Link>
@@ -295,20 +307,77 @@ export function HeroSection() {
   )
 }
 
-function TopologyIcon({ serviceId, index }: { serviceId: string; index: number }) {
-  if (serviceId === "web-mobile") {
-    const icons = [Smartphone, Server, Database]
-    const Icon = icons[index]
-    return <Icon className="mx-auto h-4 w-4" />
-  }
+const topologyIconMap = {
+  bot: Bot,
+  chart: BarChart3,
+  cloud: Cloud,
+  cog: Cog,
+  database: Database,
+  lock: Lock,
+  phone: Smartphone,
+  server: Server,
+  storage: HardDrive,
+  users: Users,
+} as const
 
-  if (serviceId === "cloud-engineering") {
-    const icons = [Server, Cloud, Lock]
-    const Icon = icons[index]
-    return <Icon className="mx-auto h-4 w-4" />
-  }
+function TopologySketch({ serviceId }: { serviceId: keyof typeof topologyScenes }) {
+  const scene = topologyScenes[serviceId]
 
-  const icons = [Database, Bot, CheckCircle2]
-  const Icon = icons[index]
-  return <Icon className="mx-auto h-4 w-4" />
+  return (
+    <div className="relative min-h-[10rem] overflow-hidden rounded-lg border border-[var(--ledger-line)] bg-background/70 p-3">
+      <svg
+        className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] text-primary/55"
+        viewBox="0 0 300 150"
+        fill="none"
+        aria-hidden="true"
+      >
+        <defs>
+          <marker
+            id={`topology-arrow-${serviceId}`}
+            markerHeight="6"
+            markerWidth="6"
+            orient="auto"
+            refX="5"
+            refY="3"
+          >
+            <path d="M0 0L6 3L0 6" fill="currentColor" />
+          </marker>
+        </defs>
+        {scene.paths.map((path) => (
+          <path
+            key={path}
+            d={path}
+            stroke="currentColor"
+            strokeDasharray={path.includes("V") ? "4 4" : undefined}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            markerEnd={`url(#topology-arrow-${serviceId})`}
+          />
+        ))}
+      </svg>
+
+      <div className="relative h-[150px] w-full">
+        {scene.nodes.map((node) => {
+          const Icon = topologyIconMap[node.icon]
+
+          return (
+            <div
+              key={node.label}
+              className="absolute rounded-md border border-[var(--ledger-line)] bg-card/95 p-2 text-center shadow-sm"
+              style={{
+                left: `${(node.x / 300) * 100}%`,
+                top: `${(node.y / 150) * 100}%`,
+                width: `${(node.width / 300) * 100}%`,
+              }}
+            >
+              <Icon className="mx-auto h-4 w-4 text-primary" />
+              <span className="mt-1 block text-[11px] font-semibold leading-3 text-foreground">
+                {node.label}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
