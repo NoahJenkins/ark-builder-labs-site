@@ -7,27 +7,27 @@ import { Award, Target, Cloud, Lock } from "lucide-react"
 const stats = [
   {
     icon: Award,
-    value: "3+",
-    label: "Years of Excellence",
-    description: "Delivering quality software solutions"
+    value: "Practical scoping",
+    label: "Start with the business need",
+    description: "We define the useful outcome before choosing the stack."
   },
   {
     icon: Lock,
-    value: "Security",
-    label: "First Design",
-    description: "We build with security in the front of our mind"
+    value: "Security from start",
+    label: "Built into the plan",
+    description: "We design with security, reliability, and ownership in view."
   },
   {
     icon: Cloud,
-    value: "Multi Cloud",
-    label: "Certified Partner",
-    description: "We are certified with Microsoft, Amazon, GitHub, and more!"
+    value: "Cloud-fit choices",
+    label: "Azure, AWS, Vercel, and more",
+    description: "We match hosting and automation to the project, not to a favorite vendor."
   },
   {
     icon: Target,
-    value: "100%",
-    label: "Success Rate",
-    description: "Meeting deadlines and expectations"
+    value: "Clear handoff",
+    label: "Ready for the next season",
+    description: "Documentation and maintenance options keep the work usable after launch."
   }
 ]
 
@@ -45,10 +45,10 @@ export function StatsSection() {
         <div className="max-w-6xl mx-auto">
           <FadeIn direction="up" className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Why Choose <span className="text-white/90">Ark Builder Labs</span>?
+              How Ark Builder Labs Works
             </h2>
             <p className="text-lg text-white/80 max-w-2xl mx-auto">
-              We bring experience, dedication, and results to every project we undertake.
+              We bring a steward's mindset to planning, delivery, and long-term support.
             </p>
           </FadeIn>
 
@@ -61,7 +61,7 @@ export function StatsSection() {
                 <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors duration-300">
                   <stat.icon className="h-8 w-8 text-white" />
                 </div>
-                <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
+                <div className="text-2xl md:text-3xl font-bold mb-2">{stat.value}</div>
                 <div className="text-lg font-semibold mb-2 text-white/90">{stat.label}</div>
                 <div className="text-sm text-white/70">{stat.description}</div>
               </div>

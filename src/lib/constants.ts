@@ -50,7 +50,7 @@ export const SERVICES = [
     icon: "Brain",
     technologies: ["Gemini", "OpenAI", "CrewAI", "Ollama", "Langchain", "Langsmith"],
     features: [
-      "Automate Buisness Workflows",
+      "Automate Business Workflows",
       "AI Integration Strategies",
       "Custom Agent Solutions",
       "Cost Optimizations"

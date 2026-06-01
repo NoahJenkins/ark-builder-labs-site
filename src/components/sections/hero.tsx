@@ -25,10 +25,28 @@ const RAIN_PARTICLES = Array.from({ length: 80 }, () => ({
 import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/animations/fade-in"
 import { SITE_CONFIG } from "@/lib/constants"
-import { ArrowRight, Play } from "lucide-react"
+import { ArrowRight, ClipboardCheck, Handshake, Play, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
+
+const operatingPromises = [
+  {
+    icon: Handshake,
+    title: "Stewardship first",
+    description: "We make technical choices with your long-term ownership in mind.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Clear handoffs",
+    description: "You get practical documentation, maintainable code, and direct next steps.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Built with care",
+    description: "Security, reliability, and cost are considered from the first conversation.",
+  },
+] as const
 
 export function HeroSection() {
   const { theme } = useTheme()
@@ -128,7 +146,7 @@ export function HeroSection() {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <FadeIn direction="up" delay={0.1}>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-              <span className="gradient-text">Building Software</span>
+              <span className="text-primary">Building Software</span>
               <br />
               <span className="text-foreground">for Every Season</span>
             </h1>
@@ -137,7 +155,7 @@ export function HeroSection() {
           <FadeIn direction="up" delay={0.2}>
             <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto mb-6">
               "Commit to the Lord whatever you do, and he will establish your plans."
-              <cite className="block text-xs mt-2 not-italic">— Proverbs 16:3</cite>
+              <cite className="block text-xs mt-2 not-italic">Proverbs 16:3</cite>
             </blockquote>
           </FadeIn>
 
@@ -165,19 +183,18 @@ export function HeroSection() {
           </FadeIn>
 
           <FadeIn direction="up" delay={0.45}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold gradient-text">3+</div>
-                <div className="text-muted-foreground">Years Experience</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold gradient-text">100+</div>
-                <div className="text-muted-foreground">Projects Created</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold gradient-text">100%</div>
-                <div className="text-muted-foreground">Client Satisfaction</div>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-14 text-left">
+              {operatingPromises.map((promise) => (
+                <div key={promise.title} className="border-t border-border/80 pt-5">
+                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <promise.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">{promise.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {promise.description}
+                  </p>
+                </div>
+              ))}
             </div>
           </FadeIn>
         </div>

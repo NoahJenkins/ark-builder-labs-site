@@ -2,8 +2,26 @@
 
 import { Button } from "@/components/ui/button"
 import { FadeIn } from "@/components/animations/fade-in"
-import { ArrowRight, MessageCircle, Calendar } from "lucide-react"
+import { ArrowRight, MessageCircle, Calendar, Clock, Wrench } from "lucide-react"
 import Link from "next/link"
+
+const nextSteps = [
+  {
+    icon: MessageCircle,
+    title: "Free Consultation",
+    description: "No-obligation discussion about your project needs",
+  },
+  {
+    icon: Clock,
+    title: "Quick Response",
+    description: "We'll get back to you within 24 hours",
+  },
+  {
+    icon: Wrench,
+    title: "Custom Solutions",
+    description: "Tailored approach for your unique requirements",
+  },
+] as const
 
 export function CTASection() {
   return (
@@ -16,7 +34,7 @@ export function CTASection() {
         <div className="max-w-4xl mx-auto text-center">
           <FadeIn direction="up">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Ready to Build Your Next <span className="gradient-text">Project</span>?
+              Ready to Build Your Next <span className="text-primary">Project</span>?
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Let's discuss how we can help transform your ideas into powerful, scalable solutions 
@@ -44,33 +62,17 @@ export function CTASection() {
 
           <FadeIn direction="up" delay={0.3}>
             <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div className="space-y-2">
-                <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
-                  <div className="w-6 h-6 rounded-full bg-success" />
+              {nextSteps.map((step) => (
+                <div key={step.title} className="space-y-2">
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+                    <step.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-semibold">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {step.description}
+                  </p>
                 </div>
-                <h3 className="font-semibold">Free Consultation</h3>
-                <p className="text-sm text-muted-foreground">
-                  No-obligation discussion about your project needs
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
-                  <div className="w-6 h-6 rounded-full bg-warning" />
-                </div>
-                <h3 className="font-semibold">Quick Response</h3>
-                <p className="text-sm text-muted-foreground">
-                  We'll get back to you within 24 hours
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <div className="w-6 h-6 rounded-full bg-primary" />
-                </div>
-                <h3 className="font-semibold">Custom Solutions</h3>
-                <p className="text-sm text-muted-foreground">
-                  Tailored approach for your unique requirements
-                </p>
-              </div>
+              ))}
             </div>
           </FadeIn>
         </div>

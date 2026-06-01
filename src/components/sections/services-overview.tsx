@@ -1,6 +1,5 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { FadeIn } from "@/components/animations/fade-in"
@@ -9,7 +8,6 @@ import { SERVICES } from "@/lib/constants"
 import { encodePathSegment } from "@/lib/security"
 import { ArrowRight, Code2, Cloud, Brain } from "lucide-react"
 import Link from "next/link"
-import { motion } from "framer-motion"
 
 const iconMap = {
   Code2,
@@ -17,69 +15,72 @@ const iconMap = {
   Brain
 }
 
+const serviceCtas = {
+  "web-mobile": "Explore web and mobile",
+  "cloud-engineering": "Explore cloud",
+  "ai-consulting": "Explore AI",
+} as const
+
 export function ServicesOverview() {
   return (
     <section className="py-20 md:py-32 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <FadeIn direction="up" className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              Our <span className="gradient-text">Services</span>
+          <FadeIn direction="up" className="mb-12 grid gap-5 md:grid-cols-[0.95fr_1.05fr] md:items-end">
+            <h2 className="text-3xl md:text-5xl font-bold">
+              Services shaped around ownership
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We provide comprehensive technology solutions to help your business thrive in the digital age.
+            <p className="text-lg text-muted-foreground md:max-w-xl">
+              Choose the path that matches the problem in front of you. Each engagement is scoped around useful software, clear handoff, and practical stewardship after launch.
             </p>
           </FadeIn>
 
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 gap-8 md:items-stretch">
+          <StaggerChildren className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
             {SERVICES.map((service) => {
               const IconComponent = iconMap[service.icon as keyof typeof iconMap]
               
               return (
-                <motion.div
+                <article
                   key={service.id}
-                  whileHover={{ y: -5 }}
-                  transition={{ duration: 0.2 }}
-                  className="h-full"
+                  className="grid gap-6 p-6 transition-colors hover:bg-primary/5 md:grid-cols-[220px_1fr_auto] md:items-start md:p-8"
                 >
-                  <Card className="h-full group hover:shadow-xl transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm flex flex-col">
-                    <CardHeader className="text-center pb-4">
-                      <div className="mx-auto mb-4 w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                        <IconComponent className="h-8 w-8 text-white" />
-                      </div>
-                      <CardTitle className="text-xl md:text-2xl">{service.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6 flex-1 flex flex-col">
-                      <p className="text-muted-foreground text-center min-h-[48px] flex items-center justify-center">
-                        {service.description}
-                      </p>
-                      
-                      <div className="flex flex-wrap gap-2 justify-center min-h-[32px] items-center">
-                        {service.technologies.slice(0, 3).map((tech) => (
-                          <Badge key={tech} variant="secondary" className="text-xs">
-                            {tech}
-                          </Badge>
-                        ))}
-                      </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                      <IconComponent className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-xl font-bold leading-tight">{service.title}</h3>
+                  </div>
 
-                      <ul className="space-y-2 flex-1 min-h-[72px]">
-                        {service.features.slice(0, 3).map((feature) => (
-                          <li key={feature} className="text-sm text-muted-foreground flex items-start">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 mr-3 flex-shrink-0" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
+                  <div className="space-y-4">
+                    <p className="max-w-2xl text-muted-foreground">
+                      {service.description}
+                    </p>
 
-                      <Button variant="ghost" className="w-full group/btn mt-auto" asChild>
-                        <Link href={`/services/${encodePathSegment(service.id)}`}>
-                          Learn More
-                          <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
-                        </Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                    <div className="flex flex-wrap gap-2">
+                      {service.technologies.slice(0, 4).map((tech) => (
+                        <Badge key={tech} variant="secondary" className="text-xs">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <ul className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-3">
+                      {service.features.slice(0, 3).map((feature) => (
+                        <li key={feature} className="flex items-start">
+                          <span className="mt-2 mr-3 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <Button variant="ghost" className="justify-start md:justify-center" asChild>
+                    <Link href={`/services/${encodePathSegment(service.id)}`}>
+                      {serviceCtas[service.id as keyof typeof serviceCtas]}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Link>
+                  </Button>
+                </article>
               )
             })}
           </StaggerChildren>
