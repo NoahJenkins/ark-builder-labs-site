@@ -31,9 +31,9 @@ const process = [
 
 export function StatsSection() {
   return (
-    <section className="relative overflow-hidden bg-[var(--deep-navy)] py-16 text-primary-foreground md:py-24">
+    <section className="relative overflow-hidden bg-[var(--deep-navy)] py-16 text-[oklch(95%_0.008_85)] md:py-24">
       <div className="absolute inset-0 blueprint-grid opacity-45" />
-      <div className="absolute bottom-0 right-0 h-40 w-64 rotate-[-8deg] border border-primary-foreground/10 bg-primary-foreground/5 max-md:hidden" />
+      <div className="absolute bottom-0 right-0 h-40 w-64 rotate-[-8deg] border border-[oklch(95%_0.008_85_/_0.16)] bg-[oklch(95%_0.008_85_/_0.05)] max-md:hidden" />
 
       <div className="container relative mx-auto px-4">
         <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
@@ -44,7 +44,7 @@ export function StatsSection() {
             <h2 className="font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight md:text-5xl">
               A steady path, from idea to enduring impact
             </h2>
-            <p className="mt-5 max-w-md text-lg leading-8 text-primary-foreground/75">
+            <p className="mt-5 max-w-md text-lg leading-8 text-[oklch(95%_0.008_85_/_0.75)]">
               Software for every season means clear steps, honest communication, and long-term care when the weather changes.
             </p>
           </div>
@@ -53,17 +53,17 @@ export function StatsSection() {
             {process.map((step, index) => (
               <article key={step.season} className="relative">
                 {index < process.length - 1 && (
-                  <div className="absolute left-[3rem] top-8 hidden h-px w-[calc(100%-2rem)] border-t border-dashed border-primary-foreground/35 md:block" />
+                  <div className="absolute left-[3rem] top-8 hidden h-px w-[calc(100%-2rem)] border-t border-dashed border-[oklch(95%_0.008_85_/_0.35)] md:block" />
                 )}
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-primary-foreground/70 bg-[var(--deep-navy)]">
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-[oklch(95%_0.008_85_/_0.7)] bg-[var(--deep-navy)]">
                   <step.icon className="h-7 w-7" />
                 </div>
                 <p className="mt-5 font-mono text-sm text-[var(--field-amber)]">
                   {String(index + 1).padStart(2, "0")}
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold">{step.season}</h3>
-                <p className="mt-1 font-medium text-primary-foreground/90">{step.title}</p>
-                <p className="mt-3 text-sm leading-6 text-primary-foreground/70">
+                <p className="mt-1 font-medium text-[oklch(95%_0.008_85_/_0.9)]">{step.title}</p>
+                <p className="mt-3 text-sm leading-6 text-[oklch(95%_0.008_85_/_0.7)]">
                   {step.description}
                 </p>
               </article>
