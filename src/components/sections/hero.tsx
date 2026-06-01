@@ -1,448 +1,314 @@
 "use client"
 
-// Animation timings are fixed at module load to satisfy render purity rules
-const LIGHTNING_DURATIONS = [
-  `${8 + Math.random() * 4}s`,
-  `${10 + Math.random() * 6}s`,
-  `${12 + Math.random() * 8}s`,
-] as const;
-const LIGHTNING_DELAYS = [
-  `${Math.random() * 5}s`,
-  `${2 + Math.random() * 8}s`,
-  `${4 + Math.random() * 6}s`,
-] as const;
-const SNOW_PARTICLES = Array.from({ length: 50 }, () => ({
-  left: `${Math.random() * 100}%`,
-  animationDelay: `${Math.random() * 10}s`,
-  animationDuration: `${3 + Math.random() * 4}s`,
-}));
-const RAIN_PARTICLES = Array.from({ length: 80 }, () => ({
-  left: `${Math.random() * 100}%`,
-  animationDelay: `${Math.random() * 3}s`,
-  animationDuration: `${0.8 + Math.random() * 0.4}s`,
-}));
-
 import { Button } from "@/components/ui/button"
-import { FadeIn } from "@/components/animations/fade-in"
-import { SITE_CONFIG } from "@/lib/constants"
-import { ArrowRight, ClipboardCheck, Handshake, Play, ShieldCheck } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { SERVICES } from "@/lib/constants"
+import { encodePathSegment } from "@/lib/security"
+import {
+  ArrowRight,
+  Bot,
+  Brain,
+  CheckCircle2,
+  Cloud,
+  Code2,
+  Database,
+  Lock,
+  MessageCircle,
+  Server,
+  Smartphone,
+} from "lucide-react"
 import Link from "next/link"
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
 
-const operatingPromises = [
-  {
-    icon: Handshake,
-    title: "Stewardship first",
-    description: "We make technical choices with your long-term ownership in mind.",
+const iconMap = {
+  Code2,
+  Cloud,
+  Brain,
+} as const
+
+const serviceNotes = {
+  "web-mobile": {
+    line: "Build fast, ship with confidence.",
+    description: "Custom web and mobile apps that are maintainable, scalable, and built for your users.",
+    sketch: [
+      { label: "Web and mobile UI", detail: "Next.js plus React Native" },
+      { label: "API boundary", detail: "Node routes, auth, integrations" },
+      { label: "Data layer", detail: "Database, storage, reporting" },
+    ],
+    stamp: "ready to build",
   },
-  {
-    icon: ClipboardCheck,
-    title: "Clear handoffs",
-    description: "You get practical documentation, maintainable code, and direct next steps.",
+  "cloud-engineering": {
+    line: "Run securely. Scale reliably.",
+    description: "Cloud infrastructure and DevOps practices that improve performance, security, and resilience.",
+    sketch: [
+      { label: "Users and traffic", detail: "Requests, sessions, edge rules" },
+      { label: "Load balancing", detail: "Routing, scaling, availability" },
+      { label: "App services", detail: "Secure runtime and observability" },
+    ],
+    stamp: "ready to scale",
   },
-  {
-    icon: ShieldCheck,
-    title: "Built with care",
-    description: "Security, reliability, and cost are considered from the first conversation.",
+  "ai-consulting": {
+    line: "Automate with purpose.",
+    description: "AI-powered workflows and agents that streamline operations and create real business value.",
+    sketch: [
+      { label: "Data sources", detail: "Docs, systems, customer context" },
+      { label: "Agent workflow", detail: "Models, tools, approval gates" },
+      { label: "Business actions", detail: "Draft, route, update, report" },
+    ],
+    stamp: "ready to improve",
   },
+} as const
+
+const checklist = [
+  "Purpose understood",
+  "Scope aligned",
+  "Plan documented",
+  "Ready to build",
+] as const
+
+const fieldLines = [
+  "Good software solves today.",
+  "Stewardship builds for tomorrow.",
+] as const
+
+const seasonMarks = [
+  { left: "8%", top: "18%", delay: "0s" },
+  { left: "18%", top: "76%", delay: "1.5s" },
+  { left: "34%", top: "34%", delay: "2.1s" },
+  { left: "53%", top: "68%", delay: "0.8s" },
+  { left: "70%", top: "24%", delay: "2.8s" },
+  { left: "86%", top: "58%", delay: "1.2s" },
 ] as const
 
 export function HeroSection() {
-  const { theme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 py-20 md:py-32">
-      {/* Background elements */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-      
-      {/* Dynamic Swiping Animation Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Primary Sweep */}
-        <div className="absolute w-full h-full animate-sweep-primary opacity-0">
-          <div className="absolute top-0 -left-1/4 w-1/2 h-full bg-gradient-to-r from-transparent via-primary/10 to-transparent transform -skew-x-12" />
-        </div>
-        
-        {/* Secondary Sweep */}
-        <div className="absolute w-full h-full animate-sweep-secondary opacity-0">
-          <div className="absolute top-0 -right-1/4 w-1/2 h-full bg-gradient-to-r from-transparent via-accent/8 to-transparent transform skew-x-12" />
-        </div>
-        
-        {/* Tertiary Sweep */}
-        <div className="absolute w-full h-full animate-sweep-tertiary opacity-0">
-          <div className="absolute top-0 -left-1/3 w-2/3 h-full bg-gradient-to-r from-transparent via-primary/6 to-transparent transform -skew-x-6" />
-        </div>
-        
-        {/* Floating Particles */}
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-primary/20 animate-float-1 opacity-0" />
-          <div className="absolute top-3/4 right-1/3 w-1 h-1 rounded-full bg-accent/30 animate-float-2 opacity-0" />
-          <div className="absolute top-1/2 left-2/3 w-1.5 h-1.5 rounded-full bg-primary/15 animate-float-3 opacity-0" />
-          <div className="absolute top-1/3 right-1/4 w-1 h-1 rounded-full bg-accent/25 animate-float-4 opacity-0" />
-        </div>
+    <section className="relative overflow-hidden border-b border-border bg-[var(--paper-warm)]">
+      <div className="absolute inset-0 ledger-grid opacity-60" />
+      <div className="absolute inset-y-0 left-0 hidden w-[72px] border-r border-[var(--ledger-line)]/50 md:block">
+        {Array.from({ length: 12 }).map((_, index) => (
+          <div
+            key={index}
+            className="flex h-16 items-center border-b border-[var(--ledger-line)]/30 pl-8 text-[10px] font-medium text-primary/80"
+          >
+            {String(index + 1).padStart(2, "0")}
+          </div>
+        ))}
       </div>
-      
-      {/* Weather Animations */}
-      {mounted && (
-        <>
-          {/* Snow Animation for Light Mode */}
-          {theme === 'light' && (
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {SNOW_PARTICLES.map((particle, i) => (
-                <div
-                  key={`snow-${i}`}
-                  className="absolute w-1 h-1 bg-blue-400 rounded-full animate-snowfall"
-                  style={{ top: '-20px', opacity: 0, ...particle }}
-                />
-              ))}
-            </div>
-          )}
-          
-          {/* Rain and Lightning Animation for Dark Mode */}
-          {theme === 'dark' && (
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {/* Rain */}
-              {RAIN_PARTICLES.map((particle, i) => (
-                <div
-                  key={`rain-${i}`}
-                  className="absolute w-0.5 h-4 bg-blue-200/50 animate-rainfall"
-                  style={{ top: '-20px', opacity: 0, ...particle }}
-                />
-              ))}
-              
-              {/* Lightning Effects - positioned to avoid text areas */}
-              <div 
-                className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-blue-200/10 via-white/5 to-transparent animate-lightning opacity-0 invisible"
-                style={{
-                  animationDuration: LIGHTNING_DURATIONS[0],
-                  animationDelay: LIGHTNING_DELAYS[0],
-                }}
-              />
-              <div 
-                className="absolute top-0 right-0 w-2/3 h-1/4 bg-gradient-to-bl from-blue-100/8 via-white/3 to-transparent animate-lightning-2 opacity-0 invisible"
-                style={{
-                  animationDuration: LIGHTNING_DURATIONS[1],
-                  animationDelay: LIGHTNING_DELAYS[1],
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-1/4 w-1/2 h-1/5 bg-gradient-to-t from-blue-200/6 via-white/2 to-transparent animate-lightning opacity-0 invisible"
-                style={{
-                  animationDuration: LIGHTNING_DURATIONS[2],
-                  animationDelay: LIGHTNING_DELAYS[2],
-                }}
-              />
-            </div>
-          )}
-        </>
-      )}
-      
-      <div className="container mx-auto px-4 relative">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <FadeIn direction="up" delay={0.1}>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-              <span className="text-primary">Building Software</span>
-              <br />
-              <span className="text-foreground">for Every Season</span>
-            </h1>
-          </FadeIn>
 
-          <FadeIn direction="up" delay={0.2}>
-            <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto mb-6">
-              "Commit to the Lord whatever you do, and he will establish your plans."
-              <cite className="block text-xs mt-2 not-italic">Proverbs 16:3</cite>
-            </blockquote>
-          </FadeIn>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        {seasonMarks.map((mark, index) => (
+          <span
+            key={index}
+            className="season-mark"
+            style={{
+              left: mark.left,
+              top: mark.top,
+              animationDelay: mark.delay,
+            }}
+          />
+        ))}
+      </div>
 
-          <FadeIn direction="up" delay={0.25}>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {SITE_CONFIG.mission}
+      <div className="container relative mx-auto px-4 py-16 md:py-24 lg:py-28">
+        <div className="grid gap-12 xl:grid-cols-[0.62fr_1.38fr] xl:items-start">
+          <div className="max-w-xl pt-2 lg:pl-20 xl:pl-16">
+            <p className="mb-8 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+              Steward's Workshop
             </p>
-          </FadeIn>
+            <h1 className="font-[family-name:var(--font-ledger)] text-5xl font-semibold leading-[0.95] tracking-normal text-foreground md:text-6xl xl:text-7xl">
+              A practical technology partner for the long road
+            </h1>
+            <div className="mt-7 h-1 w-24 rounded-full bg-[var(--field-amber)]" />
+            <p className="mt-7 max-w-lg text-lg leading-8 text-muted-foreground md:text-xl">
+              We build with stewardship in mind: clear plans, maintainable systems, and honest communication that lasts beyond launch.
+            </p>
 
-          <FadeIn direction="up" delay={0.35}>
-            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
-              <Button size="lg" className="text-base" asChild>
-                <Link href="/contact" className="inline-flex items-center space-x-2">
-                  <span>Get a Quote</span>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Button size="lg" asChild>
+                <Link href="/contact" className="inline-flex items-center gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Start a Conversation
+                </Link>
+              </Button>
+              <Button size="lg" variant="secondary" asChild>
+                <Link href="#service-ledger" className="inline-flex items-center gap-2">
+                  Choose a service path
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="secondary" className="text-base" asChild>
-                <Link href="/services" className="inline-flex items-center space-x-2">
-                  <Play className="h-4 w-4" />
-                  <span>View Our Services</span>
-                </Link>
-              </Button>
             </div>
-          </FadeIn>
 
-          <FadeIn direction="up" delay={0.45}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-14 text-left">
-              {operatingPromises.map((promise) => (
-                <div key={promise.title} className="border-t border-border/80 pt-5">
-                  <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <promise.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-base font-semibold text-foreground">{promise.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {promise.description}
-                  </p>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-1">
+              <div>
+                <p className="mb-3 border-b border-[var(--ledger-line)] pb-2 font-mono text-xs uppercase tracking-[0.16em] text-primary">
+                  Field Note
+                </p>
+                <div className="space-y-1 font-[family-name:var(--font-ledger)] text-base italic leading-6 text-muted-foreground">
+                  {fieldLines.map((line) => (
+                    <p key={line}>{line}</p>
+                  ))}
                 </div>
-              ))}
+              </div>
+              <div>
+                <p className="mb-3 border-b border-[var(--ledger-line)] pb-2 font-mono text-xs uppercase tracking-[0.16em] text-primary">
+                  Handoff Checklist
+                </p>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  {checklist.map((item) => (
+                    <li key={item} className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </FadeIn>
+          </div>
+
+          <div id="service-ledger" className="rounded-xl border border-border bg-card/90 shadow-sm">
+            <div className="grid grid-cols-[150px_minmax(180px,1fr)_280px_76px] border-b border-border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary max-lg:hidden">
+              <span>Path</span>
+              <span>What it solves</span>
+              <span>Topology sketch</span>
+              <span>Signal</span>
+            </div>
+
+            {SERVICES.map((service, index) => {
+              const Icon = iconMap[service.icon as keyof typeof iconMap]
+              const note = serviceNotes[service.id as keyof typeof serviceNotes]
+
+              return (
+                <article
+                  key={service.id}
+                  className="grid gap-4 border-b border-border p-5 last:border-b-0 lg:grid-cols-[150px_minmax(180px,1fr)_280px_76px]"
+                >
+                  <div className="flex gap-4 lg:block">
+                    <span className="font-mono text-sm text-primary">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="mt-0 flex items-start gap-3 lg:mt-5 lg:block">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-[var(--ledger-line)] bg-background text-primary lg:mb-3">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <h2 className="text-lg font-semibold leading-tight text-foreground md:max-w-[10rem]">
+                        {service.title}
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-semibold text-foreground">{note.line}</h3>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {note.description}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {service.technologies.slice(0, 4).map((tech) => (
+                        <Badge key={tech} variant="secondary" className="border border-border bg-background">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-[var(--ledger-line)] bg-background/70 p-3">
+                    <ol className="space-y-2">
+                      {note.sketch.map((step, sketchIndex) => (
+                        <li key={step.label}>
+                          <div className="grid grid-cols-[2.25rem_1fr] gap-3 rounded-md border border-[var(--ledger-line)] bg-card p-2.5">
+                            <div className="flex h-9 w-9 items-center justify-center rounded border border-[var(--ledger-line)] bg-background text-primary">
+                              <TopologyIcon serviceId={service.id} index={sketchIndex} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-semibold leading-4 text-foreground">
+                                {step.label}
+                              </p>
+                              <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+                                {step.detail}
+                              </p>
+                            </div>
+                          </div>
+                          {sketchIndex < note.sketch.length - 1 && (
+                            <div className="flex h-4 items-center pl-[1.1rem] text-primary/60">
+                              <ArrowRight className="h-3.5 w-3.5 rotate-90" />
+                            </div>
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <Link
+                    href={`/services/${encodePathSegment(service.id)}`}
+                    className="flex h-16 w-16 rotate-[-8deg] items-center justify-center rounded-full border border-success/70 text-center font-[family-name:var(--font-ledger)] text-[10px] font-semibold uppercase leading-3 text-success transition-transform hover:rotate-0"
+                  >
+                    {note.stamp}
+                  </Link>
+                </article>
+              )
+            })}
+          </div>
         </div>
       </div>
 
       <style jsx>{`
-        .bg-grid-pattern {
-          background-image: radial-gradient(circle at 1px 1px, rgb(156 163 175 / 0.15) 1px, transparent 0);
-          background-size: 20px 20px;
+        .ledger-grid {
+          background-image:
+            linear-gradient(to right, oklch(62% 0.105 246 / 0.14) 1px, transparent 1px),
+            linear-gradient(to bottom, oklch(62% 0.105 246 / 0.1) 1px, transparent 1px);
+          background-size: 72px 72px;
         }
-        
-        /* Swiping Animation Keyframes */
-        @keyframes sweep-primary {
-          0% {
-            transform: translateX(-150%) rotate(15deg);
-            opacity: 0;
-          }
-          20% {
-            opacity: 1;
-          }
-          80% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(150%) rotate(15deg);
-            opacity: 0;
-          }
+
+        .season-mark {
+          position: absolute;
+          width: 5px;
+          height: 5px;
+          border-radius: 999px;
+          background: oklch(62% 0.105 246 / 0.45);
+          animation: seasonal-drift 7s ease-in-out infinite;
         }
-        
-        @keyframes sweep-secondary {
-          0% {
-            transform: translateX(150%) rotate(-15deg);
-            opacity: 0;
-          }
-          25% {
-            opacity: 1;
-          }
-          75% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(-150%) rotate(-15deg);
-            opacity: 0;
-          }
+
+        .season-mark::after {
+          content: "";
+          position: absolute;
+          inset: -6px;
+          border: 1px solid oklch(62% 0.105 246 / 0.18);
+          border-radius: inherit;
         }
-        
-        @keyframes sweep-tertiary {
-          0% {
-            transform: translateX(-180%) rotate(8deg);
-            opacity: 0;
-          }
-          30% {
-            opacity: 0.8;
-          }
-          70% {
-            opacity: 0.8;
-          }
-          100% {
-            transform: translateX(180%) rotate(8deg);
-            opacity: 0;
-          }
-        }
-        
-        /* Floating Particle Animations */
-        @keyframes float-1 {
+
+        @keyframes seasonal-drift {
           0%, 100% {
-            transform: translateY(0px) translateX(0px);
+            transform: translate3d(0, 0, 0);
             opacity: 0.2;
           }
-          50% {
-            transform: translateY(-20px) translateX(10px);
-            opacity: 0.8;
+          45% {
+            transform: translate3d(8px, 18px, 0);
+            opacity: 0.65;
           }
         }
-        
-        @keyframes float-2 {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px);
-            opacity: 0.3;
+
+        @media (prefers-reduced-motion: reduce) {
+          .season-mark {
+            animation: none;
           }
-          50% {
-            transform: translateY(15px) translateX(-8px);
-            opacity: 0.7;
-          }
-        }
-        
-        @keyframes float-3 {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px);
-            opacity: 0.15;
-          }
-          50% {
-            transform: translateY(-12px) translateX(6px);
-            opacity: 0.6;
-          }
-        }
-        
-        @keyframes float-4 {
-          0%, 100% {
-            transform: translateY(0px) translateX(0px);
-            opacity: 0.25;
-          }
-          50% {
-            transform: translateY(18px) translateX(-12px);
-            opacity: 0.9;
-          }
-        }
-        
-        /* Animation Classes */
-        .animate-sweep-primary {
-          animation: sweep-primary 12s ease-in-out infinite;
-        }
-        
-        .animate-sweep-secondary {
-          animation: sweep-secondary 16s ease-in-out infinite 2s;
-        }
-        
-        .animate-sweep-tertiary {
-          animation: sweep-tertiary 20s ease-in-out infinite 4s;
-        }
-        
-        .animate-float-1 {
-          animation: float-1 8s ease-in-out infinite;
-        }
-        
-        .animate-float-2 {
-          animation: float-2 6s ease-in-out infinite 1s;
-        }
-        
-        .animate-float-3 {
-          animation: float-3 10s ease-in-out infinite 2s;
-        }
-        
-        .animate-float-4 {
-          animation: float-4 7s ease-in-out infinite 3s;
-        }
-        
-        /* Weather Animation Keyframes */
-        @keyframes snowfall {
-          0% {
-            transform: translateY(-10px) translateX(0px);
-            opacity: 0;
-          }
-          5% {
-            opacity: 1;
-          }
-          95% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100vh) translateX(20px);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes rainfall {
-          0% {
-            transform: translateY(-10px);
-            opacity: 0;
-          }
-          5% {
-            opacity: 0.8;
-          }
-          100% {
-            transform: translateY(100vh);
-            opacity: 0;
-          }
-        }
-        
-        @keyframes lightning {
-          0%, 98%, 100% {
-            opacity: 0;
-            visibility: hidden;
-          }
-          98.5% {
-            visibility: visible;
-          }
-          99%, 99.2%, 99.4% {
-            opacity: 0.8;
-            visibility: visible;
-          }
-          99.1%, 99.3% {
-            opacity: 0.2;
-            visibility: visible;
-          }
-        }
-        
-        @keyframes lightning-2 {
-          0%, 97%, 100% {
-            opacity: 0;
-            visibility: hidden;
-          }
-          97.5% {
-            visibility: visible;
-          }
-          98%, 98.4% {
-            opacity: 0.4;
-            visibility: visible;
-          }
-          98.2% {
-            opacity: 0.1;
-            visibility: visible;
-          }
-        }
-        
-        /* Weather Animation Classes */
-        .animate-snowfall {
-          animation: snowfall linear infinite;
-        }
-        
-        .animate-rainfall {
-          animation: rainfall linear infinite;
-        }
-        
-        .animate-lightning {
-          animation: lightning ease-in-out infinite;
-        }
-        
-        .animate-lightning-2 {
-          animation: lightning-2 ease-in-out infinite;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-          .animate-sweep-primary,
-          .animate-sweep-secondary,
-          .animate-sweep-tertiary {
-            animation-duration: 8s, 12s, 16s;
-          }
-        }
-        
-        /* Performance optimizations */
-        .animate-sweep-primary,
-        .animate-sweep-secondary,
-        .animate-sweep-tertiary,
-        .animate-float-1,
-        .animate-float-2,
-        .animate-float-3,
-        .animate-float-4,
-        .animate-snowfall,
-        .animate-rainfall,
-        .animate-lightning,
-        .animate-lightning-2 {
-          will-change: transform, opacity;
-          backface-visibility: hidden;
-          transform-style: preserve-3d;
         }
       `}</style>
     </section>
   )
+}
+
+function TopologyIcon({ serviceId, index }: { serviceId: string; index: number }) {
+  if (serviceId === "web-mobile") {
+    const icons = [Smartphone, Server, Database]
+    const Icon = icons[index]
+    return <Icon className="mx-auto h-4 w-4" />
+  }
+
+  if (serviceId === "cloud-engineering") {
+    const icons = [Server, Cloud, Lock]
+    const Icon = icons[index]
+    return <Icon className="mx-auto h-4 w-4" />
+  }
+
+  const icons = [Database, Bot, CheckCircle2]
+  const Icon = icons[index]
+  return <Icon className="mx-auto h-4 w-4" />
 }

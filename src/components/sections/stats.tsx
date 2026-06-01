@@ -1,74 +1,85 @@
 "use client"
 
-import { FadeIn } from "@/components/animations/fade-in"
-import { StaggerChildren } from "@/components/animations/stagger-children"
-import { Award, Target, Cloud, Lock } from "lucide-react"
+import { Binoculars, CheckSquare, Leaf, Wrench } from "lucide-react"
 
-const stats = [
+const process = [
   {
-    icon: Award,
-    value: "Practical scoping",
-    label: "Start with the business need",
-    description: "We define the useful outcome before choosing the stack."
+    icon: Binoculars,
+    season: "Discover",
+    title: "Listen first",
+    description: "Understand the goal, constraints, context, and what success should look like.",
   },
   {
-    icon: Lock,
-    value: "Security from start",
-    label: "Built into the plan",
-    description: "We design with security, reliability, and ownership in view."
+    icon: Wrench,
+    season: "Build",
+    title: "Craft with care",
+    description: "Design and build secure, testable systems that can evolve with the business.",
   },
   {
-    icon: Cloud,
-    value: "Cloud-fit choices",
-    label: "Azure, AWS, Vercel, and more",
-    description: "We match hosting and automation to the project, not to a favorite vendor."
+    icon: CheckSquare,
+    season: "Handoff",
+    title: "Deliver clearly",
+    description: "Ship with documentation, training, and support paths your team can use.",
   },
   {
-    icon: Target,
-    value: "Clear handoff",
-    label: "Ready for the next season",
-    description: "Documentation and maintenance options keep the work usable after launch."
-  }
-]
+    icon: Leaf,
+    season: "Steward",
+    title: "Improve over time",
+    description: "Measure what matters, respond to change, and keep the system useful.",
+  },
+] as const
 
 export function StatsSection() {
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-primary to-accent text-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-black/10" />
-      <div className="absolute top-0 left-0 w-full h-full opacity-10">
-        <div className="absolute top-10 left-10 w-20 h-20 rounded-full border border-white/20" />
-        <div className="absolute bottom-10 right-10 w-32 h-32 rounded-full border border-white/20" />
-        <div className="absolute top-1/3 right-1/4 w-16 h-16 rounded-full border border-white/20" />
-      </div>
-      
-      <div className="container mx-auto px-4 relative">
-        <div className="max-w-6xl mx-auto">
-          <FadeIn direction="up" className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
-              How Ark Builder Labs Works
-            </h2>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto">
-              We bring a steward's mindset to planning, delivery, and long-term support.
-            </p>
-          </FadeIn>
+    <section className="relative overflow-hidden bg-[var(--deep-navy)] py-16 text-primary-foreground md:py-24">
+      <div className="absolute inset-0 blueprint-grid opacity-45" />
+      <div className="absolute bottom-0 right-0 h-40 w-64 rotate-[-8deg] border border-primary-foreground/10 bg-primary-foreground/5 max-md:hidden" />
 
-          <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center group"
-              >
-                <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors duration-300">
-                  <stat.icon className="h-8 w-8 text-white" />
+      <div className="container relative mx-auto px-4">
+        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+          <div className="lg:pl-20">
+            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--field-amber)]">
+              Our Process
+            </p>
+            <h2 className="font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight md:text-5xl">
+              A steady path, from idea to enduring impact
+            </h2>
+            <p className="mt-5 max-w-md text-lg leading-8 text-primary-foreground/75">
+              Software for every season means clear steps, honest communication, and long-term care when the weather changes.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-4">
+            {process.map((step, index) => (
+              <article key={step.season} className="relative">
+                {index < process.length - 1 && (
+                  <div className="absolute left-[3rem] top-8 hidden h-px w-[calc(100%-2rem)] border-t border-dashed border-primary-foreground/35 md:block" />
+                )}
+                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-primary-foreground/70 bg-[var(--deep-navy)]">
+                  <step.icon className="h-7 w-7" />
                 </div>
-                <div className="text-2xl md:text-3xl font-bold mb-2">{stat.value}</div>
-                <div className="text-lg font-semibold mb-2 text-white/90">{stat.label}</div>
-                <div className="text-sm text-white/70">{stat.description}</div>
-              </div>
+                <p className="mt-5 font-mono text-sm text-[var(--field-amber)]">
+                  {String(index + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-2 text-2xl font-semibold">{step.season}</h3>
+                <p className="mt-1 font-medium text-primary-foreground/90">{step.title}</p>
+                <p className="mt-3 text-sm leading-6 text-primary-foreground/70">
+                  {step.description}
+                </p>
+              </article>
             ))}
-          </StaggerChildren>
+          </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .blueprint-grid {
+          background-image:
+            linear-gradient(to right, oklch(98% 0.006 85 / 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, oklch(98% 0.006 85 / 0.07) 1px, transparent 1px);
+          background-size: 56px 56px;
+        }
+      `}</style>
     </section>
   )
 }
