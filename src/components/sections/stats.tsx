@@ -31,41 +31,49 @@ const process = [
 
 export function StatsSection() {
   return (
-    <section className="relative overflow-hidden bg-[var(--deep-navy)] py-16 text-[oklch(95%_0.008_85)] md:py-24">
+    <section className="relative overflow-hidden bg-[var(--deep-navy)] py-14 text-[oklch(95%_0.008_85)] md:py-24">
       <div className="absolute inset-0 blueprint-grid opacity-45" />
-      <div className="absolute bottom-0 right-0 h-40 w-64 rotate-[-8deg] border border-[oklch(95%_0.008_85_/_0.16)] bg-[oklch(95%_0.008_85_/_0.05)] max-md:hidden" />
+      <ProcessFieldSketch />
 
       <div className="container relative mx-auto px-4">
-        <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
+        <div className="grid gap-9 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
           <div className="lg:pl-20">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--field-amber)]">
               Our Process
             </p>
-            <h2 className="font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight md:text-5xl">
+            <h2 className="max-w-[12ch] font-[family-name:var(--font-ledger)] text-[2.15rem] font-semibold leading-[1.08] sm:max-w-none sm:text-4xl md:text-5xl md:leading-tight">
               A steady path, from idea to enduring impact
             </h2>
-            <p className="mt-5 max-w-md text-lg leading-8 text-[oklch(95%_0.008_85_/_0.75)]">
+            <p className="mt-5 max-w-md text-base leading-7 text-[oklch(95%_0.008_85_/_0.75)] md:text-lg md:leading-8">
               Software for every season means clear steps, honest communication, and long-term care when the weather changes.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-4">
+          <div className="grid gap-0 md:grid-cols-4 md:gap-6">
             {process.map((step, index) => (
-              <article key={step.season} className="relative">
+              <article
+                key={step.season}
+                className="relative grid grid-cols-[3.25rem_1fr] gap-x-4 pb-7 last:pb-0 md:block md:pb-0"
+              >
                 {index < process.length - 1 && (
-                  <div className="absolute left-[3rem] top-8 hidden h-px w-[calc(100%-2rem)] border-t border-dashed border-[oklch(95%_0.008_85_/_0.35)] md:block" />
+                  <>
+                    <div className="absolute left-6 top-12 h-[calc(100%-2.5rem)] border-l border-dashed border-[oklch(95%_0.008_85_/_0.32)] md:hidden" />
+                    <div className="absolute left-[3rem] top-8 hidden h-px w-[calc(100%-2rem)] border-t border-dashed border-[oklch(95%_0.008_85_/_0.35)] md:block" />
+                  </>
                 )}
-                <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-[oklch(95%_0.008_85_/_0.7)] bg-[var(--deep-navy)]">
-                  <step.icon className="h-7 w-7" />
+                <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[oklch(95%_0.008_85_/_0.7)] bg-[var(--deep-navy)] md:h-16 md:w-16">
+                  <step.icon className="h-5 w-5 md:h-7 md:w-7" />
                 </div>
-                <p className="mt-5 font-mono text-sm text-[var(--field-amber)]">
-                  {String(index + 1).padStart(2, "0")}
-                </p>
-                <h3 className="mt-2 text-2xl font-semibold">{step.season}</h3>
-                <p className="mt-1 font-medium text-[oklch(95%_0.008_85_/_0.9)]">{step.title}</p>
-                <p className="mt-3 text-sm leading-6 text-[oklch(95%_0.008_85_/_0.7)]">
-                  {step.description}
-                </p>
+                <div className="pt-0.5 md:pt-0">
+                  <p className="font-mono text-xs text-[var(--field-amber)] md:mt-5 md:text-sm">
+                    {String(index + 1).padStart(2, "0")}
+                  </p>
+                  <h3 className="mt-1 text-xl font-semibold md:mt-2 md:text-2xl">{step.season}</h3>
+                  <p className="mt-1 font-medium text-[oklch(95%_0.008_85_/_0.9)]">{step.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-[oklch(95%_0.008_85_/_0.7)] md:mt-3">
+                    {step.description}
+                  </p>
+                </div>
               </article>
             ))}
           </div>
@@ -81,5 +89,47 @@ export function StatsSection() {
         }
       `}</style>
     </section>
+  )
+}
+
+function ProcessFieldSketch() {
+  return (
+    <svg
+      className="pointer-events-none absolute bottom-8 right-8 hidden h-36 w-72 text-[oklch(95%_0.008_85_/_0.24)] lg:block"
+      viewBox="0 0 288 144"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M18 108C56 76 89 72 118 92C147 112 174 113 207 88C227 73 247 68 270 75"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M38 112H254M58 88H225M86 64H201M118 40H170"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="0.8"
+        opacity="0.38"
+      />
+      <path
+        d="M72 106C70 90 75 76 88 63C102 79 104 94 95 112M213 87C212 75 216 65 225 56C235 68 237 79 231 91"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1"
+        opacity="0.72"
+      />
+      <path
+        d="M50 118C91 127 143 128 197 120"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="1"
+        opacity="0.58"
+      />
+      <circle cx="118" cy="92" r="2.5" fill="currentColor" opacity="0.8" />
+      <circle cx="207" cy="88" r="2.5" fill="currentColor" opacity="0.8" />
+    </svg>
   )
 }
