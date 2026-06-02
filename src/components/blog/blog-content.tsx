@@ -41,7 +41,8 @@ function PostImage({ post, featured = false }: { post: BlogPost; featured?: bool
         src={post.image}
         alt={post.title}
         fill
-        className="object-cover transition duration-500 group-hover:scale-[1.025]"
+        priority={featured}
+        className="object-cover transition duration-500 group-hover:scale-[1.025] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         sizes={featured ? "(max-width: 1024px) 100vw, 46vw" : "(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"}
       />
     )
@@ -80,12 +81,12 @@ function ReadLink({ post, compact = false }: { post: BlogPost; compact?: boolean
       href={`/blog/${encodePathSegment(post.slug)}`}
       aria-label={`Read field note: ${post.title}`}
       className={cn(
-        "group/link inline-flex min-h-11 items-center gap-2 font-medium text-primary underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "group/link inline-flex min-h-11 items-center gap-2 font-medium text-primary underline-offset-4 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none",
         compact ? "text-sm" : "text-base"
       )}
     >
       <span>Read field note<span className="sr-only">: {post.title}</span></span>
-      <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1" aria-hidden="true" />
+      <ArrowRight className="h-4 w-4 transition-transform group-hover/link:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover/link:translate-x-0" aria-hidden="true" />
     </Link>
   )
 }
@@ -110,7 +111,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
             <h2 className="text-2xl font-semibold md:text-3xl">Browse the field notes</h2>
           </div>
 
-          <div className="flex flex-wrap gap-2" aria-label="Filter blog posts by category">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter blog posts by category">
             {categories.map((category) => {
               const isSelected = category === selectedCategory
 
@@ -121,7 +122,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
                   aria-pressed={isSelected}
                   onClick={() => setSelectedCategory(category)}
                   className={cn(
-                    "min-h-10 rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    "min-h-10 rounded-full border px-4 text-sm font-medium transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:active:scale-100",
                     isSelected
                       ? "border-primary bg-primary text-primary-foreground shadow-sm"
                       : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-primary"
@@ -187,7 +188,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {archivePosts.map((post, index) => (
                 <FadeIn key={post.id} direction="up" delay={index * 0.08}>
-                  <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+                  <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0">
                     <div className="relative aspect-[16/10] overflow-hidden border-b border-border bg-muted">
                       <PostImage post={post} />
                     </div>
