@@ -211,18 +211,18 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="border-b border-border bg-background py-16 md:py-24">
+      <section className="border-b border-border bg-background py-12 md:py-20 lg:py-24">
         <div className="container mx-auto px-4">
-          <div className="grid gap-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.3fr] lg:items-start">
             <FadeIn direction="up" className="lg:pl-20">
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
                 Our Values
               </p>
-              <h2 className="max-w-[11ch] font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight text-foreground md:text-5xl">
-                The standards under the work
+              <h2 className="max-w-lg font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight text-foreground md:text-5xl">
+                Standards for the work
               </h2>
-              <p className="mt-5 max-w-md text-lg leading-8 text-muted-foreground">
-                Values are not decoration here. They shape how we scope, communicate, build, and support each engagement.
+              <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
+                They shape how we scope, communicate, build, and support every engagement.
               </p>
             </FadeIn>
 
@@ -231,7 +231,7 @@ export default function AboutPage() {
                 {values.map((value, index) => (
                   <article
                     key={value.title}
-                    className="grid gap-4 border-b border-border p-5 last:border-b-0 md:grid-cols-[64px_220px_1fr_132px] md:items-center"
+                    className="grid gap-3 border-b border-border p-4 last:border-b-0 md:grid-cols-[64px_220px_1fr_132px] md:items-center md:gap-4 md:p-5"
                   >
                     <div className="flex h-12 w-12 items-center justify-center rounded-md border border-[var(--ledger-line)] bg-background text-primary">
                       <value.icon className="h-5 w-5" />
