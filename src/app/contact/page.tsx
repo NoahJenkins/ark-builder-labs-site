@@ -99,8 +99,8 @@ export default function ContactPage() {
 
               <div className="mt-8 grid gap-3 sm:max-w-xl">
                 {contactNotes.map((note) => (
-                  <div key={note.label} className="grid grid-cols-[2.75rem_1fr] items-start gap-3 rounded-lg border border-[var(--ledger-line)]/45 bg-card/65 p-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <div key={note.label} className="grid min-h-16 grid-cols-[2.75rem_1fr] items-center gap-3 rounded-lg border border-[var(--ledger-line)]/45 bg-card/70 p-3 shadow-sm">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary/10 text-primary" aria-hidden="true">
                       <note.icon className="h-4 w-4" />
                     </span>
                     <span>
@@ -166,9 +166,9 @@ export default function ContactPage() {
             </FadeIn>
 
             <FadeIn direction="up" delay={0.1}>
-              <div className="rounded-xl border border-[oklch(95%_0.008_85_/_0.18)] bg-[oklch(95%_0.008_85_/_0.045)] p-5 md:p-6">
+              <div className="rounded-xl border border-[oklch(95%_0.008_85_/_0.18)] bg-[oklch(95%_0.008_85_/_0.045)] p-5 shadow-[0_18px_60px_oklch(12%_0.03_262_/_0.18)] md:p-6">
                 <div className="mb-5 flex items-center gap-3 border-b border-[oklch(95%_0.008_85_/_0.12)] pb-5">
-                  <MessageCircle className="h-5 w-5 text-[var(--field-amber)]" />
+                  <MessageCircle className="h-5 w-5 shrink-0 text-[var(--field-amber)]" aria-hidden="true" />
                   <div>
                     <p className="font-semibold text-[oklch(95%_0.008_85)]">What you can expect</p>
                     <p className="text-sm text-[oklch(95%_0.008_85_/_0.62)]">
@@ -179,7 +179,7 @@ export default function ContactPage() {
                 <ul className="grid gap-3">
                   {intakeStandards.map((standard) => (
                     <li key={standard} className="grid grid-cols-[1.75rem_1fr] gap-3 text-sm leading-6 text-[oklch(95%_0.008_85_/_0.75)]">
-                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--field-amber)]" />
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[var(--field-amber)]" aria-hidden="true" />
                       <span>{standard}</span>
                     </li>
                   ))}
@@ -209,7 +209,7 @@ export default function ContactPage() {
               <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
                 <div className="grid gap-3 border-b border-border bg-[var(--paper-warm)] p-4 sm:grid-cols-[1fr_auto] sm:items-center md:p-5">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary" aria-hidden="true">
                       <Calendar className="h-4 w-4" />
                     </span>
                     <div>
@@ -259,7 +259,7 @@ export default function ContactPage() {
             <FadeIn direction="up" delay={0.1}>
               <div className="divide-y divide-border rounded-xl border border-border bg-card/85">
                 {faqs.map((faq) => (
-                  <article key={faq.question} className="grid gap-3 p-5 md:grid-cols-[0.72fr_1.28fr] md:p-6">
+                  <article key={faq.question} className="grid gap-3 p-5 md:grid-cols-[0.72fr_1.28fr] md:gap-6 md:p-6">
                     <h3 className="text-lg font-semibold leading-snug text-foreground">
                       {faq.question}
                     </h3>

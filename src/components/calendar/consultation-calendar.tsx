@@ -27,7 +27,7 @@ export function ConsultationCalendar() {
         style={{
           width: "100%",
           height: "auto",
-          minHeight: "500px",
+          minHeight: "clamp(360px, 44vw, 500px)",
           overflow: "hidden"
         }}
         config={{

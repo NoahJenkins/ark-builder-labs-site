@@ -25,7 +25,6 @@ interface ContactFormProps {
 export function ContactForm({ className }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error' | 'rate-limit' | 'spam'>('idle')
-  
 
   const {
     register,
@@ -35,6 +34,11 @@ export function ContactForm({ className }: ContactFormProps) {
   } = useForm<ContactFormData & { _hp?: string }>()
 
   const onSubmit = async (data: ContactFormData) => {
+    if (data._hp) {
+      setSubmitStatus('spam')
+      return
+    }
+
     setIsSubmitting(true)
     setSubmitStatus('idle')
 
@@ -57,15 +61,16 @@ export function ContactForm({ className }: ContactFormProps) {
       }
     } catch {
       setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
     }
-    setIsSubmitting(false)
   }
 
   return (
     <section
       aria-labelledby="contact-intake-title"
       className={cn(
-        "relative overflow-hidden rounded-xl border border-[var(--ledger-line)]/45 bg-card/95 shadow-[0_24px_70px_oklch(24%_0.03_260_/_0.12)]",
+        "relative overflow-hidden rounded-xl border border-[var(--ledger-line)]/45 bg-card/95 shadow-[0_24px_70px_oklch(24%_0.03_260_/_0.11)]",
         className
       )}
     >
