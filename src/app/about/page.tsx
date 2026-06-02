@@ -99,7 +99,7 @@ export default function AboutPage() {
     <div className="min-h-screen bg-background">
       <section className="relative overflow-hidden border-b border-border bg-[var(--paper-warm)]">
         <div className="absolute inset-0 about-ledger-grid opacity-60" />
-        <div className="absolute inset-y-0 left-0 hidden w-[72px] border-r border-[var(--ledger-line)]/50 md:block">
+        <div className="absolute inset-y-0 left-0 hidden w-[72px] border-r border-[var(--ledger-line)]/50 lg:block">
           {Array.from({ length: 10 }).map((_, index) => (
             <div
               key={index}
@@ -156,10 +156,10 @@ export default function AboutPage() {
 
             <FadeIn direction="up" delay={0.12}>
               <div className="overflow-hidden rounded-xl border border-border bg-card/90 shadow-sm">
-                <div className="grid gap-3 border-b border-border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary md:grid-cols-[128px_1fr_128px]">
+                <div className="grid grid-cols-[128px_1fr] gap-3 border-b border-border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary lg:grid-cols-[128px_1fr_128px]">
                   <span>Origin</span>
                   <span>Field Notes</span>
-                  <span className="hidden md:block">Signal</span>
+                  <span className="hidden lg:block">Signal</span>
                 </div>
 
                 <div className="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
