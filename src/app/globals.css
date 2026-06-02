@@ -132,6 +132,13 @@ h1, h2, h3, h4, h5, h6 {
   background-size: 56px 56px;
 }
 
+.blog-ledger-grid {
+  background-image:
+    linear-gradient(to right, oklch(62% 0.105 246 / 0.11) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(62% 0.105 246 / 0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
 .about-season-mark {
   position: absolute;
   width: 5px;
