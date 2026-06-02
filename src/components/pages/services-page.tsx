@@ -14,7 +14,6 @@ import {
   Code2,
   Compass,
   MessageCircle,
-  Ruler,
 } from "lucide-react"
 
 const iconMap = {
@@ -28,16 +27,19 @@ const serviceNotes = {
     line: "Shape the product surface",
     outcome: "Launch-ready web and mobile experiences with a maintainable foundation.",
     plan: ["Interface and workflow planning", "Application buildout", "Testing and handoff"],
+    measure: "Product surface",
   },
   "cloud-engineering": {
     line: "Make the system reliable",
     outcome: "Infrastructure, deployment, and operations work that helps software hold up under use.",
     plan: ["Architecture review", "Secure deployment path", "Monitoring and cost visibility"],
+    measure: "Operating posture",
   },
   "ai-consulting": {
     line: "Automate with judgment",
     outcome: "AI workflows and agents designed around real business steps, review, and measurement.",
     plan: ["Workflow mapping", "Agent and integration design", "Evaluation and iteration"],
+    measure: "Workflow leverage",
   },
 } as const
 
@@ -174,23 +176,43 @@ export function ServicesPageContent() {
         </div>
       </section>
 
-      <section id="service-paths" className="border-b border-border bg-background py-12 md:py-20 lg:py-24">
+      <section id="service-paths" className="relative overflow-hidden border-b border-border bg-[var(--deep-navy)] py-12 text-[oklch(95%_0.008_85)] md:py-20 lg:py-24">
+        <div className="pointer-events-none absolute inset-x-0 -mt-12 h-px bg-[oklch(95%_0.008_85_/_0.16)]" aria-hidden="true" />
         <div className="container mx-auto px-4">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.3fr] lg:items-start">
+          <div className="grid gap-8 lg:grid-cols-[minmax(220px,0.74fr)_minmax(0,1.46fr)] lg:items-start">
             <FadeIn direction="up" className="lg:pl-20">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--field-amber)]">
                 Existing Services
               </p>
-              <h2 className="max-w-md font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight text-foreground md:text-[2.75rem]">
+              <h2 className="max-w-md font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight md:text-[2.75rem]">
                 Choose the right service path
               </h2>
-              <p className="mt-4 max-w-lg text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
+              <p className="mt-4 max-w-lg text-base leading-7 text-[oklch(95%_0.008_85_/_0.72)] md:text-lg md:leading-8">
                 Each path includes practical planning, direct implementation, and a clear next step for your team.
               </p>
+              <div className="mt-8 hidden max-w-sm rounded-lg border border-[oklch(95%_0.008_85_/_0.18)] bg-[oklch(95%_0.008_85_/_0.04)] p-4 lg:block">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[oklch(95%_0.008_85_/_0.52)]">
+                  Service plan format
+                </p>
+                <div className="mt-4 grid grid-cols-[auto_1fr] gap-x-3 gap-y-3 text-sm text-[oklch(95%_0.008_85_/_0.7)]">
+                  <span className="font-mono text-xs text-[var(--field-amber)]">01</span>
+                  <span>Define the working surface</span>
+                  <span className="font-mono text-xs text-[var(--field-amber)]">02</span>
+                  <span>Build the durable path</span>
+                  <span className="font-mono text-xs text-[var(--field-amber)]">03</span>
+                  <span>Leave the handoff clear</span>
+                </div>
+              </div>
             </FadeIn>
 
             <FadeIn direction="up" delay={0.1}>
-              <div className="overflow-hidden rounded-xl border border-border bg-card">
+              <div className="overflow-hidden rounded-xl border border-[oklch(95%_0.008_85_/_0.2)] bg-[oklch(22%_0.04_262)] shadow-[0_24px_70px_oklch(12%_0.03_262_/_0.28)]">
+                <div className="hidden border-b border-[oklch(95%_0.008_85_/_0.14)] bg-[oklch(95%_0.008_85_/_0.035)] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-[oklch(95%_0.008_85_/_0.54)] lg:grid lg:grid-cols-[84px_1fr_1fr_160px]">
+                  <span>Ref</span>
+                  <span>Service</span>
+                  <span>Plan</span>
+                  <span className="text-right">Next</span>
+                </div>
                 {SERVICES.map((service, index) => {
                   const Icon = iconMap[service.icon as keyof typeof iconMap]
                   const note = serviceNotes[service.id as keyof typeof serviceNotes]
@@ -199,53 +221,65 @@ export function ServicesPageContent() {
                     <article
                       key={service.id}
                       aria-label={`${service.title} service path`}
-                      className="grid gap-5 border-b border-border p-5 last:border-b-0 md:grid-cols-[64px_1fr] lg:grid-cols-[64px_minmax(210px,0.9fr)_minmax(250px,1.1fr)_176px] lg:items-start"
+                      className="group relative grid gap-5 border-b border-[oklch(95%_0.008_85_/_0.14)] p-5 last:border-b-0 sm:p-6 lg:grid-cols-[84px_minmax(220px,0.9fr)_minmax(290px,1.1fr)_150px] lg:items-start"
                     >
-                      <div className="flex h-12 w-12 items-center justify-center rounded-md border border-[var(--ledger-line)] bg-background text-primary">
-                        <Icon className="h-5 w-5" />
+                      <div className="flex items-start gap-3 lg:block">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-md border border-[oklch(66%_0.105_246_/_0.42)] bg-[oklch(18%_0.035_262)] text-[oklch(66%_0.105_246)] transition-colors duration-200 group-hover:border-[oklch(74%_0.11_85_/_0.7)] group-hover:text-[var(--field-amber)]">
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <p className="pt-1 font-mono text-xs text-[oklch(66%_0.105_246)] lg:mt-4 lg:pt-0">
+                          {String(index + 1).padStart(2, "0")}
+                        </p>
                       </div>
 
                       <div>
-                        <p className="font-mono text-xs text-primary">
-                          {String(index + 1).padStart(2, "0")}
+                        <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.16em] text-[oklch(95%_0.008_85_/_0.5)]">
+                          {note.measure}
                         </p>
-                        <h3 className="mt-1 text-xl font-semibold leading-tight text-foreground">
+                        <h3 className="max-w-[13rem] text-[1.35rem] font-semibold leading-tight text-[oklch(95%_0.008_85)]">
                           {service.title}
                         </h3>
-                        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+                        <p className="mt-4 max-w-[31ch] text-sm leading-7 text-[oklch(95%_0.008_85_/_0.68)]">
                           {service.description}
                         </p>
                       </div>
 
-                      <div className="md:col-start-2 lg:col-start-auto">
-                        <h4 className="text-sm font-semibold text-foreground">{note.line}</h4>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">{note.outcome}</p>
+                      <div>
+                        <h4 className="text-sm font-semibold text-[oklch(95%_0.008_85)]">{note.line}</h4>
+                        <p className="mt-2 max-w-[42ch] text-sm leading-6 text-[oklch(95%_0.008_85_/_0.68)]">{note.outcome}</p>
 
-                        <ul className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-3 lg:grid-cols-1">
-                          {note.plan.map((item) => (
-                            <li key={item} className="flex gap-2">
-                              <Ruler className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                        <ol className="mt-5 grid gap-2.5 text-sm text-[oklch(95%_0.008_85_/_0.72)]">
+                          {note.plan.map((item, planIndex) => (
+                            <li key={item} className="grid grid-cols-[1.75rem_1fr] items-start gap-2">
+                              <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[oklch(66%_0.105_246_/_0.38)] font-mono text-[10px] text-[oklch(66%_0.105_246)]">
+                                {planIndex + 1}
+                              </span>
                               <span>{item}</span>
                             </li>
                           ))}
-                        </ul>
+                        </ol>
 
-                        <div className="mt-5 flex flex-wrap gap-2">
+                        <div className="mt-5 flex flex-wrap gap-2" aria-label={`${service.title} technologies`}>
                           {service.technologies.slice(0, 5).map((tech) => (
-                            <Badge key={tech} variant="secondary" className="border border-border bg-background">
+                            <Badge
+                              key={tech}
+                              variant="secondary"
+                              className="border border-[oklch(66%_0.105_246_/_0.28)] bg-[oklch(18%_0.035_262)] text-[oklch(95%_0.008_85_/_0.82)]"
+                            >
                               {tech}
                             </Badge>
                           ))}
                         </div>
                       </div>
 
-                      <div className="flex items-start md:col-start-2 lg:col-start-auto lg:justify-end">
+                      <div className="flex items-start lg:justify-end">
                         <Link
                           href={`/services/${encodePathSegment(service.id)}`}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-primary px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          aria-label={`Learn more about ${service.title}`}
+                          className="inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-[oklch(66%_0.105_246_/_0.42)] px-4 py-3 text-sm font-medium text-[oklch(66%_0.105_246)] transition-colors duration-200 hover:border-[var(--field-amber)] hover:bg-[oklch(95%_0.008_85_/_0.08)] hover:text-[var(--field-amber)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--field-amber)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--deep-navy)] lg:max-w-[150px]"
                         >
-                          Learn more about {service.title}
-                          <ArrowRight className="h-4 w-4" />
+                          <span>Open path</span>
+                          <ArrowRight className="h-4 w-4 shrink-0" />
                         </Link>
                       </div>
                     </article>
