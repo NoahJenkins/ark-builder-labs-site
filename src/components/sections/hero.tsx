@@ -33,16 +33,19 @@ const serviceNotes = {
   "web-mobile": {
     line: "Build fast, ship with confidence.",
     description: "Custom web and mobile apps that are maintainable, scalable, and built for your users.",
+    focus: ["Responsive product surface", "Launch-ready handoff"],
     stamp: "ready to build",
   },
   "cloud-engineering": {
     line: "Run securely. Scale reliably.",
     description: "Cloud infrastructure and DevOps practices that improve performance, security, and resilience.",
+    focus: ["Reliable deployment path", "Operational visibility"],
     stamp: "ready to scale",
   },
   "ai-consulting": {
     line: "Automate with purpose.",
     description: "AI-powered workflows and agents that streamline operations and create real business value.",
+    focus: ["Human-reviewed automation", "Measurable workflow lift"],
     stamp: "ready to improve",
   },
 } as const
@@ -50,47 +53,58 @@ const serviceNotes = {
 const topologyScenes = {
   "web-mobile": {
     paths: [
-      "M73 44 H112",
-      "M172 44 H216",
-      "M145 67 V95",
-      "M74 118 H105",
-      "M191 118 H224 V72",
+      "M63 36 H88",
+      "M63 101 H88",
+      "M148 36 H196",
+      "M148 66 V88 H107",
+      "M148 66 H196 V98",
+      "M121 123 H190",
     ],
     nodes: [
-      { label: "Web / Mobile", icon: "phone", x: 8, y: 18, width: 76 },
-      { label: "API", icon: "server", x: 116, y: 18, width: 60 },
-      { label: "Database", icon: "database", x: 220, y: 18, width: 74 },
-      { label: "Auth Service", icon: "lock", x: 108, y: 96, width: 92 },
+      { label: "Web App", detail: "Next.js", icon: "phone", x: 6, y: 14, width: 58 },
+      { label: "Mobile", detail: "Expo", icon: "phone", x: 6, y: 80, width: 58 },
+      { label: "API", detail: "Node routes", icon: "server", x: 88, y: 42, width: 62 },
+      { label: "Auth", detail: "Sessions", icon: "lock", x: 84, y: 105, width: 72 },
+      { label: "Data", detail: "Records", icon: "database", x: 198, y: 14, width: 72 },
+      { label: "Files", detail: "CMS", icon: "storage", x: 196, y: 92, width: 80 },
     ],
   },
   "cloud-engineering": {
     paths: [
-      "M74 44 H104",
-      "M188 44 H216",
-      "M146 67 V88 H78 V96",
-      "M256 67 V88 H226 V96",
+      "M55 34 H76",
+      "M133 34 H160",
+      "M218 34 H238",
+      "M105 58 V78 H69 V88",
+      "M188 58 V78 H224 V88",
+      "M188 58 V102 H118",
     ],
     nodes: [
-      { label: "Users", icon: "users", x: 8, y: 18, width: 76 },
-      { label: "Load Balancer", icon: "server", x: 108, y: 18, width: 84 },
-      { label: "App Services", icon: "cloud", x: 216, y: 18, width: 84 },
-      { label: "Object Storage", icon: "storage", x: 34, y: 96, width: 94 },
-      { label: "Monitoring", icon: "chart", x: 196, y: 96, width: 88 },
+      { label: "Users", detail: "Traffic", icon: "users", x: 8, y: 14, width: 58 },
+      { label: "Edge", detail: "WAF", icon: "lock", x: 76, y: 14, width: 58 },
+      { label: "Load Balancer", detail: "Routing", icon: "server", x: 144, y: 14, width: 76 },
+      { label: "App", detail: "Runtime", icon: "cloud", x: 238, y: 14, width: 62 },
+      { label: "Object", detail: "Store", icon: "storage", x: 34, y: 88, width: 76 },
+      { label: "CI / CD", detail: "Deploys", icon: "cog", x: 116, y: 104, width: 64 },
+      { label: "Monitor", detail: "Logs", icon: "chart", x: 206, y: 88, width: 82 },
     ],
   },
   "ai-consulting": {
     paths: [
-      "M86 44 H118",
-      "M182 44 H220",
-      "M150 67 V88 H82 V96",
-      "M150 67 V88 H220 V96",
+      "M78 34 H92",
+      "M152 34 H170",
+      "M236 34 H240",
+      "M122 58 V84 H73 V102",
+      "M194 58 V94 H164 V106",
+      "M214 58 V86 H255 V102",
     ],
     nodes: [
-      { label: "Data Sources", icon: "database", x: 8, y: 18, width: 88 },
-      { label: "AI / Agent", icon: "bot", x: 122, y: 18, width: 64 },
-      { label: "Actions", icon: "cog", x: 224, y: 18, width: 68 },
-      { label: "Vector Store", icon: "storage", x: 44, y: 96, width: 92 },
-      { label: "Observability", icon: "chart", x: 188, y: 96, width: 102 },
+      { label: "Inputs", detail: "Docs + apps", icon: "database", x: 8, y: 14, width: 70 },
+      { label: "Router", detail: "Rules", icon: "server", x: 92, y: 14, width: 60 },
+      { label: "AI Agent", detail: "Tools", icon: "bot", x: 170, y: 14, width: 66 },
+      { label: "Tasks", detail: "Actions", icon: "cog", x: 240, y: 14, width: 60 },
+      { label: "Vector DB", detail: "Memory", icon: "storage", x: 34, y: 102, width: 78 },
+      { label: "Review", detail: "Approval", icon: "users", x: 126, y: 106, width: 76 },
+      { label: "Telemetry", detail: "Evals + logs", icon: "chart", x: 212, y: 102, width: 86 },
     ],
   },
 } as const
@@ -201,9 +215,9 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div>
             <div id="service-ledger" className="rounded-xl border border-border bg-card/90 shadow-sm">
-              <div className="grid grid-cols-[140px_minmax(160px,1fr)_300px_68px] border-b border-border px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary max-lg:hidden">
+              <div className="grid grid-cols-[136px_minmax(150px,1fr)_280px_60px] border-b border-border px-6 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary max-lg:hidden">
                 <span>Path</span>
                 <span>What it solves</span>
                 <span>Topology sketch</span>
@@ -217,13 +231,15 @@ export function HeroSection() {
                 return (
                   <article
                     key={service.id}
-                    className="grid gap-4 border-b border-border p-5 last:border-b-0 lg:grid-cols-[140px_minmax(160px,1fr)_300px_68px]"
+                    className="grid gap-5 border-b border-border p-6 last:border-b-0 lg:min-h-[340px] lg:grid-cols-[136px_minmax(150px,1fr)_280px_60px] lg:items-stretch"
                   >
-                    <div className="flex gap-4 lg:block">
-                      <span className="font-mono text-sm text-primary">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <div className="mt-0 flex items-start gap-3 lg:mt-5 lg:block">
+                    <div className="flex gap-4 lg:flex lg:h-full lg:flex-col">
+                      <div>
+                        <span className="font-mono text-sm text-primary">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <div className="mt-0 flex items-start gap-3 lg:mt-4 lg:block">
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-[var(--ledger-line)] bg-background text-primary lg:mb-3">
                           <Icon className="h-6 w-6" />
                         </div>
@@ -231,40 +247,56 @@ export function HeroSection() {
                           {service.title}
                         </h2>
                       </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-base font-semibold text-foreground">{note.line}</h3>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        {note.description}
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {service.technologies.slice(0, 4).map((tech) => (
-                          <Badge key={tech} variant="secondary" className="border border-border bg-background">
-                            {tech}
-                          </Badge>
-                        ))}
+                      <div className="mt-auto hidden border-t border-[var(--ledger-line)]/60 pt-3 font-mono text-[10px] uppercase tracking-[0.14em] text-primary/75 lg:block">
+                        Path {String(index + 1).padStart(2, "0")}
                       </div>
                     </div>
 
-                    <TopologySketch serviceId={service.id as keyof typeof topologyScenes} />
+                    <div className="flex h-full flex-col">
+                      <div>
+                        <h3 className="text-base font-semibold text-foreground">{note.line}</h3>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          {note.description}
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {service.technologies.slice(0, 4).map((tech) => (
+                            <Badge key={tech} variant="secondary" className="border border-border bg-background">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
 
-                    <Link
-                      href={`/services/${encodePathSegment(service.id)}`}
-                      className="flex h-14 w-14 rotate-[-8deg] items-center justify-center rounded-full border border-success/70 text-center font-[family-name:var(--font-ledger)] text-[9px] font-semibold uppercase leading-3 text-success transition-transform hover:rotate-0"
-                    >
-                      {note.stamp}
-                    </Link>
+                      <div className="mt-6 border-t border-[var(--ledger-line)]/70 pt-3 lg:mt-auto">
+                        <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-primary">
+                          Stewardship focus
+                        </p>
+                        <ul className="space-y-1.5 text-xs leading-5 text-muted-foreground">
+                          {note.focus.map((item) => (
+                            <li key={item} className="flex gap-2">
+                              <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="flex h-full items-center">
+                      <TopologySketch serviceId={service.id as keyof typeof topologyScenes} />
+                    </div>
+
+                    <div className="flex lg:justify-center">
+                      <Link
+                        href={`/services/${encodePathSegment(service.id)}`}
+                        className="flex h-[3.25rem] w-[3.25rem] rotate-[-8deg] items-center justify-center rounded-full border border-success/70 text-center font-[family-name:var(--font-ledger)] text-[8px] font-semibold uppercase leading-[0.7rem] text-success transition-transform hover:rotate-0 lg:mt-1"
+                      >
+                        {note.stamp}
+                      </Link>
+                    </div>
                   </article>
                 )
               })}
-            </div>
-
-            <div className="ml-auto hidden max-w-sm border-t border-[var(--ledger-line)]/70 pt-5 text-primary xl:block">
-              <p className="mb-3 font-[family-name:var(--font-ledger)] text-base italic leading-6 text-muted-foreground">
-                Good systems are designed to endure changing conditions.
-              </p>
-              <SeasonalFieldSketch />
             </div>
           </div>
         </div>
@@ -333,9 +365,10 @@ function TopologySketch({ serviceId }: { serviceId: keyof typeof topologyScenes 
   const scene = topologyScenes[serviceId]
 
   return (
-    <div className="relative min-h-[10rem] overflow-hidden rounded-lg border border-[var(--ledger-line)] bg-background/70 p-3">
+    <div className="relative min-h-[14.5rem] w-full overflow-hidden rounded-lg border border-[var(--ledger-line)] bg-background/80 p-4 shadow-[inset_0_1px_0_oklch(98%_0.006_85_/_0.45)]">
+      <div className="absolute inset-0 topology-grid opacity-70" />
       <svg
-        className="absolute inset-3 h-[calc(100%-1.5rem)] w-[calc(100%-1.5rem)] text-primary/55"
+        className="absolute inset-4 h-[calc(100%-2rem)] w-[calc(100%-2rem)] text-primary/55"
         viewBox="0 0 300 150"
         fill="none"
         aria-hidden="true"
@@ -365,7 +398,7 @@ function TopologySketch({ serviceId }: { serviceId: keyof typeof topologyScenes 
         ))}
       </svg>
 
-      <div className="relative h-[150px] w-full">
+      <div className="relative h-[214px] w-full">
         {scene.nodes.map((node) => {
           const Icon = topologyIconMap[node.icon]
 
@@ -379,62 +412,25 @@ function TopologySketch({ serviceId }: { serviceId: keyof typeof topologyScenes 
                 width: `${(node.width / 300) * 100}%`,
               }}
             >
-              <Icon className="mx-auto h-4 w-4 text-primary" />
-              <span className="mt-1 block text-[11px] font-semibold leading-3 text-foreground">
+              <Icon className="mx-auto h-3.5 w-3.5 text-primary" />
+              <span className="mt-1 block text-[10px] font-semibold leading-[0.7rem] text-foreground">
                 {node.label}
+              </span>
+              <span className="mt-0.5 block text-[8px] font-medium leading-[0.6rem] text-muted-foreground">
+                {node.detail}
               </span>
             </div>
           )
         })}
       </div>
+      <style jsx>{`
+        .topology-grid {
+          background-image:
+            linear-gradient(to right, oklch(62% 0.105 246 / 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, oklch(62% 0.105 246 / 0.06) 1px, transparent 1px);
+          background-size: 48px 48px;
+        }
+      `}</style>
     </div>
-  )
-}
-
-function SeasonalFieldSketch() {
-  return (
-    <svg
-      className="h-28 w-full text-primary/70"
-      viewBox="0 0 360 128"
-      fill="none"
-      role="img"
-      aria-label="Field sketch of a long-range software plan"
-    >
-      <path
-        d="M14 88H338M42 104H294M68 38L114 82L142 58L196 102L236 70L320 110"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1.4"
-      />
-      <path
-        d="M112 82L132 104M196 102L212 116M236 70L252 104"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1"
-        opacity="0.55"
-      />
-      <path
-        d="M76 86C72 76 72 64 80 54C88 66 89 78 84 90M92 92C88 84 89 74 96 66C102 76 103 86 98 96M264 88C260 78 260 67 268 58C276 69 277 80 272 92"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1"
-        opacity="0.75"
-      />
-      <path
-        d="M16 18H338M16 42H338M16 66H338M16 90H338M52 8V118M116 8V118M180 8V118M244 8V118M308 8V118"
-        stroke="currentColor"
-        strokeWidth="0.7"
-        opacity="0.2"
-      />
-      <path
-        d="M62 112C110 120 176 120 240 112"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.2"
-        opacity="0.7"
-      />
-    </svg>
   )
 }
