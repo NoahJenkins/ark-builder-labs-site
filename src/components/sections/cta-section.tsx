@@ -58,9 +58,14 @@ export function CTASection() {
                 </li>
               ))}
             </ul>
-            <p className="mt-8 font-[family-name:var(--font-ledger)] text-lg italic leading-7 text-primary">
-              Every project starts with listening. Every system ships with clarity.
-            </p>
+            <div className="mt-8 border-t border-[var(--ledger-line)] pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                Working standard
+              </p>
+              <p className="text-sm font-medium leading-6 text-foreground">
+                Every project starts with listening. Every system ships with clarity.
+              </p>
+            </div>
           </aside>
         </div>
       </div>
