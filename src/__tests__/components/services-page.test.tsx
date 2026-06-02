@@ -41,4 +41,12 @@ describe('ServicesPageContent', () => {
       '/contact'
     )
   })
+
+  it('exposes the major services page sections as named landmarks', () => {
+    render(<ServicesPageContent />)
+
+    expect(screen.getByRole('region', { name: /service blueprint overview/i })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /service paths/i })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /next step/i })).toBeInTheDocument()
+  })
 })
