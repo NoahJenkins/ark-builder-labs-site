@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SERVICES } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 import { Send, CheckCircle, AlertCircle } from "lucide-react"
 
 interface ContactFormData {
@@ -18,9 +18,11 @@ interface ContactFormData {
   _hp?: string // honeypot field for spam protection
 }
 
+interface ContactFormProps {
+  className?: string
+}
 
-
-export function ContactForm() {
+export function ContactForm({ className }: ContactFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error' | 'rate-limit' | 'spam'>('idle')
   
@@ -60,28 +62,43 @@ export function ContactForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl text-center">Get in Touch</CardTitle>
-        <p className="text-muted-foreground text-center">
-          Tell us about your project and we'll get back to you within 24 hours.
+    <section
+      aria-labelledby="contact-intake-title"
+      className={cn(
+        "relative overflow-hidden rounded-xl border border-[var(--ledger-line)]/45 bg-card/95 shadow-[0_24px_70px_oklch(24%_0.03_260_/_0.12)]",
+        className
+      )}
+    >
+      <div className="absolute inset-x-0 top-0 h-1 bg-[var(--field-amber)]" aria-hidden="true" />
+      <div className="border-b border-border bg-[var(--paper-warm)] px-5 py-4 md:px-6">
+        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary">
+          Intake note
         </p>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 id="contact-intake-title" className="mt-3 font-[family-name:var(--font-ledger)] text-3xl font-semibold leading-tight text-foreground md:text-4xl">
+          Tell us about the work.
+        </h2>
+        <p className="mt-3 max-w-[58ch] text-sm leading-6 text-muted-foreground md:text-base md:leading-7">
+          Share the goal, the current constraint, and the practical next step you need help choosing.
+        </p>
+      </div>
+
+      <div className="p-5 md:p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
-                Name *
+                Your name *
               </label>
               <Input
                 id="name"
                 {...register("name", { required: "Name is required" })}
-                placeholder="Your full name"
+                placeholder="Jane Smith"
+                aria-invalid={errors.name ? "true" : "false"}
+                aria-describedby={errors.name ? "name-error" : undefined}
                 className={errors.name ? "border-destructive" : ""}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p id="name-error" className="text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
@@ -99,11 +116,13 @@ export function ContactForm() {
                     message: "Invalid email address"
                   }
                 })}
-                placeholder="your@email.com"
+                placeholder="jane@company.com"
+                aria-invalid={errors.email ? "true" : "false"}
+                aria-describedby={errors.email ? "email-error" : undefined}
                 className={errors.email ? "border-destructive" : ""}
               />
               {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+                <p id="email-error" className="text-sm text-destructive">{errors.email.message}</p>
               )}
             </div>
           </div>
@@ -115,20 +134,25 @@ export function ContactForm() {
             <Input
               id="company"
               {...register("company")}
-              placeholder="Your company name (optional)"
+              placeholder="Company or organization"
             />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="service" className="text-sm font-medium">
-              Service Interest *
+              Service path *
             </label>
             <select
               id="service"
               {...register("service", { required: "Please select a service" })}
-              className="w-full h-10 px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              aria-invalid={errors.service ? "true" : "false"}
+              aria-describedby={errors.service ? "service-error" : undefined}
+              className={cn(
+                "h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                errors.service && "border-destructive"
+              )}
             >
-              <option value="">Select a service</option>
+              <option value="">Choose the closest path</option>
               {SERVICES.map((service) => (
                 <option key={service.id} value={service.id}>
                   {service.title}
@@ -137,74 +161,93 @@ export function ContactForm() {
               <option value="general">General Inquiry</option>
             </select>
             {errors.service && (
-              <p className="text-sm text-destructive">{errors.service.message}</p>
+              <p id="service-error" className="text-sm text-destructive">{errors.service.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
             <label htmlFor="message" className="text-sm font-medium">
-              Message *
+              Project note *
             </label>
             <Textarea
               id="message"
               {...register("message", { required: "Message is required" })}
-              placeholder="Tell us about your project, timeline, and any specific requirements..."
-              rows={6}
+              placeholder="What are you trying to build, repair, automate, or decide?"
+              rows={7}
+              aria-invalid={errors.message ? "true" : "false"}
+              aria-describedby={errors.message ? "message-error" : "message-help"}
               className={errors.message ? "border-destructive" : ""}
             />
+            <p id="message-help" className="text-xs leading-5 text-muted-foreground">
+              Helpful context: goal, timeline, current tools, and what a good outcome would change.
+            </p>
             {errors.message && (
-              <p className="text-sm text-destructive">{errors.message.message}</p>
+              <p id="message-error" className="text-sm text-destructive">{errors.message.message}</p>
             )}
           </div>
 
+          <input
+            aria-hidden="true"
+            tabIndex={-1}
+            autoComplete="off"
+            className="sr-only"
+            {...register("_hp")}
+          />
+
           {submitStatus === 'success' && (
-            <div className="flex items-center space-x-2 p-4 bg-success/10 border border-success/20 rounded-lg">
+            <div role="status" className="flex items-start gap-3 rounded-lg border border-success/25 bg-success/10 p-4">
               <CheckCircle className="h-5 w-5 text-success" />
-              <p className="text-success">Thank you! We'll get back to you within 24 hours.</p>
+              <p className="text-sm leading-6 text-success">
+                Thank you. We will read the note and respond within 24 hours.
+              </p>
             </div>
           )}
 
           {submitStatus === 'error' && (
-            <div className="flex items-center space-x-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4">
               <AlertCircle className="h-5 w-5 text-destructive" />
-              <p className="text-destructive">Something went wrong. Please try again or email us directly.</p>
+              <p className="text-sm leading-6 text-destructive">
+                Something went wrong. Please try again, or email us directly.
+              </p>
             </div>
           )}
 
           {submitStatus === 'rate-limit' && (
-            <div className="flex items-center space-x-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+            <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/10 p-4">
               <AlertCircle className="h-5 w-5 text-destructive" />
-              <p className="text-destructive">Rate limit exceeded</p>
+              <p className="text-sm leading-6 text-destructive">
+                Too many submissions were sent recently. Please wait a few minutes and try again.
+              </p>
             </div>
           )}
 
           <Button 
             type="submit" 
-            className="w-full" 
+            className="h-12 w-full"
             disabled={isSubmitting}
             size="lg"
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                <div className="mr-2 h-4 w-4 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin" />
                 Sending...
               </>
             ) : (
               <>
-                <Send className="h-4 w-4 mr-2" />
-                Send Message
+                <Send className="mr-2 h-4 w-4" />
+                Send project note
               </>
             )}
           </Button>
 
-          <p className="text-sm text-muted-foreground text-center">
-            Or email us directly at{" "}
-            <a href="mailto:contact@arkbuilderlabs.com" className="text-primary hover:underline">
+          <p className="text-center text-sm leading-6 text-muted-foreground">
+            Prefer email? Write directly to{" "}
+            <a href="mailto:contact@arkbuilderlabs.com" className="font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
               contact@arkbuilderlabs.com
             </a>
           </p>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
