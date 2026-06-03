@@ -1,74 +1,87 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Calendar, CheckCircle2, Mail, MessageCircle } from "lucide-react"
+import { FadeIn } from "@/components/animations/fade-in"
+import { ArrowRight, MessageCircle, Calendar } from "lucide-react"
 import Link from "next/link"
-
-const outcomes = [
-  "Free consultation",
-  "Response within 24 hours",
-  "Custom plan for your context",
-] as const
 
 export function CTASection() {
   return (
-    <section className="bg-[var(--paper-warm)] py-16 md:py-24">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto grid max-w-6xl gap-8 rounded-xl border border-border bg-card p-6 shadow-sm md:grid-cols-[1.1fr_0.9fr] md:p-10">
-          <div>
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-              Ready to build
-            </p>
-            <h2 className="font-[family-name:var(--font-ledger)] text-4xl font-semibold leading-tight text-foreground md:text-5xl">
-              Bring the plan. We will help make it durable.
+    <section className="py-20 md:py-32 relative overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      
+      <div className="container mx-auto px-4 relative">
+        <div className="max-w-4xl mx-auto text-center">
+          <FadeIn direction="up">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Ready to Build Your Next <span className="gradient-text">Project</span>?
             </h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-              Tell us what you are trying to build, repair, automate, or steward. We will help you find the practical next step.
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Let's discuss how we can help transform your ideas into powerful, scalable solutions 
+              that drive your business forward.
             </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Button size="lg" asChild>
-                <Link href="/contact" className="inline-flex items-center gap-2">
+          </FadeIn>
+
+          <FadeIn direction="up" delay={0.2}>
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
+              <Button size="lg" className="text-base min-w-[200px]" asChild>
+                <Link href="/contact" className="inline-flex items-center space-x-2">
                   <MessageCircle className="h-4 w-4" />
-                  Start a Conversation
+                  <span>Start a Conversation</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/contact#calendar" className="inline-flex items-center gap-2">
+              <Button size="lg" variant="secondary" className="text-base min-w-[200px]" asChild>
+                <Link href="/contact#calendar" className="inline-flex items-center space-x-2">
                   <Calendar className="h-4 w-4" />
-                  Schedule a Call
+                  <span>Schedule a Call</span>
                 </Link>
               </Button>
             </div>
-          </div>
+          </FadeIn>
 
-          <aside className="rounded-lg border border-[var(--ledger-line)] bg-background p-5">
-            <div className="mb-5 flex items-center gap-3 border-b border-border pb-4">
-              <Mail className="h-5 w-5 text-primary" />
-              <div>
-                <p className="font-semibold text-foreground">Handoff starts with a conversation</p>
-                <p className="text-sm text-muted-foreground">contact@arkbuilderlabs.com</p>
+          <FadeIn direction="up" delay={0.3}>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+              <div className="space-y-2">
+                <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 rounded-full bg-success" />
+                </div>
+                <h3 className="font-semibold">Free Consultation</h3>
+                <p className="text-sm text-muted-foreground">
+                  No-obligation discussion about your project needs
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 rounded-full bg-warning" />
+                </div>
+                <h3 className="font-semibold">Quick Response</h3>
+                <p className="text-sm text-muted-foreground">
+                  We'll get back to you within 24 hours
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 rounded-full bg-primary" />
+                </div>
+                <h3 className="font-semibold">Custom Solutions</h3>
+                <p className="text-sm text-muted-foreground">
+                  Tailored approach for your unique requirements
+                </p>
               </div>
             </div>
-            <ul className="space-y-3">
-              {outcomes.map((outcome) => (
-                <li key={outcome} className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-success" />
-                  {outcome}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8 border-t border-[var(--ledger-line)] pt-4">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                Working standard
-              </p>
-              <p className="text-sm font-medium leading-6 text-foreground">
-                Every project starts with listening. Every system ships with clarity.
-              </p>
-            </div>
-          </aside>
+          </FadeIn>
         </div>
       </div>
+
+      <style jsx>{`
+        .bg-grid-pattern {
+          background-image: radial-gradient(circle at 1px 1px, rgb(156 163 175 / 0.15) 1px, transparent 0);
+          background-size: 20px 20px;
+        }
+      `}</style>
     </section>
   )
 }

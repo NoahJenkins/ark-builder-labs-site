@@ -8,13 +8,6 @@ import { NAVIGATION_ITEMS, SITE_CONFIG } from "@/lib/constants"
 import { motion, AnimatePresence } from "framer-motion"
 import { createPortal } from "react-dom"
 
-const socialLabels = {
-  linkedin: "LinkedIn",
-  twitter: "Twitter",
-  instagram: "Instagram",
-  facebook: "Facebook",
-} as const
-
 export function MobileNavigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
@@ -89,7 +82,7 @@ export function MobileNavigation() {
                   right: 0,
                   top: 0,
                   height: '100vh',
-                  width: 'min(20rem, 100vw)',
+                  width: '16rem',
                   background: isDarkMode ? '#1A2332' : '#ffffff',
                   borderLeft: isDarkMode ? '1px solid #374151' : '1px solid #e5e7eb',
                   boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
@@ -104,7 +97,7 @@ export function MobileNavigation() {
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsOpen(false)}
-                    className="h-11 w-11"
+                    className="h-8 w-8"
                     style={{
                       color: isDarkMode ? '#ffffff' : '#000000'
                     }}
@@ -146,17 +139,17 @@ export function MobileNavigation() {
                   >
                     Connect with us
                   </p>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                  <div className="flex space-x-4">
                     {Object.entries(SITE_CONFIG.social).map(([platform, url]) => (
                       <Link 
                         key={platform}
                         href={url}
-                        className="min-h-11 transition-colors"
+                        className="transition-colors capitalize"
                         style={{
                           color: isDarkMode ? '#9CA3AF' : '#6B7280'
                         }}
                       >
-                        {socialLabels[platform as keyof typeof socialLabels]}
+                        {platform}
                       </Link>
                     ))}
                   </div>

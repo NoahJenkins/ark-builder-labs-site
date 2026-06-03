@@ -1,135 +1,74 @@
 "use client"
 
-import { Binoculars, CheckSquare, Leaf, Wrench } from "lucide-react"
+import { FadeIn } from "@/components/animations/fade-in"
+import { StaggerChildren } from "@/components/animations/stagger-children"
+import { Award, Target, Cloud, Lock } from "lucide-react"
 
-const process = [
+const stats = [
   {
-    icon: Binoculars,
-    season: "Discover",
-    title: "Listen first",
-    description: "Understand the goal, constraints, context, and what success should look like.",
+    icon: Award,
+    value: "3+",
+    label: "Years of Excellence",
+    description: "Delivering quality software solutions"
   },
   {
-    icon: Wrench,
-    season: "Build",
-    title: "Craft with care",
-    description: "Design and build secure, testable systems that can evolve with the business.",
+    icon: Lock,
+    value: "Security",
+    label: "First Design",
+    description: "We build with security in the front of our mind"
   },
   {
-    icon: CheckSquare,
-    season: "Handoff",
-    title: "Deliver clearly",
-    description: "Ship with documentation, training, and support paths your team can use.",
+    icon: Cloud,
+    value: "Multi Cloud",
+    label: "Certified Partner",
+    description: "We are certified with Microsoft, Amazon, GitHub, and more!"
   },
   {
-    icon: Leaf,
-    season: "Steward",
-    title: "Improve over time",
-    description: "Measure what matters, respond to change, and keep the system useful.",
-  },
-] as const
+    icon: Target,
+    value: "100%",
+    label: "Success Rate",
+    description: "Meeting deadlines and expectations"
+  }
+]
 
 export function StatsSection() {
   return (
-    <section className="relative overflow-hidden bg-[var(--deep-navy)] py-14 text-[oklch(95%_0.008_85)] md:py-24">
-      <div className="absolute inset-0 blueprint-grid opacity-45" />
-      <ProcessFieldSketch />
-
-      <div className="container relative mx-auto px-4">
-        <div className="grid gap-9 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
-          <div className="lg:pl-20">
-            <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--field-amber)]">
-              Our Process
-            </p>
-            <h2 className="max-w-[12ch] font-[family-name:var(--font-ledger)] text-[2.15rem] font-semibold leading-[1.08] sm:max-w-none sm:text-4xl md:text-5xl md:leading-tight">
-              A steady path, from idea to enduring impact
+    <section className="py-20 md:py-32 bg-gradient-to-br from-primary to-accent text-white relative overflow-hidden">
+      <div className="absolute inset-0 bg-black/10" />
+      <div className="absolute top-0 left-0 w-full h-full opacity-10">
+        <div className="absolute top-10 left-10 w-20 h-20 rounded-full border border-white/20" />
+        <div className="absolute bottom-10 right-10 w-32 h-32 rounded-full border border-white/20" />
+        <div className="absolute top-1/3 right-1/4 w-16 h-16 rounded-full border border-white/20" />
+      </div>
+      
+      <div className="container mx-auto px-4 relative">
+        <div className="max-w-6xl mx-auto">
+          <FadeIn direction="up" className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+              Why Choose <span className="text-white/90">Ark Builder Labs</span>?
             </h2>
-            <p className="mt-5 max-w-md text-base leading-7 text-[oklch(95%_0.008_85_/_0.75)] md:text-lg md:leading-8">
-              Software for every season means clear steps, honest communication, and long-term care when the weather changes.
+            <p className="text-lg text-white/80 max-w-2xl mx-auto">
+              We bring experience, dedication, and results to every project we undertake.
             </p>
-          </div>
+          </FadeIn>
 
-          <div className="grid gap-0 md:grid-cols-4 md:gap-6">
-            {process.map((step, index) => (
-              <article
-                key={step.season}
-                className="relative grid grid-cols-[3.25rem_1fr] gap-x-4 pb-7 last:pb-0 md:block md:pb-0"
+          <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                className="text-center group"
               >
-                {index < process.length - 1 && (
-                  <>
-                    <div className="absolute left-6 top-12 h-[calc(100%-2.5rem)] border-l border-dashed border-[oklch(95%_0.008_85_/_0.32)] md:hidden" />
-                    <div className="absolute left-[3rem] top-8 hidden h-px w-[calc(100%-2rem)] border-t border-dashed border-[oklch(95%_0.008_85_/_0.35)] md:block" />
-                  </>
-                )}
-                <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full border border-[oklch(95%_0.008_85_/_0.7)] bg-[var(--deep-navy)] md:h-16 md:w-16">
-                  <step.icon className="h-5 w-5 md:h-7 md:w-7" />
+                <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center mx-auto mb-4 group-hover:bg-white/20 transition-colors duration-300">
+                  <stat.icon className="h-8 w-8 text-white" />
                 </div>
-                <div className="pt-0.5 md:pt-0">
-                  <p className="font-mono text-xs text-[var(--field-amber)] md:mt-5 md:text-sm">
-                    {String(index + 1).padStart(2, "0")}
-                  </p>
-                  <h3 className="mt-1 text-xl font-semibold md:mt-2 md:text-2xl">{step.season}</h3>
-                  <p className="mt-1 font-medium text-[oklch(95%_0.008_85_/_0.9)]">{step.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-[oklch(95%_0.008_85_/_0.7)] md:mt-3">
-                    {step.description}
-                  </p>
-                </div>
-              </article>
+                <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
+                <div className="text-lg font-semibold mb-2 text-white/90">{stat.label}</div>
+                <div className="text-sm text-white/70">{stat.description}</div>
+              </div>
             ))}
-          </div>
+          </StaggerChildren>
         </div>
       </div>
-
-      <style jsx>{`
-        .blueprint-grid {
-          background-image:
-            linear-gradient(to right, oklch(98% 0.006 85 / 0.08) 1px, transparent 1px),
-            linear-gradient(to bottom, oklch(98% 0.006 85 / 0.07) 1px, transparent 1px);
-          background-size: 56px 56px;
-        }
-      `}</style>
     </section>
-  )
-}
-
-function ProcessFieldSketch() {
-  return (
-    <svg
-      className="pointer-events-none absolute bottom-8 right-8 hidden h-36 w-72 text-[oklch(95%_0.008_85_/_0.24)] lg:block"
-      viewBox="0 0 288 144"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M18 108C56 76 89 72 118 92C147 112 174 113 207 88C227 73 247 68 270 75"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1.2"
-      />
-      <path
-        d="M38 112H254M58 88H225M86 64H201M118 40H170"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="0.8"
-        opacity="0.38"
-      />
-      <path
-        d="M72 106C70 90 75 76 88 63C102 79 104 94 95 112M213 87C212 75 216 65 225 56C235 68 237 79 231 91"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="1"
-        opacity="0.72"
-      />
-      <path
-        d="M50 118C91 127 143 128 197 120"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="1"
-        opacity="0.58"
-      />
-      <circle cx="118" cy="92" r="2.5" fill="currentColor" opacity="0.8" />
-      <circle cx="207" cy="88" r="2.5" fill="currentColor" opacity="0.8" />
-    </svg>
   )
 }

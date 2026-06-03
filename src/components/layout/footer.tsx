@@ -22,9 +22,7 @@ export function Footer() {
             </p>
             <div className="space-y-2">
               <p className="text-sm font-medium">Contact</p>
-              <p className="text-sm text-muted-foreground [overflow-wrap:anywhere]">
-                {SITE_CONFIG.email}
-              </p>
+              <p className="text-sm text-muted-foreground">{SITE_CONFIG.email}</p>
             </div>
           </div>
 
