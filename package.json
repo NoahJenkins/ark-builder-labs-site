@@ -41,8 +41,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@playwright/mcp": "^0.0.75",
-    "@playwright/test": "^1.60.0",
+    "@playwright/mcp": "^0.0.76",
+    "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
