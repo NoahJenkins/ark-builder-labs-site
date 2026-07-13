@@ -81,8 +81,8 @@ importers:
         version: 4.4.3
     devDependencies:
       '@playwright/mcp':
-        specifier: ^0.0.77
-        version: 0.0.77
+        specifier: ^0.0.78
+        version: 0.0.78
       '@playwright/test':
         specifier: ^1.61.1
         version: 1.61.1
@@ -841,8 +841,8 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@playwright/mcp@0.0.77':
-    resolution: {integrity: sha512-vf3PmCdOWVvEc3Vmh8DVWvsbz6/rIGi+OG0cyC/2YTn10U8tZMHEiRG62LHdPTTf0qCjoS7/1mbyS5F0RHoTzQ==}
+  '@playwright/mcp@0.0.78':
+    resolution: {integrity: sha512-XLTUeA6mEN9sQ+hJ4dfG8EIkDbxS0K3Trc2RBkUJuf02TgE2FQRNTMtq/aJfhyRMINsRl/Ybc4sxcWLtFn4/TQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -3132,9 +3132,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright-core@1.62.0-alpha-2026-06-29:
-    resolution: {integrity: sha512-/13EvW8l9Bmvt9nKHey+OcvZ8nob2FM8BCKBsUNwbXgmT4Hc0XX2b6mOErU0RBYNedOCa9q15USI7SY9K17v4w==}
-    engines: {node: '>=18'}
+  playwright-core@1.62.0-alpha-1783623505000:
+    resolution: {integrity: sha512-CPJZdsA/KGT2QQlekiV6Wt+QlQrZHVSZ6oiNtOI/bYYOIVLM8jfKGWTM4zQiyd4UN+40Cq4cA6lxmZHZbtPvJQ==}
+    engines: {node: '>=20'}
     hasBin: true
 
   playwright@1.61.1:
@@ -3142,9 +3142,9 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.62.0-alpha-2026-06-29:
-    resolution: {integrity: sha512-ugaMuh6rAOqmbaxrM7+XQSs7M6yPXykq5gVugJPClHcJ4Cqxmky5rDHhrCt4wmaILUeMdI7kPBCx3zMx2Qu+bg==}
-    engines: {node: '>=18'}
+  playwright@1.62.0-alpha-1783623505000:
+    resolution: {integrity: sha512-6KV9h4PP3hqu4NaGdxxcijWfYh9LJcFI/R2sP4TTC4I5cFo3oRawN0ETlW5MkE3cQEgKhhoj0KUNz4sfpCT0Tg==}
+    engines: {node: '>=20'}
     hasBin: true
 
   possible-typed-array-names@1.1.0:
@@ -4582,10 +4582,10 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@playwright/mcp@0.0.77':
+  '@playwright/mcp@0.0.78':
     dependencies:
-      playwright: 1.62.0-alpha-2026-06-29
-      playwright-core: 1.62.0-alpha-2026-06-29
+      playwright: 1.62.0-alpha-1783623505000
+      playwright-core: 1.62.0-alpha-1783623505000
 
   '@playwright/test@1.61.1':
     dependencies:
@@ -7422,7 +7422,7 @@ snapshots:
 
   playwright-core@1.61.1: {}
 
-  playwright-core@1.62.0-alpha-2026-06-29: {}
+  playwright-core@1.62.0-alpha-1783623505000: {}
 
   playwright@1.61.1:
     dependencies:
@@ -7430,9 +7430,9 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.2
 
-  playwright@1.62.0-alpha-2026-06-29:
+  playwright@1.62.0-alpha-1783623505000:
     dependencies:
-      playwright-core: 1.62.0-alpha-2026-06-29
+      playwright-core: 1.62.0-alpha-1783623505000
     optionalDependencies:
       fsevents: 2.3.2
 
