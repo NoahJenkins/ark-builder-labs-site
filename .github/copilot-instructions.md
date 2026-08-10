@@ -2,14 +2,14 @@
 
 ## Project Overview
 - Primary language(s): TypeScript, JavaScript, MDX/Markdown
-- Framework(s): Next.js 15 (App Router), React 19
+- Framework(s): Next.js 16 (App Router), React 19
 - Architecture pattern: Next.js app-router web application with component-library organization and file-based MDX content
 
 ## Coding Standards
 
 ### Language & Framework Versions
 - Node.js: `22.x`
-- Next.js: `^15.5.12`
+- Next.js: `^16.3.0`
 - React / React DOM: `19.1.0`
 - TypeScript: `^5.9.3`
 - Tailwind CSS: `^4.2.1`
