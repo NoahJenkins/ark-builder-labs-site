@@ -1,6 +1,6 @@
 # Ark Builder Labs Website
 
-A modern, professional company website built with Next.js 15, featuring bold animations, dark mode support, comprehensive business pages, and a complete MDX-powered blog system.
+A modern, professional company website built with Next.js 16, featuring bold animations, dark mode support, comprehensive business pages, and a complete MDX-powered blog system.
 
 ## 🚀 Features
 
@@ -17,7 +17,7 @@ A modern, professional company website built with Next.js 15, featuring bold ani
 
 ## 🛠️ Tech Stack
 
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4 via `@tailwindcss/postcss` with design tokens defined using `@theme inline` in `src/app/globals.css`
 - **Animations**: Framer Motion
