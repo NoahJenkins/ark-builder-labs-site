@@ -81,8 +81,8 @@ importers:
         version: 4.4.3
     devDependencies:
       '@playwright/mcp':
-        specifier: ^0.0.78
-        version: 0.0.78
+        specifier: ^0.0.79
+        version: 0.0.79
       '@playwright/test':
         specifier: ^1.62.1
         version: 1.62.1
@@ -96,8 +96,8 @@ importers:
         specifier: ^16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.4(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@testing-library/user-event':
-        specifier: ^14.6.1
-        version: 14.6.1(@testing-library/dom@10.4.1)
+        specifier: ^14.6.3
+        version: 14.6.3(@testing-library/dom@10.4.1)
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
@@ -847,8 +847,8 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@playwright/mcp@0.0.78':
-    resolution: {integrity: sha512-XLTUeA6mEN9sQ+hJ4dfG8EIkDbxS0K3Trc2RBkUJuf02TgE2FQRNTMtq/aJfhyRMINsRl/Ybc4sxcWLtFn4/TQ==}
+  '@playwright/mcp@0.0.79':
+    resolution: {integrity: sha512-VpqD4a3vFyGQMY9sh3UJiO6wjcurggkljKfAyCHL0QWGY5m6Ehr3MNsAAHPDHO//n13g0PCjpHatAOiulrqdZQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1010,8 +1010,8 @@ packages:
       '@types/react-dom':
         optional: true
 
-  '@testing-library/user-event@14.6.1':
-    resolution: {integrity: sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw==}
+  '@testing-library/user-event@14.6.3':
+    resolution: {integrity: sha512-6dBq67jT8lE+JTE8Exm02Kt6ze43hz1jdiSpSJwtTZiT1xQQ6b7nZYTTQ9njdArdU8XklOwaDp/AbT/eYSKF4g==}
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
@@ -3135,23 +3135,23 @@ packages:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
 
-  playwright-core@1.62.0-alpha-1783623505000:
-    resolution: {integrity: sha512-CPJZdsA/KGT2QQlekiV6Wt+QlQrZHVSZ6oiNtOI/bYYOIVLM8jfKGWTM4zQiyd4UN+40Cq4cA6lxmZHZbtPvJQ==}
-    engines: {node: '>=20'}
-    hasBin: true
-
   playwright-core@1.62.1:
     resolution: {integrity: sha512-wPYSwEBJY9GHraISXqyqtx0na0LpO3XEX7jNDhntbex7tzUS7kLnZsOlFruFJB4Hi/rhDMjXGqHewDZ68nYZVw==}
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright@1.62.0-alpha-1783623505000:
-    resolution: {integrity: sha512-6KV9h4PP3hqu4NaGdxxcijWfYh9LJcFI/R2sP4TTC4I5cFo3oRawN0ETlW5MkE3cQEgKhhoj0KUNz4sfpCT0Tg==}
+  playwright-core@1.63.0-alpha-2026-08-05:
+    resolution: {integrity: sha512-YussvUybTfBtyYbGXWh43f+5kNP03wg98M6mu4DphYET7PSbNVajsdLGjWE1xrsjqOw32i2wFlRP7U5mcOpMZg==}
     engines: {node: '>=20'}
     hasBin: true
 
   playwright@1.62.1:
     resolution: {integrity: sha512-0M+L3LAD8/nm554LOla9Ayx0j0tmFZ0FBcoQ7F1VuVHpM/XpiC8RcDzBQB8W5+hA8L22THxELzeF+2WcUzvcLg==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.63.0-alpha-2026-08-05:
+    resolution: {integrity: sha512-zbGZUK+JYkoDV3cUgfvh2czTBJL34Gmz5gHVI25xiIpvYSR17Q1M7TS8hnwECUe+IkKaeXbKrSyJTyogm2DVWw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4599,10 +4599,10 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@playwright/mcp@0.0.78':
+  '@playwright/mcp@0.0.79':
     dependencies:
-      playwright: 1.62.0-alpha-1783623505000
-      playwright-core: 1.62.0-alpha-1783623505000
+      playwright: 1.63.0-alpha-2026-08-05
+      playwright-core: 1.63.0-alpha-2026-08-05
 
   '@playwright/test@1.62.1':
     dependencies:
@@ -4739,7 +4739,7 @@ snapshots:
       '@types/react': 19.2.18
       '@types/react-dom': 19.2.4(@types/react@19.2.18)
 
-  '@testing-library/user-event@14.6.1(@testing-library/dom@10.4.1)':
+  '@testing-library/user-event@14.6.3(@testing-library/dom@10.4.1)':
     dependencies:
       '@testing-library/dom': 10.4.1
 
@@ -7439,19 +7439,19 @@ snapshots:
     dependencies:
       find-up: 4.1.0
 
-  playwright-core@1.62.0-alpha-1783623505000: {}
-
   playwright-core@1.62.1: {}
 
-  playwright@1.62.0-alpha-1783623505000:
-    dependencies:
-      playwright-core: 1.62.0-alpha-1783623505000
-    optionalDependencies:
-      fsevents: 2.3.2
+  playwright-core@1.63.0-alpha-2026-08-05: {}
 
   playwright@1.62.1:
     dependencies:
       playwright-core: 1.62.1
+    optionalDependencies:
+      fsevents: 2.3.2
+
+  playwright@1.63.0-alpha-2026-08-05:
+    dependencies:
+      playwright-core: 1.63.0-alpha-2026-08-05
     optionalDependencies:
       fsevents: 2.3.2
 
