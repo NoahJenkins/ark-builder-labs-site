@@ -9,10 +9,6 @@ updates:
       time: "09:00"
       timezone: "America/Chicago"
     open-pull-requests-limit: 10
-    reviewers:
-      - "NoahJenkins"
-    assignees:
-      - "NoahJenkins"
     commit-message:
       prefix: "deps"
       include: "scope"
@@ -20,41 +16,17 @@ updates:
       - "dependencies"
       - "automated"
     groups:
-      react:
+      npm-patch-minor:
+        applies-to: "version-updates"
         patterns:
-          - "react*"
-          - "@types/react*"
-      next:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      npm-security:
+        applies-to: "security-updates"
         patterns:
-          - "next*"
-          - "@next/*"
-      testing:
-        patterns:
-          - "jest*"
-          - "@testing-library/*"
-          - "@playwright/*"
-          - "@types/jest"
-          - "ts-jest"
-      tailwind:
-        patterns:
-          - "tailwind*"
-          - "@tailwindcss/*"
-          - "postcss"
-      types:
-        patterns:
-          - "@types/*"
-      vercel:
-        patterns:
-          - "@vercel/*"
-    ignore:
-      - dependency-name: "next"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "tailwindcss"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@tailwindcss/postcss"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
+          - "*"
 
   # Enable version updates for GitHub Actions
   - package-ecosystem: "github-actions"
@@ -65,13 +37,21 @@ updates:
       time: "09:30"
       timezone: "America/Chicago"
     open-pull-requests-limit: 5
-    reviewers:
-      - "NoahJenkins"
-    assignees:
-      - "NoahJenkins"
     commit-message:
       prefix: "ci"
       include: "scope"
     labels:
       - "github-actions"
       - "automated"
+    groups:
+      github-actions-patch-minor:
+        applies-to: "version-updates"
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      github-actions-security:
+        applies-to: "security-updates"
+        patterns:
+          - "*"

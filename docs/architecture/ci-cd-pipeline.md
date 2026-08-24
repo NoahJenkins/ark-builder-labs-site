@@ -7,8 +7,8 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 1) TypeScript & Lint
 - **Trigger conditions:** `push` to `main`, `pull_request` to `main`
-- **Actions performed:** Checkout, install pnpm + Node 22, install dependencies, run `pnpm exec tsc --noEmit`, run `pnpm lint`
-- **Success criteria:** Type check and lint both exit successfully
+- **Actions performed:** Checkout, install pnpm + Node 22, install dependencies, run `pnpm exec tsc --noEmit`, run `pnpm lint`, and run the dependency automation policy contract
+- **Success criteria:** Type check, lint, and the workflow policy contract exit successfully
 - **Typical duration:** ~1-3 minutes
 
 ### 2) Jest Tests
@@ -24,22 +24,24 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 - **Typical duration:** ~2-6 minutes
 
 ### 4) Playwright Tests
-- **Trigger conditions:** Runs after `Build Check` succeeds
+- **Trigger conditions:** Runs after `TypeScript & Lint` succeeds, in parallel with `Build Check`
 - **Actions performed:** Install dependencies, install Playwright browsers/deps, run `pnpm run test:e2e`, upload reports/artifacts
 - **Success criteria:** E2E suite passes across configured projects
 - **Typical duration:** ~4-12 minutes
 
 ### 5) Dependabot Auto-Merge Policy
 - **Trigger conditions:** `pull_request_target` events for Dependabot PRs (`opened`, `reopened`, `synchronize`, `ready_for_review`)
-- **Actions performed:** Fetch metadata, verify repository-level auto-merge prerequisites, validate file allowlist, enforce ecosystem/update-type gates (patch, minor, and major for `npm_and_yarn` and `github-actions`), auto-approve, enable native squash auto-merge
-- **Success criteria:** Eligibility rules pass and auto-merge is enabled
+- **Actions performed:** Fetch metadata, verify repository-level auto-merge prerequisites, validate the changed-file allowlist, enforce actor/author/base/draft/ecosystem/update-type gates, auto-approve, and enable native squash auto-merge. Dependabot separately groups routine npm and GitHub Actions patch/minor updates and security updates; safe major updates remain standalone.
+- **Success criteria:** Eligibility rules pass, auto-merge is enabled, and branch protection waits for the exact `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests` checks on the current `main` base. Failed, conflicting, or disallowed updates remain open.
 - **Typical duration:** <1 minute
+- **Timeout:** 5 minutes
 
 ### 6) Dependabot Behind Refresh
-- **Trigger conditions:** `push` to `main`, merged PRs targeting `main` via `pull_request_target: closed`, scheduled every 6 hours, and manual `workflow_dispatch`
-- **Actions performed:** After `main` advances, wait briefly for GitHub to recalculate PR mergeability, authenticate with `REPO_ADMIN_TOKEN` when available, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`
-- **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed immediately after `main` advances, while genuinely failing dependency updates remain open for manual follow-up
+- **Trigger conditions:** `push` to `main`, merged PRs targeting `main` via `pull_request_target: closed`, daily fallback at `20:23 UTC`, and manual `workflow_dispatch`
+- **Actions performed:** After `main` advances, wait briefly for GitHub to recalculate PR mergeability, authenticate with `REPO_ADMIN_TOKEN` when available, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`. Any update-branch failure fails the job.
+- **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed after `main` advances or by the daily recovery path, while genuinely failing dependency updates remain open for manual follow-up.
 - **Typical duration:** <1 minute
+- **Timeout:** 5 minutes
 
 ### 7) Repository Settings Health
 - **Trigger conditions:** Daily schedule and manual `workflow_dispatch`
@@ -80,7 +82,7 @@ Referenced by tooling/runtime in repository configuration:
 - **Playwright failures due to browser setup:** Ensure `pnpm exec playwright install --with-deps` ran successfully in CI
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
 - **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled and `can_approve_pull_request_reviews` is true in repository settings
-- **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran after the latest merge to `main` or on the next schedule, and confirm `REPO_ADMIN_TOKEN` is configured; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
+- **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran after the latest merge to `main` or on the next daily fallback, and confirm `REPO_ADMIN_TOKEN` is configured; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
 
 ## Maintenance
 - Update workflow action versions periodically (e.g., `actions/checkout`, `actions/setup-node`)
