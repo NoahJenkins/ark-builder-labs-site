@@ -10,7 +10,7 @@ on:
     types:
       - closed
   schedule:
-    - cron: '23 */6 * * *'
+    - cron: '23 20 * * *'
   workflow_dispatch:
 
 permissions:
@@ -25,6 +25,7 @@ jobs:
   refresh-behind-prs:
     name: Refresh Auto-Merge Dependabot PRs
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Refresh behind Dependabot PRs with auto-merge enabled
         uses: actions/github-script@v9
@@ -139,6 +140,7 @@ jobs:
 
             const refreshed = [];
             const skipped = [];
+            const failed = [];
 
             for (const pr of openPrs) {
               const author = pr.user?.login ?? '';
@@ -184,6 +186,7 @@ jobs:
                 refreshed.push(pr.number);
                 core.info(`Requested branch update for PR #${pr.number}.`);
               } catch (error) {
+                failed.push(`#${pr.number}:${error.message}`);
                 core.warning(`Failed to update PR #${pr.number}: ${error.message}`);
               }
             }
@@ -193,5 +196,11 @@ jobs:
               .addRaw(`Refreshed PRs: ${refreshed.length > 0 ? refreshed.map((number) => `#${number}`).join(', ') : 'none'}`)
               .addEOL()
               .addRaw(`Skipped PRs: ${skipped.length > 0 ? skipped.join(', ') : 'none'}`)
+              .addEOL()
+              .addRaw(`Failed PRs: ${failed.length > 0 ? failed.join(', ') : 'none'}`)
               .addEOL();
             await core.summary.write();
+
+            if (failed.length > 0) {
+              core.setFailed(`Failed to refresh ${failed.length} behind Dependabot PR(s).`);
+            }

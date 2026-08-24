@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "jest",
+    "test:workflow-policy": "ruby scripts/test-workflow-policy.rb",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",

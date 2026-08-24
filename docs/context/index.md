@@ -1,8 +1,12 @@
 # Context Notes Index
 
-Last Updated: 2026-05-26
+Last Updated: 2026-08-24
 
 ## Security & Automation
+
+- [2026-08-24 Dependabot Grouping and Refresh Tuning](./2026-08-24-dependabot-grouping-and-refresh-tuning.md)
+  - Related ADRs:
+    - [ADR-0001 Dependabot Auto-Merge Policy (amended)](../adr/adr-0001-dependabot-auto-merge-policy.md)
 
 - [2026-05-26 Dependabot Alert Cleanup via pnpm-Only Lockfile Policy](./2026-05-26-dependabot-pnpm-lockfile-cleanup.md)
   - Related ADRs:

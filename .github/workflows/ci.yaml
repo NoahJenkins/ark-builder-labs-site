@@ -46,6 +46,9 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
+      - name: Verify dependency automation policy
+        run: pnpm run test:workflow-policy
+
   jest-tests:
     name: Jest Tests
     runs-on: ubuntu-latest
