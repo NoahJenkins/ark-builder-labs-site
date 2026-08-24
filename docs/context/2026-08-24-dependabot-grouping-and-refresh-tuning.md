@@ -51,7 +51,7 @@ Completed locally with Node 22 and pnpm 10.33.0:
 - a successful diagnostic Next.js webpack production build;
 - 16 Playwright tests.
 
-The exact `pnpm build` command reached a Turbopack local worker-port restriction in this execution environment. The draft pull request's hosted `Build Check` remains the required proof for the exact build command.
+The exact local `pnpm build` command reached a Turbopack worker-port restriction in this execution environment. The draft pull request's hosted `Build Check` subsequently passed on the reviewed head, providing the required proof for the exact build command.
 
 The repository policy contract covers:
 
@@ -71,8 +71,7 @@ Local configuration and policy tests cannot create future Dependabot pull reques
 - immediate security-update handling;
 - standalone major-update behavior;
 - recovery of multiple queued auto-merge pull requests after one advances `main`;
-- the event-versus-daily-fallback path used for a real behind branch;
-- the exact Turbopack production build in the hosted `Build Check`.
+- the event-versus-daily-fallback path used for a real behind branch.
 
 ## Related
 

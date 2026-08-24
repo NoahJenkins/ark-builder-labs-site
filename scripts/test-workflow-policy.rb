@@ -121,16 +121,29 @@ end
 assert(!auto_source.include?("pulls.merge"), "workflow must use native auto-merge, not a direct merge")
 assert(!auto_source.include?("pulls.update"), "workflow must not close or rewrite ineligible PRs")
 
-allowed_file_patterns = [
-  /(^|\/)package\.json$/,
-  /(^|\/)pnpm-lock\.yaml$/,
-  /(^|\/)package-lock\.json$/,
-  /(^|\/)yarn\.lock$/,
-  /(^|\/)bun\.lockb$/,
-  /(^|\/)npm-shrinkwrap\.json$/,
-  /^\.github\/workflows\/[^\/]+\.ya?ml$/,
-  /^\.github\/dependabot\.ya?ml$/
-]
+allowed_patterns_block = auto_source.match(/const allowedPatterns = \[(?<patterns>.*?)^\s*\];/m)
+assert(allowed_patterns_block, "auto-merge workflow must define allowedPatterns")
+
+allowed_pattern_sources = allowed_patterns_block[:patterns].lines.filter_map do |line|
+  line.match(%r{^\s*/(?<source>.*)/,\s*$})&.[](:source)
+end
+assert_equal(
+  [
+    '(^|\/)package\.json$',
+    '(^|\/)pnpm-lock\.yaml$',
+    '(^|\/)package-lock\.json$',
+    '(^|\/)yarn\.lock$',
+    '(^|\/)bun\.lockb$',
+    '(^|\/)npm-shrinkwrap\.json$',
+    '^\.github\/workflows\/[^/]+\.ya?ml$',
+    '^\.github\/dependabot\.ya?ml$'
+  ],
+  allowed_pattern_sources,
+  "auto-merge workflow changed-file allowlist"
+)
+allowed_file_patterns = allowed_pattern_sources.map do |source|
+  Regexp.new(source.gsub('\\/', '/'))
+end
 allowed_files = [
   "package.json",
   "apps/site/package.json",
