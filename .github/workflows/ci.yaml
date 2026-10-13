@@ -16,10 +16,35 @@ permissions:
   contents: read
 
 jobs:
+  # GitHub expression string comparisons ignore case; Bash enforces exact opt-in.
+  runner-routing:
+    name: Select CI Runner
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.runner.outputs.label }}
+    steps:
+      - name: Select runner for this event
+        id: runner
+        env:
+          OPTIPLEX_CI_ENABLED: ${{ vars.OPTIPLEX_CI_ENABLED }}
+          EVENT_NAME: ${{ github.event_name }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          label=ubuntu-latest
+          if [[ "$OPTIPLEX_CI_ENABLED" == "true" ]] &&
+             { [[ "$EVENT_NAME" != "pull_request" ]] ||
+               [[ "$HEAD_REPOSITORY" == "$REPOSITORY" ]]; }; then
+            label=optiplex-ci-ubuntu24
+          fi
+          printf 'label=%s\n' "$label" >> "$GITHUB_OUTPUT"
+
   # Fast checks run first - type checking and linting
   typecheck:
     name: TypeScript & Lint
-    runs-on: ubuntu-latest
+    needs: runner-routing
+    runs-on: ${{ needs.runner-routing.outputs.label }}
     
     steps:
       - name: Checkout code
@@ -51,8 +76,8 @@ jobs:
 
   jest-tests:
     name: Jest Tests
-    runs-on: ubuntu-latest
-    needs: typecheck  # Only run if typecheck passes
+    runs-on: ${{ needs.runner-routing.outputs.label }}
+    needs: [runner-routing, typecheck]  # Only run if typecheck passes
     
     steps:
       - name: Checkout code
@@ -89,8 +114,8 @@ jobs:
   # Build verification - depends on typecheck
   build:
     name: Build Check
-    runs-on: ubuntu-latest
-    needs: typecheck  # Only build if types are valid
+    runs-on: ${{ needs.runner-routing.outputs.label }}
+    needs: [runner-routing, typecheck]  # Only build if types are valid
     
     steps:
       - name: Checkout code
@@ -125,8 +150,8 @@ jobs:
 
   playwright-tests:
     name: Playwright Tests
-    runs-on: ubuntu-latest
-    needs: typecheck  # Run in parallel with build to reduce wall-clock CI time
+    runs-on: ${{ needs.runner-routing.outputs.label }}
+    needs: [runner-routing, typecheck]  # Run in parallel with build to reduce wall-clock CI time
     
     steps:
       - name: Checkout code

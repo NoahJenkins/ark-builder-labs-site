@@ -1,6 +1,6 @@
 # CI and Branch Protection Architecture
 
-Last updated: 2026-08-24
+Last updated: 2026-10-13
 
 ## CI Required Checks
 
@@ -11,6 +11,34 @@ Main branch protection requires these exact GitHub Actions job names from `.gith
 - `Playwright Tests`
 
 Branch protection requires strict current-base checks. Dependabot native auto-merge therefore waits until all four checks pass against the current `main` branch.
+
+## Runner Routing
+
+The hosted `runner-routing` job computes the runner label without checking out application code. Only a case-sensitive Bash match of `OPTIPLEX_CI_ENABLED` to `true` opts in. PRs must also have a head repository equal to the current repository; a Dependabot actor does not make a fork trusted. Missing/false/other values and all fork PRs use the original GitHub-hosted selector.
+
+| Job / display name | Before | Prepared routing |
+| --- | --- | --- |
+| `typecheck` / TypeScript & Lint | `ubuntu-latest` | `optiplex-ci-ubuntu24` when opted in and eligible; otherwise `ubuntu-latest` |
+| `jest-tests` / Jest Tests | `ubuntu-latest` | Same conditional routing |
+| `build` / Build Check | `ubuntu-latest` | Same conditional routing |
+| `playwright-tests` / Playwright Tests | `ubuntu-latest` | Same conditional routing |
+| `runner-routing` (new prerequisite) | Not present | Always `ubuntu-latest` |
+
+Typecheck depends on routing. The other three checks depend on routing and typecheck, preserving their existing typecheck gate. No check depends on build or another test check. A single active Dell VM means ready jobs queue; the workflow does not change pool concurrency. The added hosted prerequisite enforces the exact opt-in value because [GitHub expression string comparisons ignore case](https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#operators).
+
+### Work Remaining on Hosted Runners
+
+| Workflow | Job display name (or ID when unnamed) | Runner |
+| --- | --- | --- |
+| `branch-protection.yml` | Apply Main Branch Protection | `ubuntu-latest` |
+| `repository-settings-health.yml` | Verify Repository Automation Settings | `ubuntu-latest` |
+| `dependabot-auto-merge.yml` | Dependabot Auto-Merge | `ubuntu-latest` |
+| `dependabot-behind-refresh.yml` | Refresh Auto-Merge Dependabot PRs | `ubuntu-latest` |
+| `copilot-setup-steps.yml` | `copilot-setup-steps` | `ubuntu-latest` |
+
+These files manage policy or a separate GitHub-managed runtime and are unchanged. GitHub-managed Dependabot and CodeQL default setup are outside this YAML migration, as are Copilot execution environments. Production deployment remains Vercel Git integration; deployments/migrations, release publication/signing/attestation, privileged dependency automation, and provider-secret repair/review are excluded from first-phase Dell execution.
+
+See [image requirements and live acceptance](./ci-cd-pipeline.md#dell-image-and-controller-contract), [ADR 0004](../adr/0004-opt-in-disposable-dell-ci.md), and [preparation context](../context/2026-10-13-optiplex-ci-preparation.md). Live activation is pending and belongs to the infrastructure handoff.
 
 ## Dependabot Update Grouping
 
