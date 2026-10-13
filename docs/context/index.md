@@ -1,6 +1,12 @@
 # Context Notes Index
 
-Last Updated: 2026-08-24
+Last Updated: 2026-10-13
+
+## CI Infrastructure
+
+- [2026-10-13 Optiplex CI Preparation](./2026-10-13-optiplex-ci-preparation.md)
+  - Related ADR: [ADR 0004 Opt-In Disposable Dell CI](../adr/0004-opt-in-disposable-dell-ci.md)
+  - Canonical requirements: [CI/CD Pipeline](../architecture/ci-cd-pipeline.md#dell-image-and-controller-contract)
 
 ## Security & Automation
 

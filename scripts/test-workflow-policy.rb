@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 require "json"
+require "open3"
+require "tempfile"
 require "yaml"
 
 ROOT = File.expand_path("..", __dir__)
@@ -269,7 +271,84 @@ required_status_checks = branch_protection.fetch("required_status_checks")
 assert_equal(true, required_status_checks.fetch("strict"), "main protection must require the current base")
 assert_equal(REQUIRED_CHECKS, required_status_checks.fetch("contexts"), "protected check names")
 
-ci_check_names = ci.fetch("jobs").values.map { |job| job.fetch("name") }
+ci_jobs = ci.fetch("jobs")
+assert_equal(
+  ["runner-routing", "typecheck", "jest-tests", "build", "playwright-tests"],
+  ci_jobs.keys,
+  "CI must retain all four checks and one hosted routing job"
+)
+routing_job = ci_jobs.fetch("runner-routing")
+assert_equal("ubuntu-latest", routing_job.fetch("runs-on"), "routing must stay hosted")
+assert_equal({ "label" => "${{ steps.runner.outputs.label }}" }, routing_job.fetch("outputs"), "routing output")
+assert_equal(1, routing_job.fetch("steps").length, "routing needs only its selection step")
+routing_step = routing_job.fetch("steps").first
+assert_equal("runner", routing_step.fetch("id"), "routing output step")
+assert_equal("bash", routing_step.fetch("shell"), "routing must use case-sensitive Bash comparisons")
+assert_equal(
+  {
+    "OPTIPLEX_CI_ENABLED" => "${{ vars.OPTIPLEX_CI_ENABLED }}",
+    "EVENT_NAME" => "${{ github.event_name }}",
+    "HEAD_REPOSITORY" => "${{ github.event.pull_request.head.repo.full_name }}",
+    "REPOSITORY" => "${{ github.repository }}"
+  },
+  routing_step.fetch("env"),
+  "routing must use the opt-in and repository identity, never actor-based trust"
+)
+
+# Execute the actual YAML selection script, rather than duplicating its logic.
+# A missing repository variable is exposed by GitHub as the empty string.
+routing_cases = [
+  ["enabled push", "true", "push", "", "optiplex-ci-ubuntu24"],
+  ["enabled same-repository PR", "true", "pull_request", "NoahJenkins/ark-builder-labs-site", "optiplex-ci-ubuntu24"],
+  ["disabled push", "false", "push", "", "ubuntu-latest"],
+  ["disabled same-repository PR", "false", "pull_request", "NoahJenkins/ark-builder-labs-site", "ubuntu-latest"],
+  ["missing variable push", "", "push", "", "ubuntu-latest"],
+  ["missing variable PR", "", "pull_request", "NoahJenkins/ark-builder-labs-site", "ubuntu-latest"],
+  ["uppercase opt-in", "TRUE", "push", "", "ubuntu-latest"],
+  ["mixed-case opt-in", "True", "push", "", "ubuntu-latest"],
+  ["whitespace opt-in", "true ", "push", "", "ubuntu-latest"],
+  ["arbitrary opt-in", "1", "push", "", "ubuntu-latest"],
+  ["missing PR head repository", "true", "pull_request", "", "ubuntu-latest"]
+]
+# Every fork remains hosted, including forks attributed to Dependabot.
+["true", "false", ""].each do |enabled|
+  ["contributor", "dependabot[bot]"].each do |actor|
+    routing_cases << ["#{actor} fork (opt-in #{enabled.inspect})", enabled, "pull_request", "contributor/ark-builder-labs-site", "ubuntu-latest", actor]
+  end
+end
+routing_cases.each do |description, enabled, event, head_repo, expected, actor|
+  Tempfile.create("ci-routing-output") do |output|
+    env = {
+      "OPTIPLEX_CI_ENABLED" => enabled,
+      "EVENT_NAME" => event,
+      "HEAD_REPOSITORY" => head_repo,
+      "REPOSITORY" => "NoahJenkins/ark-builder-labs-site",
+      "GITHUB_ACTOR" => actor || "maintainer",
+      "GITHUB_OUTPUT" => output.path
+    }
+    _stdout, stderr, status = Open3.capture3(env, "bash", "--noprofile", "--norc", "-e", "-o", "pipefail", "-c", routing_step.fetch("run"))
+    assert(status.success?, "#{description}: selection script failed: #{stderr}")
+    assert_equal("label=#{expected}\n", File.read(output.path), "#{description}: runner selection")
+  end
+end
+
+check_jobs = ci_jobs.reject { |id, _job| id == "runner-routing" }
+check_jobs.each do |id, job|
+  assert_equal("${{ needs.runner-routing.outputs.label }}", job.fetch("runs-on"), "#{id} must consume the tested selector")
+  expected_needs = id == "typecheck" ? ["runner-routing"] : ["runner-routing", "typecheck"]
+  assert_equal(expected_needs, Array(job.fetch("needs")), "#{id} must preserve typecheck ordering")
+end
+
+%w[
+  branch-protection.yml repository-settings-health.yml dependabot-auto-merge.yml
+  dependabot-behind-refresh.yml copilot-setup-steps.yml
+].each do |file|
+  read_yaml(".github/workflows/#{file}").fetch("jobs").each do |id, job|
+    assert_equal("ubuntu-latest", job.fetch("runs-on"), "#{file}/#{id} must remain hosted")
+  end
+end
+
+ci_check_names = check_jobs.values.map { |job| job.fetch("name") }
 assert_equal(REQUIRED_CHECKS.sort, ci_check_names.sort, "CI job names must match protected checks exactly")
 
 repository_settings = read_json(".github/repository-settings/repository.json")
