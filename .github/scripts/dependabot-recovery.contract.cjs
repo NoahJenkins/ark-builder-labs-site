@@ -1,0 +1,178 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const {reserve} = require('./dependabot-controller-ledger.cjs');
+const {evaluateScope, REQUIRED_CHECKS} = require('./dependabot-controller-policy.cjs');
+const {productionFailure} = require('./dependabot-deployment.cjs');
+const task = {pr:1, prId:'PR_one', head:'a'.repeat(40), base:'b'.repeat(40), kind:'repair'};
+test('two repair attempts survive head and day changes; refresh has a separate bounded budget', () => {
+ let state = {version:1,reservations:[]};
+ for (const [index,kind] of ['repair','repair'].entries()) {
+   const result = reserve(state,{...task,kind,head:String(index+1).repeat(40)},`2026-10-${20+index}T00:00:00.000Z`);
+   assert.ok(result.reservation); state=result.ledger;
+ }
+ const result=reserve(state,task,'2026-10-23T00:00:00.000Z');
+ assert.equal(result.reservation,undefined); assert.match(result.reason,/two/);
+ assert.ok(reserve(state,{...task,kind:'refresh'},'2026-10-23T00:00:00.000Z').reservation);
+});
+test('package scripts and workflow command changes cannot be repaired', () => {
+ assert.equal(evaluateScope([{filename:'package.json',status:'modified',before:'{"scripts":{"build":"next build"}}',after:'{"scripts":{"build":"true"}}'}]).allowed,false);
+ assert.equal(evaluateScope([{filename:'.github/workflows/ci.yml',status:'modified',before:'run: pnpm test',after:'run: true'}]).allowed,false);
+});
+test('production failure latches across a later success; explicit operator clear is needed', () => {
+ const failure={id:1,environment:'Production',creator:{id:35613825},statuses:[{id:2,state:'failure',creator:{id:35613825}}]};
+ const block=productionFailure(null,[failure]); assert.equal(block.deploymentId,1);
+ assert.deepEqual(productionFailure(block,[{...failure,id:3,statuses:[{id:4,state:'success',creator:{id:35613825}}]}]),block);
+ assert.equal(productionFailure(null,[{...failure,creator:{id:1}}]),null);
+});
+test('required checks are explicit and nonempty',()=>assert.ok(REQUIRED_CHECKS.length>=2));
+
+const {evaluateCandidate,DEPENDABOT_ID} = require('./dependabot-controller-policy.cjs');
+const {createClient} = require('./dependabot-controller-api.cjs');
+const {agentConfig} = require('./dependabot-opencode-worker.cjs');
+const {verifyRun,verifyJobs} = require('./dependabot-opencode-publish.cjs');
+const {validateFiles,validateReview} = require('./dependabot-opencode-contract.cjs');
+function snapshot() {
+ const head='a'.repeat(40), base='b'.repeat(40), ref='dependabot/npm_and_yarn/group';
+ const pr={number:1,node_id:'PR_one',head:{sha:head,ref,repo:{id:1}},base:{sha:base,ref:'main',repo:{id:1}},user:{id:DEPENDABOT_ID,type:'Bot'},state:'open',draft:false,mergeable:true,mergeable_state:'clean'};
+ const checks=REQUIRED_CHECKS.map((name,i)=>({id:i+1,name,head_sha:head,app:{id:15368},status:'completed',conclusion:'success'}));
+ return {pr,mainSha:base,repositoryId:1,scope:{allowed:true},classification:{eligible:true},productionHealthy:true,containsMain:true,ciWorkflowId:10,ci:{head_sha:head,workflow_id:10,event:'pull_request',head_repository:{id:1},head_branch:ref,pull_requests:[{number:1,base:{sha:base}}],status:'completed',conclusion:'success'},jobs:checks.map(c=>({...c,check_run_url:`https://api.github.com/check-runs/${c.id}`})),checks,vercelPrefix:'https://vercel.com/team/project/',statuses:[{context:'Vercel',creator:{id:35613825},state:'success',target_url:'https://vercel.com/team/project/123'}],vercelAppId:8329,vercelChecks:[{head_sha:head,app:{id:8329}}],independentReview:{task:{head,base},passed:true,report:{verdict:'approve'}}};
+}
+test('merge requires exact CI head/base, all required jobs and independent review',()=>{
+ assert.equal(evaluateCandidate(snapshot()).kind,'ready');
+ for (const mutate of [s=>s.ci.head_sha='c'.repeat(40),s=>s.ci.pull_requests[0].base.sha='c'.repeat(40),s=>s.jobs.pop(),s=>s.checks[0].app.id=1,s=>s.ci.head_repository.id=2,s=>s.pr.head.repo.id=2,s=>s.classification.eligible=false,s=>s.productionHealthy=false]) {
+  const s=snapshot();mutate(s);assert.notEqual(evaluateCandidate(s).kind,'ready');
+ }
+ const s=snapshot();s.independentReview=null;assert.equal(evaluateCandidate(s).kind,'review');
+ s.productionBlock={deploymentId:1};assert.equal(evaluateCandidate(s).kind,'blocked');
+});
+test('failed CI repairs, interrupted CI retries, and behind branches refresh within one budget',()=>{
+ const s=snapshot();s.ci.conclusion='failure';s.jobs[0].conclusion=s.checks[0].conclusion='failure';
+ assert.equal(evaluateCandidate(s).kind,'repair');
+ s.ci.conclusion='cancelled';s.jobs[0].conclusion=s.checks[0].conclusion='cancelled';assert.equal(evaluateCandidate(s).kind,'retry');
+ s.containsMain=false;assert.equal(evaluateCandidate(s).kind,'refresh');
+});
+test('worker denies command/network/task execution; review cannot edit',()=>{
+ const config=agentConfig('review','http://broker:8080/v1','temporary');
+ assert.equal(config.agent.review.permission.bash,'deny');assert.equal(config.agent.review.permission.edit,'deny');
+ assert.equal(config.agent.review.permission.task,'deny');assert.deepEqual(config.plugin,[]);assert.deepEqual(config.mcp,{});
+});
+test('data contracts reject traversal, incomplete review and mismatched provenance',()=>{
+ assert.throws(()=>validateFiles([{path:'../package.json',content:'{}'}]));
+ assert.throws(()=>validateReview({verdict:'approve',findings:[],coveredFiles:['a'],assessment:{security:{status:'pass',rationale:'ok'},compatibility:{status:'pass',rationale:'ok'}}},['a','b']));
+ assert.throws(()=>verifyRun({event:'pull_request',path:'.github/workflows/dependabot-auto-merge.yml'}, {}, {}));
+ assert.throws(()=>verifyJobs([{name:'OpenCode worker (x)',status:'completed',conclusion:'success',id:1}],{nonce:'x'},{jobId:1}));
+});
+test('source edits cannot weaken existing tests',()=>{
+ assert.equal(evaluateScope([{filename:'src/app/a.test.ts',status:'modified',before:'expect(true).toBe(true)',after:''}]).allowed,false);
+});
+test('tag-only action updates stay in scope while command changes do not',()=>{
+ const before='jobs:\n  test:\n    steps:\n      - uses: actions/checkout@v6\n      - run: pnpm test\n';
+ assert.equal(evaluateScope([{filename:'.github/workflows/ci.yml',status:'modified',before,after:before.replace('@v6','@v7')}]).allowed,true);
+ assert.equal(evaluateScope([{filename:'.github/workflows/ci.yml',status:'modified',before,after:before.replace('pnpm test','true')}]).allowed,false);
+});
+test('repository API uses atomic expected heads and never retries ambiguous writes',async()=>{
+ const calls=[];const client=createClient({repo:'o/r',appId:99},'read','write',async(url,init)=>{calls.push({url,init});return {ok:false,status:503}});
+ await assert.rejects(()=>client.queueMerge({node_id:'PR_one',head:{sha:'a'.repeat(40)}}));assert.equal(calls.length,1);
+ assert.equal(JSON.parse(calls[0].init.body).variables.head,'a'.repeat(40));
+});
+
+test('empty workflow PR arrays use authenticated exact-head commit association and current-main ancestry',()=>{
+ const s=snapshot();s.ci.pull_requests=[];assert.equal(evaluateCandidate(s).kind,'waiting');
+ s.headPullRequests=[{number:s.pr.number,head:s.pr.head,base:s.pr.base}];assert.equal(evaluateCandidate(s).kind,'ready');
+ s.containsMain=false;assert.equal(evaluateCandidate(s).kind,'refresh');
+});
+
+test('transient reads have at most one retry',async()=>{
+ let calls=0;const client=createClient({repo:'o/r',appId:99},'read',undefined,async()=>{calls++;return {ok:false,status:503}});
+ await assert.rejects(()=>client.getRepo());assert.equal(calls,2);
+});
+
+test('fresh read-only worker session emits a bound artifact and rejects command execution',async()=>{
+ const fs=require('node:fs'),os=require('node:os'),path=require('node:path');
+ const {spawn}=require('node:child_process');
+ const {runAgent}=require('./dependabot-opencode-worker.cjs');
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'dependabot-contract-'));
+ const t={...task,kind:'review',nonce:'12345678-1234-1234-1234-123456789abc',createdAt:'2026-10-20T00:00:00.000Z'};
+ const origin={repositoryId:1,workflowPath:'.github/workflows/dependabot-auto-merge.yml',workflowSha:t.base,ref:'refs/heads/main',runId:1,runAttempt:1,jobId:1};
+ const report={verdict:'approve',findings:[],coveredFiles:['package.json'],assessment:{security:{status:'pass',rationale:'mock contract result'},compatibility:{status:'pass',rationale:'mock contract result'}}};
+ const snapshot={task:t,changedFiles:['package.json'],baseFiles:{'package.json':'{}'},headFiles:{'package.json':'{}'},existingPaths:['package.json'],contextFiles:{}};
+ const launcher=(bad)=>({env})=>{
+   assert.equal(env.OPENCODE_GO_API_KEY,undefined);assert.equal(env.GH_TOKEN,undefined);
+   const events=[{type:'step_start',sessionID:'ses_test'},...(bad?[{type:'tool_use',part:{tool:'bash'}}]:[]),{type:'text',part:{text:JSON.stringify(report)}}];
+   return spawn(process.execPath,['-e',`for(const e of ${JSON.stringify(events)})process.stdout.write(JSON.stringify(e)+'\\n')`],{env:{PATH:process.env.PATH}});
+ };
+ try {
+   const artifact=await runAgent(t,{root:path.join(root,'good'),snapshot,origin},{launcher:launcher(false)});
+   assert.equal(artifact.task.head,t.head);assert.equal(artifact.agent.model,'glm-5.3');assert.equal(artifact.origin.workflowSha,t.base);
+   await assert.rejects(()=>runAgent(t,{root:path.join(root,'bad'),snapshot,origin},{launcher:launcher(true)}),/Denied agent tool/);
+ } finally {fs.rmSync(root,{recursive:true,force:true});}
+});
+
+test('production commit-status failure persists a block even when deployment records are green',async()=>{
+ let saved;
+ const fetcher=async(url,init)=>{
+  let data;
+  if(init.method==='POST'){saved=JSON.parse(init.body);data={id:1,body:saved.body,user:{id:100}};}
+  else if(url.includes('/issues/1/comments'))data=[];
+  else if(url.includes('/deployments/10/statuses'))data=[{id:20,state:'success',creator:{id:35613825}}];
+  else if(url.includes('/deployments?'))data=[{id:10,sha:'a'.repeat(40),created_at:'2026-10-20T00:00:00Z',environment:'Production',creator:{id:35613825}}];
+  else if(url.includes('/git/ref/heads/production'))data={object:{sha:'a'.repeat(40)}};
+  else if(url.includes('/commits/'))data=[{id:31,context:'Vercel',state:'success',created_at:'2026-10-20T01:00:00Z',creator:{id:35613825},target_url:'https://vercel.com/team/project/recovered'},{id:30,context:'Vercel',state:'failure',created_at:'2026-10-20T00:30:00Z',creator:{id:35613825},target_url:'https://vercel.com/team/project/failed'}];
+  else throw Error(`Unexpected mock path: ${url}`);
+  return {ok:true,status:200,json:async()=>data};
+ };
+ const client=createClient({repo:'o/r',appId:99,appBotId:100,stateIssue:1,deploymentEnvironment:'Production',deploymentBaseline:10,productionBranch:'production',vercelPrefix:'https://vercel.com/team/project/'},'read','write',fetcher);
+ const state=await client.productionState(true);assert.equal(state.healthy,false);assert.equal(state.block.statusId,30);assert.match(saved.body,/productionBlock/);
+});
+
+test('Go broker uses canonical OpenAI endpoint and bounds upstream requests',async()=>{
+ const {createGoProxy}=require('./dependabot-opencode-proxy.cjs');let calls=0;
+ const broker=await createGoProxy({apiKey:'test-only',model:'glm-5.3',maxCalls:1,timeoutMs:5000,session:'ses_test',fetcher:async(url)=>{assert.equal(url,'https://opencode.ai/inference/go/openai/v1/chat/completions');calls++;return new Response('{}',{status:200,headers:{'content-type':'application/json'}})}});
+ try {
+  const request=()=>fetch(`${broker.url}/chat/completions`,{method:'POST',headers:{authorization:`Bearer ${broker.token}`,'content-type':'application/json'},body:JSON.stringify({model:'glm-5.3',messages:[]})});
+  assert.equal((await request()).status,200);assert.equal((await request()).status,429);assert.equal(calls,1);
+ } finally {await broker.close();}
+});
+
+test('monitor outage revokes queued bot merge gates before failing reconciliation',async()=>{
+ const {run}=require('./dependabot-controller-run.cjs');const s=snapshot();s.pr.auto_merge={merge_method:'squash'};
+ const calls=[];const client={getRepo:async()=>({id:1}),request:async()=>({type:'Bot',id:100}),getRun:async()=>({}),productionState:async()=>{throw Error('monitor unavailable')},listPrs:async()=>[s.pr],getPr:async()=>s.pr,hasDependabotHead:async()=>false,setGate:async(_pr,kind)=>calls.push(kind),disableMerge:async()=>calls.push('disable')};
+ const env={GITHUB_REPOSITORY:'o/r',DEPENDABOT_CONTROLLER_APP_ID:'99',DEPENDABOT_STATE_ISSUE_NUMBER:'1',DEPENDABOT_CONTROLLER_APP_SLUG:'controller',DEPENDABOT_AUTOMATION_ENABLED:'true',DEPENDABOT_READ_TOKEN:'test',DEPENDABOT_APP_TOKEN:'test',GITHUB_EVENT_NAME:'schedule',GITHUB_RUN_ID:'1',GITHUB_REF:'refs/heads/main',GITHUB_WORKFLOW_SHA:'b'.repeat(40)};
+ const original=global.fetch;global.fetch=async()=>{throw Error('Network disabled in test')};
+ try {await assert.rejects(()=>run(env,'controller',{createClient:()=>client}));}finally{global.fetch=original;}
+ assert.deepEqual(calls,['pending','disable','blocked']);
+});
+
+test('production advancement does not hide a recovered failure on the prior head',async()=>{
+ let saved;const base='a'.repeat(40),head='b'.repeat(40);
+ const fetcher=async(url,init)=>{
+  let data;
+  if(init.method==='POST'){saved=JSON.parse(init.body);data={id:1,body:saved.body,user:{id:100}};}
+  else if(url.includes('/issues/1/comments'))data=[];
+  else if(url.includes('/deployments/10/statuses'))data=[{id:20,state:'success',creator:{id:35613825}}];
+  else if(url.includes('/deployments?'))data=[{id:10,sha:base,created_at:'2026-10-20T00:00:00Z',environment:'Production',creator:{id:35613825}}];
+  else if(url.includes('/git/ref/heads/production'))data={object:{sha:head}};
+  else if(url.includes('/compare/'))data={status:'ahead',total_commits:1,commits:[{sha:head}]};
+  else if(url.includes(`/commits/${base}/`))data=[{id:31,context:'Vercel',state:'success',created_at:'2026-10-20T01:00:00Z',creator:{id:35613825},target_url:'https://vercel.com/team/project/recovered'},{id:30,context:'Vercel',state:'failure',created_at:'2026-10-20T00:30:00Z',creator:{id:35613825},target_url:'https://vercel.com/team/project/failed'}];
+  else if(url.includes(`/commits/${head}/`))data=[{id:40,context:'Vercel',state:'success',created_at:'2026-10-20T02:00:00Z',creator:{id:35613825},target_url:'https://vercel.com/team/project/current'}];
+  else throw Error(`Unexpected mock path: ${url}`);
+  return {ok:true,status:200,json:async()=>data};
+ };
+ const client=createClient({repo:'o/r',appId:99,appBotId:100,stateIssue:1,deploymentEnvironment:'Production',deploymentBaseline:10,productionBranch:'production',vercelPrefix:'https://vercel.com/team/project/'},'read','write',fetcher);
+ const state=await client.productionState(true);assert.equal(state.healthy,false);assert.equal(state.block.head,base);assert.equal(state.block.statusId,30);assert.match(saved.body,/productionBlock/);
+});
+
+test('interrupted CI retries the full run, with a positive authenticated run ID',async()=>{
+ const calls=[];const client=createClient({repo:'o/r',appId:99},'read','write',async(url,init)=>{calls.push({url,init});return {ok:true,status:201,json:async()=>({})}});
+ await client.retryCi(55);assert.equal(calls.length,1);assert.equal(calls[0].url,'https://api.github.com/repos/o/r/actions/runs/55/rerun');assert.equal(calls[0].init.method,'POST');assert.throws(()=>client.retryCi(-1));
+});
+
+test('merge protection retains the repository review floor while requiring the new App gate and current CI',()=>{
+ const {protectionAllowsMerge}=require('./dependabot-controller.cjs');
+ const protection={required_status_checks:{strict:true,checks:[{context:'Dependabot Merge Gate',app_id:99},...REQUIRED_CHECKS.map(context=>({context}))]},required_pull_request_reviews:{required_approving_review_count:1,dismiss_stale_reviews:false,require_code_owner_reviews:false}};
+ assert.equal(protectionAllowsMerge(protection,99),true);
+ const noGate=structuredClone(protection);noGate.required_status_checks.checks.shift();assert.equal(protectionAllowsMerge(noGate,99),false);
+ const stale=structuredClone(protection);stale.required_status_checks.strict=false;assert.equal(protectionAllowsMerge(stale,99),false);
+ const incomplete=structuredClone(protection);incomplete.required_status_checks.checks.pop();assert.equal(protectionAllowsMerge(incomplete,99),false);
+ const noApproval=structuredClone(protection);noApproval.required_pull_request_reviews.required_approving_review_count=0;assert.equal(protectionAllowsMerge(noApproval,99),false);
+});

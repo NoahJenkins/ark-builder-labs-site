@@ -120,3 +120,7 @@ Native squash auto-merge remains the merge authority. Routine, security, and eli
 - **REF-004**: `.github/repository-settings/workflow-permissions.json`
 - **REF-005**: `.github/dependabot.yml`
 - **REF-006**: `docs/context/2026-08-24-dependabot-grouping-and-refresh-tuning.md`
+
+## Bounded recovery implementation (2026-10-20)
+
+The [controller setup](../dependabot-controller-setup.md) retains all-semver eligibility and adds current-head/base CI, an App-bound gate, independent OpenCode review, bounded repair/retry/refresh and a production failure latch. The prior auto-approval and behind-refresh jobs are replaced by one serialized controller. Activation is pending dedicated credentials, protected environments, live protection and a hosted canary.
