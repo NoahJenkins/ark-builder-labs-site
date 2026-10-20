@@ -60,3 +60,6 @@ For grouped updates, complete update-type metadata retains precedence. If metada
 Each reconciliation reserves at most ten model tasks, matching the claim limit. Excess work waits for another run without consuming a reservation, including when reconciliation crosses UTC midnight. Daily and per-PR limits remain unchanged.
 
 Production health requires the latest trusted Production deployment to succeed for the current production branch SHA. A successful preview status cannot substitute for that deployment. The branch SHA is read again before accepting health; advancement during inspection blocks merge.
+
+Repair snapshots authorize the PR delta against its authenticated merge base and retain current-main content for conflict repair. Dependency generation runs before the validation checks in a separate secret-free container. The host records the submitted files and generated dependency files before checks, rejects later byte changes, and publishes only those recorded bytes. Both phases share the existing 20-minute execution limit.
+Existing tag-based action updates remain supported, but an immutable SHA reference cannot become a mutable tag. Upstream tag resolution does not override this restriction.

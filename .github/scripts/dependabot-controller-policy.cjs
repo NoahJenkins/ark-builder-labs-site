@@ -32,7 +32,10 @@ function actionPins(text) {
 
 function normalizeWorkflow(text, allowNode = true) {
   const lines = text.split('\n')
-  for (const pin of actionPins(text)) lines[pin.index] = `${pin.prefix}${pin.action}@PIN`
+  for (const pin of actionPins(text)) {
+    // Preserve legacy tag updates without allowing an immutable pin to become a tag.
+    lines[pin.index] = `${pin.prefix}${pin.action}@${pin.sha ? 'SHA_PIN' : 'TAG_REF'}`
+  }
   const normalized = lines.join('\n')
   return allowNode ? normalized.replace(/^([ \t]*node-version:[ \t]*)['"]?(2[2-9]|[3-9]\d)(?:\.\d+\.\d+)?['"]?[ \t]*$/gm, '$1NODE') : normalized
 }

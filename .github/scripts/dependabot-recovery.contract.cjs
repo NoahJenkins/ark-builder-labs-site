@@ -293,3 +293,5 @@ test('production health requires a successful deployment for the current product
  status='success';assert.equal((await client.productionState()).healthy,true);
  drift=true;assert.equal((await client.productionState()).healthy,false);
 });
+
+require('./dependabot-validation-binding.contract.cjs');
