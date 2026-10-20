@@ -1,8 +1,10 @@
 # Context Notes Index
 
-Last Updated: 2026-08-24
+Last Updated: 2026-10-20
 
 ## Security & Automation
+
+- [2026-10-20 Dependabot Transitive Security Fix](./2026-10-20-dependabot-transitive-security-fix.md)
 
 - [2026-08-24 Dependabot Grouping and Refresh Tuning](./2026-08-24-dependabot-grouping-and-refresh-tuning.md)
   - Related ADRs:
