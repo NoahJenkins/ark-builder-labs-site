@@ -253,3 +253,21 @@ test('contradictory or missing run associations never use the commit fallback',(
  }
  s.ci.pull_requests=[];s.ci.conclusion='success';assert.equal(evaluateCandidate(s).kind,'ready');
 });
+
+test('partial grouped metadata falls back to complete version transitions', async () => {
+ const {classifyDependabotPullRequest: classify}=await import('./classify-dependabot-pr.mjs');
+ const prefix='Updates the dependencies group with 3 updates.\n';
+ const transitions='Updates alpha from 1.0.0 to 1.0.1\nUpdates beta from 2.0.0 to 2.1.0\nUpdates gamma from 3.0.0 to 4.0.0\n';
+ const metadata='update-type: version-update:semver-patch\n';
+ const input={author:{login:'dependabot[bot]'},files:[{filename:'package.json'},{filename:'pnpm-lock.yaml'}]};
+ const result=classify({...input,body:prefix+transitions+metadata});
+ assert.equal(result.eligible,true);assert.match(result.reason,/1 patch and 1 minor, and 1 major/);
+ assert.equal(classify({...input,files:[{filename:'.github/workflows/ci.yml'}],body:prefix+transitions+metadata}).eligible,true);
+ for(const body of [prefix.replace('3 updates','4 updates')+transitions+metadata, prefix+transitions.replace('to 1.0.1','to 0.9.0')+metadata, prefix+transitions+metadata.repeat(4), prefix+metadata, prefix+transitions.replace('Updates beta from 2.0.0 to 2.1.0','Unknown beta change')+metadata]) {
+  assert.equal(classify({...input,body}).eligible,false,body);
+ }
+ // Complete metadata and the existing ungrouped rules keep their behavior.
+ assert.equal(classify({...input,body:prefix+metadata.repeat(3)}).eligible,true);
+ assert.equal(classify({...input,body:metadata}).eligible,true);
+ assert.equal(classify({...input,body:metadata.repeat(2)}).eligible,false);
+});

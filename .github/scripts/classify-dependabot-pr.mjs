@@ -71,13 +71,16 @@ function versionTransitions(body) {
   }));
 }
 
-function updateKinds(body) {
+function updateKinds(body, declaredCount) {
   const metadataKinds = [...body.matchAll(metadataUpdateTypePattern)].map(
     (match) => match[1],
   );
-  if (metadataKinds.length > 0) {
+  if (metadataKinds.length > 0 &&
+      (declaredCount === undefined || metadataKinds.length >= declaredCount)) {
     return metadataKinds;
   }
+  // Partial group metadata must not discard the complete transition list.
+  // The caller still requires exactly the declared count and proven versions.
   return versionTransitions(body).map(({ kind }) => kind);
 }
 
@@ -122,12 +125,12 @@ export function classifyDependabotPullRequest(pullRequest) {
   }
 
   const body = pullRequest.body ?? "";
-  const kinds = updateKinds(body);
   const groupMatch = (pullRequest.body ?? "").match(
     /group(?: across \d+ directories?)? with\s+(\d+)\s+updates?/i,
   );
+  const declaredCount = groupMatch ? Number(groupMatch[1]) : undefined;
+  const kinds = updateKinds(body, declaredCount);
   if (groupMatch) {
-    const declaredCount = Number(groupMatch[1]);
     if (
       kinds.length !== declaredCount ||
       kinds.some((kind) => kind === "unproven")

@@ -54,3 +54,5 @@ Workspace override updates accept quoted or plain version values, package/versio
 
 The scope check compares PR file changes against the authenticated common ancestor of current main and the PR head. This permits bounded refresh when main changed unrelated protected settings. After refresh, the common ancestor must equal current main before merge can proceed. Missing or contradictory comparison evidence blocks the controller.
 CI commit-to-PR fallback is used only when the run association list is explicitly empty. Populated contradictory associations and missing lists cannot authenticate a run.
+
+For grouped updates, complete update-type metadata retains precedence. If metadata covers fewer than the declared group members, classification uses the full version-transition list instead. That list must still contain exactly the declared number of proven updates; missing members and downgrades remain blocked.
