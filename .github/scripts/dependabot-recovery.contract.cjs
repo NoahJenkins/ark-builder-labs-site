@@ -178,3 +178,15 @@ test('merge protection retains the repository review floor while requiring the n
 });
 
 require('./dependabot-recovery-review.contract.cjs');
+
+test('early interrupted CI retries before job creation without weakening run authentication', () => {
+ for (const conclusion of ['cancelled', 'timed_out']) {
+  const s=snapshot();s.ci.conclusion=conclusion;s.jobs=[];s.checks=[];
+  assert.equal(evaluateCandidate(s).kind,'retry');
+  for (const mutate of [x=>x.ci.head_sha='c'.repeat(40),x=>x.ci.workflow_id=999,x=>x.ci.event='push',x=>x.ci.head_repository.id=2,x=>x.ci.pull_requests[0].base.sha='c'.repeat(40),x=>x.ci.status='queued']) {
+   const invalid=structuredClone(s);mutate(invalid);assert.notEqual(evaluateCandidate(invalid).kind,'retry');
+  }
+  s.jobs=[{name:REQUIRED_CHECKS[0],status:'queued'}];assert.equal(evaluateCandidate(s).kind,'retry');
+ }
+ const success=snapshot();success.jobs=[];success.checks=[];assert.equal(evaluateCandidate(success).kind,'waiting');
+});
