@@ -177,4 +177,4 @@ test('merge protection retains the repository review floor while requiring the n
  const noApproval=structuredClone(protection);noApproval.required_pull_request_reviews.required_approving_review_count=0;assert.equal(protectionAllowsMerge(noApproval,99),false);
 });
 
-require('./dependabot-recovery-review.test.cjs');
+require('./dependabot-recovery-review.contract.cjs');
