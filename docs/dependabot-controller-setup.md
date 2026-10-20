@@ -56,3 +56,7 @@ The scope check compares PR file changes against the authenticated common ancest
 CI commit-to-PR fallback is used only when the run association list is explicitly empty. Populated contradictory associations and missing lists cannot authenticate a run.
 
 For grouped updates, complete update-type metadata retains precedence. If metadata covers fewer than the declared group members, classification uses the full version-transition list instead. That list must still contain exactly the declared number of proven updates; missing members and downgrades remain blocked.
+
+Each reconciliation reserves at most ten model tasks, matching the claim limit. Excess work waits for another run without consuming a reservation, including when reconciliation crosses UTC midnight. Daily and per-PR limits remain unchanged.
+
+Production health requires the latest trusted Production deployment to succeed for the current production branch SHA. A successful preview status cannot substitute for that deployment. The branch SHA is read again before accepting health; advancement during inspection blocks merge.

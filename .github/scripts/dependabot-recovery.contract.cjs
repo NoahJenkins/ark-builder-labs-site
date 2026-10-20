@@ -271,3 +271,25 @@ test('partial grouped metadata falls back to complete version transitions', asyn
  assert.equal(classify({...input,body:metadata}).eligible,true);
  assert.equal(classify({...input,body:metadata.repeat(2)}).eligible,false);
 });
+
+test('production health requires a successful deployment for the current production SHA',async()=>{
+ const base='a'.repeat(40),head='b'.repeat(40),moved='c'.repeat(40);
+ let deployCurrent=false,status='success',drift=false,reads=0;
+ const baseline={id:10,sha:base,created_at:'2026-10-20T00:00:00Z',environment:'Production',creator:{id:35613825}};
+ const client=createClient({repo:'o/r',appId:99,appBotId:100,stateIssue:1,deploymentEnvironment:'Production',deploymentBaseline:10,productionBranch:'production',vercelPrefix:'https://vercel.com/team/project/'},'read',undefined,async(url,init)=>{
+  assert.equal(init.method,'GET');let data;
+  if(url.includes('/issues/1/comments'))data=[];
+  else if(url.includes('/deployments/10/statuses'))data=[{id:20,state:'success',creator:{id:35613825}}];
+  else if(url.includes('/deployments/11/statuses'))data=[{id:21,state:status,creator:{id:35613825}}];
+  else if(url.includes('/deployments?'))data=deployCurrent?[{...baseline,id:11,sha:head},baseline]:[baseline];
+  else if(url.includes('/git/ref/heads/production'))data={object:{sha:drift&&++reads>1?moved:head}};
+  else if(url.includes('/compare/'))data={status:'ahead',total_commits:1,commits:[{sha:head}]};
+  else if(url.includes('/commits/'))data=[{id:30,context:'Vercel',state:'success',created_at:'2026-10-20T01:00:00Z',creator:{id:35613825},target_url:'https://vercel.com/team/project/preview'}];
+  else throw Error('Unexpected route '+url);
+  return {ok:true,status:200,json:async()=>structuredClone(data)};
+ });
+ assert.equal((await client.productionState()).healthy,false);
+ deployCurrent=true;status='pending';assert.equal((await client.productionState()).healthy,false);
+ status='success';assert.equal((await client.productionState()).healthy,true);
+ drift=true;assert.equal((await client.productionState()).healthy,false);
+});

@@ -162,7 +162,8 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
       if (block && persist) await client.saveLedger({...state.ledger,productionBlock:block},state)
       const latest=watched.sort((a,b)=>b.id-a.id)[0]
       const status=latest?.statuses.filter(s=>s.creator?.id===35613825).sort((a,b)=>b.id-a.id)[0]
-      return {block,healthy:!block && status?.state==='success' && commitStatus?.state==='success'}
+      const currentHead=(await request('GET',`${root}/git/ref/heads/${config.productionBranch}`)).object.sha
+      return {block,healthy:!block && currentHead===productionHead && latest?.sha===productionHead && status?.state==='success' && commitStatus?.state==='success'}
     },
     updateBranch: (pr) => request('PUT', `${root}/pulls/${pr.number}/update-branch`, { expected_head_sha: pr.head.sha }),
     getLedger: async () => readLedger(await list(`${root}/issues/${config.stateIssue}/comments`), config.appBotId),
