@@ -74,10 +74,16 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
     async snapshot(pr, main) {
       const files = await list(`${root}/pulls/${pr.number}/files`)
       if (files.length !== pr.changed_files || files.length > 100) throw new Error('Incomplete or excessive PR file list')
+      const compare = await request('GET', `${root}/compare/${main}...${pr.head.sha}`)
+      const containsMain = ['ahead', 'identical'].includes(compare.status)
+      const scopeBase = compare.merge_base_commit?.sha
+      if (!['ahead', 'identical', 'behind', 'diverged'].includes(compare.status) || !/^[0-9a-f]{40}$/.test(scopeBase || '') || (containsMain && scopeBase !== main)) throw new Error('Invalid PR merge base evidence')
+      // PR file lists describe the delta from this common ancestor. Current main
+      // may contain unrelated policy edits until a bounded branch refresh lands.
       const changes = []
       for (const file of files) {
         const needText = /(^|\/)package\.json$/.test(file.filename) || file.filename==='pnpm-workspace.yaml' || file.filename.startsWith('.github/workflows/') || ['.nvmrc','.node-version'].includes(file.filename)
-        changes.push({ ...file, before: needText && file.status === 'modified' ? await content(file.filename, main) : '', after: needText && !['removed', 'renamed'].includes(file.status) ? await content(file.filename, pr.head.sha) : '' })
+        changes.push({ ...file, before: needText && file.status === 'modified' ? await content(file.filename, scopeBase) : '', after: needText && !['removed', 'renamed'].includes(file.status) ? await content(file.filename, pr.head.sha) : '' })
       }
       const scope = evaluateScope(changes)
       const {classifyDependabotPullRequest} = await import('./classify-dependabot-pr.mjs')
@@ -91,10 +97,9 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
       const checks = await checksFor(pr.head.sha)
       const statuses = await list(`${root}/commits/${pr.head.sha}/statuses`)
       const independentReview = await client.getIndependentReview(pr,main,files.map(f=>f.filename),checks)
-      const headPullRequests = await list(`${root}/commits/${pr.head.sha}/pulls`)
-      const compare = await request('GET', `${root}/compare/${main}...${pr.head.sha}`)
+      const headPullRequests = Array.isArray(ci?.pull_requests) && ci.pull_requests.length === 0 ? await list(`${root}/commits/${pr.head.sha}/pulls`) : []
       const production = await client.productionState()
-      return { headPullRequests, classification, productionBlock: production.block, productionHealthy: production.healthy, vercelPrefix: config.vercelPrefix, pr, mainSha: main, repositoryId: config.repositoryId, scope, containsMain: ['ahead', 'identical'].includes(compare.status), ciWorkflowId: workflow.id, ci, jobs, checks, statuses, independentReview, vercelAppId: config.vercelAppId, vercelChecks: checks }
+      return { headPullRequests, classification, productionBlock: production.block, productionHealthy: production.healthy, vercelPrefix: config.vercelPrefix, pr, mainSha: main, repositoryId: config.repositoryId, scope, containsMain, ciWorkflowId: workflow.id, ci, jobs, checks, statuses, independentReview, vercelAppId: config.vercelAppId, vercelChecks: checks }
     },
     async verifyActionPins(changes) {
       for (const change of changes) {

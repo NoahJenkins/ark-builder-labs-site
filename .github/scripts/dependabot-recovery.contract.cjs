@@ -204,3 +204,52 @@ test('workspace overrides preserve surrounding policy and accept repository synt
   assert.equal(allowed(fixture, after), false, after);
  }
 });
+
+test('snapshot scopes the PR delta at its merge base before bounded refresh', async () => {
+ const {createClient} = require('./dependabot-controller-api.cjs');
+ const {evaluateCandidate} = require('./dependabot-controller-policy.cjs');
+ const head='a'.repeat(40), main='b'.repeat(40), ancestor='c'.repeat(40);
+ const filename='package.json';
+ const original=JSON.stringify({scripts:{test:'jest'},dependencies:{next:'16.0.0'}});
+ const updated=original.replace('16.0.0','16.0.1');
+ const mainText=JSON.stringify({scripts:{test:'jest',build:'next build'},dependencies:{next:'16.0.0'}});
+ const pr={id:1,node_id:'PR_one',number:1,changed_files:2,head:{sha:head,ref:'dependabot/npm_and_yarn/next',repo:{id:1}},base:{sha:main,ref:'main',repo:{id:1}},user:{id:49699333,type:'Bot',login:'dependabot[bot]'},body:'Bumps next from 16.0.0 to 16.0.1',title:'Bump next from 16.0.0 to 16.0.1',state:'open',draft:false,mergeable:true,mergeable_state:'behind'};
+ let comparison={status:'diverged',merge_base_commit:{sha:ancestor}};
+ let headText=updated;
+ const reads=[];
+ const client=createClient({repo:'o/r',repositoryId:1},'read',undefined,async(url)=>{
+  const parsed=new URL(url), path=parsed.pathname.replace('/repos/o/r','');let data;
+  if(path==='/pulls/1/files')data=[{filename,status:'modified'},{filename:'pnpm-lock.yaml',status:'modified'}];
+  else if(path.startsWith('/compare/'))data=comparison;
+  else if(path==='/contents/'+filename){const ref=parsed.searchParams.get('ref');reads.push(ref);const value=ref===main?mainText:ref===ancestor?original:ref===head?headText:null;assert.notEqual(value,null);data={type:'file',size:value.length,encoding:'base64',content:Buffer.from(value).toString('base64')};}
+  else if(path==='/actions/workflows/ci.yml'||path==='/actions/workflows/ci.yaml')data={id:10};
+  else if(path==='/actions/workflows/10/runs')data={workflow_runs:[]};
+  else if(path.endsWith('/check-runs'))data={check_runs:[]};
+  else if(path.endsWith('/statuses')||path.endsWith('/pulls'))data=[];
+  else throw Error('Unexpected provider route '+path);
+  return {ok:true,status:200,json:async()=>data};
+ });
+ client.getIndependentReview=async()=>null;
+ client.productionState=async()=>({healthy:true,block:null});
+ client.getReleaseHealth=async()=>({kind:'ready'});
+ const state=await client.snapshot(pr,main);
+ assert.equal(state.scope.allowed,true);
+ assert.equal(evaluateCandidate(state).kind,'refresh');
+ assert.ok(reads.includes(ancestor));assert.ok(!reads.includes(main));
+ headText=mainText.replace('16.0.0','16.0.1');
+ assert.equal((await client.snapshot(pr,main)).scope.allowed,false);
+ headText=updated;comparison={status:'ahead',merge_base_commit:{sha:main}};
+ assert.equal((await client.snapshot(pr,main)).scope.allowed,false);
+ for(const invalid of [{status:'ahead'}, {status:'ahead',merge_base_commit:{sha:ancestor}}, {status:'unknown',merge_base_commit:{sha:ancestor}}]) {
+  comparison=invalid;await assert.rejects(()=>client.snapshot(pr,main),/merge base/i);
+ }
+});
+
+test('contradictory or missing run associations never use the commit fallback',()=>{
+ const s=snapshot();s.headPullRequests=[{number:s.pr.number,head:s.pr.head,base:s.pr.base}];
+ for(const associations of [[{number:999,base:{sha:s.mainSha}}],[{number:s.pr.number,base:{sha:'c'.repeat(40)}}],undefined,null]) {
+  s.ci.pull_requests=associations;
+  for(const conclusion of ['success','cancelled','failure']) {s.ci.conclusion=conclusion;assert.equal(evaluateCandidate(s).kind,'waiting');}
+ }
+ s.ci.pull_requests=[];s.ci.conclusion='success';assert.equal(evaluateCandidate(s).kind,'ready');
+});
