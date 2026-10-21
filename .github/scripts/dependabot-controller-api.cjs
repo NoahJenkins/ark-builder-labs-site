@@ -114,6 +114,11 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
           if (!pin.sha && old.some(item=>item.index===pin.index && item.action===pin.action && item.sha)) throw new Error('Immutable action pins cannot become mutable tags')
           if (old.some((item) => item.index === pin.index && item.action === pin.action && item.sha === pin.sha && item.tag === pin.tag)) continue
           const upstream = pin.action.split('/').slice(0, 2).join('/')
+          if(pin.sha && !pin.tag) {
+            const commit=await request('GET', `/repos/${upstream}/git/commits/${pin.sha}`)
+            if(commit.sha!==pin.sha)throw Error('Action pin does not match the official upstream commit')
+            continue
+          }
           let object = (await request('GET', `/repos/${upstream}/git/ref/tags/${pin.tag}`)).object
           for (let depth = 0; object.type === 'tag' && depth < 5; depth++) object = (await request('GET', `/repos/${upstream}/git/tags/${object.sha}`)).object
           if (object.type !== 'commit' || (pin.sha && object.sha !== pin.sha)) throw new Error('Action pin does not match the official upstream version tag')
