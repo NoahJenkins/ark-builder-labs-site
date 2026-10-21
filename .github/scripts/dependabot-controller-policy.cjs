@@ -68,9 +68,9 @@ function evaluateScope(files) {
     const { filename, before, after, status } = file
     let allowed = false
     if (/(^|\/)(?:AGENTS\.md|CLAUDE\.md|auth(?:entication|orization)?|security|migrations|operations)(?:[./]|$)/.test(filename)) return {allowed:false,reason:`Protected test, instruction or security path: ${filename}`}
-    // Added regression tests must be in roots exercised by validation. Existing
+    // The isolated validator runs Jest, not Playwright. Existing
     // tests, setup files, ignored output directories and security paths stay protected.
-    const addedTest = status === 'added' && /^(?:src\/__tests__|tests)\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:test|spec)\.tsx?$/.test(filename) && !filename.split('/').some(part=>['node_modules','dist'].includes(part))
+    const addedTest = status === 'added' && /^src\/__tests__\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:test|spec)\.tsx?$/.test(filename) && !filename.split('/').some(part=>['node_modules','dist'].includes(part))
     if (addedTest) continue
     if (/(^|\/)(?:AGENTS\.md|CLAUDE\.md|auth(?:entication|orization)?|security|migrations|operations|__tests__|tests?)(?:[./]|$)|\.(?:test|spec)\.[cm]?[jt]sx?$/.test(filename)) return {allowed:false,reason:`Protected test, instruction or security path: ${filename}`}
     if (status !== 'removed' && status !== 'renamed') {
