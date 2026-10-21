@@ -1,4 +1,5 @@
 'use strict'
+const { expandWorkflowFlow } = require('./dependabot-workflow-shape.cjs')
 
 const REQUIRED_CHECKS = ["TypeScript & Lint", "Jest Tests", "Build Check", "Playwright Tests"]
 const GATE = 'Dependabot Merge Gate'
@@ -14,6 +15,7 @@ function actionPins(text) {
 }
 
 function normalizeWorkflow(text, allowNode = true) {
+  text=expandWorkflowFlow(text)
   const lines = text.split('\n')
   for (const pin of actionPins(text)) {
     // Preserve legacy tag updates without allowing an immutable pin to become a tag.
