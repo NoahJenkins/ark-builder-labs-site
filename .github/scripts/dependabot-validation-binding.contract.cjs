@@ -801,3 +801,56 @@ runTest('flow comments retain their owner, placement, and non-action version tex
  const annotated=wrap(`{uses: actions/checkout@${base}} # v4.1.0`);
  assert.equal(allowed(annotated,annotated.replace(base,head).replace('v4.1.0','v4.2.0')),true,'real action annotations still normalize');
 });
+
+runTest('repair provenance survives only a reserved refresh with the proven merged tree',async()=>{
+ const repaired='d'.repeat(40),original='e'.repeat(40),pr={number:1,node_id:task.prId,changed_files:3,head:{sha:head,ref:'dependabot/npm/foo'},user:{login:'dependabot[bot]'},body:'Bumps foo from 1.0.0 to 1.1.0'};
+ const receipt={published:true,publishAttempted:true,resultId:repaired,task:{...task,head:original},origin};
+ const refresh={...task,kind:'refresh',head:repaired};
+ const source='src/app/page.tsx',oldSource='1'.repeat(40),fixedSource='2'.repeat(40),oldConfig='3'.repeat(40),newConfig='4'.repeat(40);
+ const leaf=(path,sha)=>({path,sha,type:'blob',mode:'100644'});
+ const trees={
+  [ancestor]:[leaf(source,oldSource),leaf('README.md',oldConfig)],
+  [repaired]:[leaf(source,fixedSource),leaf('README.md',oldConfig)],
+  [base]:[leaf(source,oldSource),leaf('README.md',newConfig)],
+  [head]:[leaf(source,fixedSource),leaf('README.md',newConfig)],
+ };
+ let parents=[{sha:repaired},{sha:base}],reservations=[refresh],claims=[receipt],truncated=false;
+ const client=createClient({repo:'o/r',repositoryId:1,stateIssue:9},'read','write',async url=>{
+  const u=new URL(url),p=u.pathname;let data;
+  if(p.endsWith('/git/commits/'+head))data={sha:head,parents};
+  else if(p.endsWith('/pulls/1/files'))data=[{filename:'package.json',status:'modified'},{filename:'pnpm-lock.yaml',status:'modified'},{filename:source,status:'modified'}];
+  else if(p.endsWith('/contents/package.json')){const value=JSON.stringify({dependencies:{foo:u.searchParams.get('ref')===head?'1.1.0':'1.0.0'}});data={type:'file',size:value.length,encoding:'base64',content:Buffer.from(value).toString('base64')};}
+  else if(p.includes('/compare/'))data=p.endsWith('...'+head)?{status:'ahead',merge_base_commit:{sha:base}}:{status:'diverged',merge_base_commit:{sha:ancestor}};
+  else if(p.includes('/actions/workflows/ci.'))data={id:10};
+  else if(p.endsWith('/runs'))data={workflow_runs:[]};
+  else if(p.endsWith('/check-runs'))data={check_runs:[]};
+  else if(p.endsWith('/statuses'))data=[];
+  else if(p.includes('/git/trees/'))data={tree:trees[p.split('/').at(-1)],truncated};
+  else throw Error('Unexpected refresh evidence route '+p);
+  return {ok:true,status:200,json:async()=>data};
+ });
+ client.getClaims=async()=>claims;client.getLedger=async()=>({ledger:{version:1,reservations}});client.getIndependentReview=async()=>null;client.productionState=async()=>({healthy:true});
+ assert.deepEqual(await client.getPublishedRepairClaim(pr,base),receipt,'refresh keeps validated source and adopts main-only changes');
+ assert.equal((await client.snapshot(pr,base)).classification.eligible,true,'post-refresh classification retains validated source repair');
+ const earlier='f'.repeat(40);claims=[{...receipt,resultId:earlier},receipt];reservations=[{...refresh,head:earlier},refresh];
+ assert.deepEqual(await client.getPublishedRepairClaim(pr,base),receipt,'an older repaired refresh cannot hide the matching parent receipt');
+ for(const change of [
+  ()=>{reservations=[]},
+  ()=>{reservations=[{...refresh,base:ancestor}]},
+  ()=>{reservations=[{...refresh,prId:'other'}]},
+  ()=>{parents=[{sha:original},{sha:base}]},
+  ()=>{parents=[{sha:repaired}]},
+  ()=>{parents=[{sha:repaired},{sha:ancestor}]},
+  ()=>{trees[head]=[leaf(source,'9'.repeat(40)),leaf('README.md',newConfig)]},
+  ()=>{trees[head]=[leaf(source,oldSource),leaf('README.md',newConfig)]},
+  ()=>{trees[head]=[{...leaf(source,fixedSource),mode:'100755'},leaf('README.md',newConfig)]},
+  ()=>{trees[head]=[leaf(source,fixedSource)]},
+  ()=>{trees[head]=[leaf(source,fixedSource),leaf('README.md',newConfig),leaf('extra.ts',fixedSource)]},
+  ()=>{truncated=true},
+  ()=>{claims=[receipt,receipt]},
+ ]){
+  parents=[{sha:repaired},{sha:base}];reservations=[refresh];claims=[receipt];truncated=false;trees[head]=[leaf(source,fixedSource),leaf('README.md',newConfig)];change();
+  assert.equal(await client.getPublishedRepairClaim(pr,base),null,'unproven refresh cannot inherit repair authority');
+  assert.equal((await client.snapshot(pr,base)).classification.eligible,false,'unproven source does not pass classification');
+ }
+});

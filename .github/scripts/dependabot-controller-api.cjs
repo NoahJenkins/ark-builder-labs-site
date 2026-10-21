@@ -72,8 +72,41 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
       if (result.app?.id !== config.appId || result.head_sha !== pr.head.sha) throw new Error('Unexpected merge-gate publisher or head')
     },
     async getPublishedRepairClaim(pr,main) {
-      const claims=(await client.getClaims()).filter(claim=>claim.published===true && claim.publishAttempted===true && claim.resultId===pr.head.sha && claim.task?.kind==='repair' && claim.task.pr===pr.number && claim.task.prId===pr.node_id && claim.task.base===main && claim.task.head!==pr.head.sha && /^[0-9a-f]{40}$/.test(claim.task.head || '') && claim.origin?.repositoryId===config.repositoryId && claim.origin.workflowSha===main && claim.origin.workflowPath==='.github/workflows/dependabot-auto-merge.yml' && claim.origin.ref==='refs/heads/main')
-      return claims.length===1?claims[0]:null
+      const claims=(await client.getClaims()).filter(claim=>claim.published===true && claim.publishAttempted===true && /^[0-9a-f]{40}$/.test(claim.resultId || '') && claim.task?.kind==='repair' && claim.task.pr===pr.number && claim.task.prId===pr.node_id && claim.task.base===main && claim.task.head!==pr.head.sha && /^[0-9a-f]{40}$/.test(claim.task.head || '') && claim.origin?.repositoryId===config.repositoryId && claim.origin.workflowSha===main && claim.origin.workflowPath==='.github/workflows/dependabot-auto-merge.yml' && claim.origin.ref==='refs/heads/main')
+      const direct=claims.filter(claim=>claim.resultId===pr.head.sha)
+      if(direct.length)return direct.length===1?direct[0]:null
+      if(!claims.length || !config.stateIssue)return null
+      // An authenticated refresh reservation alone does not authenticate the
+      // resulting bytes. Bind both merge parents and the complete merged tree.
+      const {ledger}=await client.getLedger()
+      const eligible=claims.filter(claim=>ledger.reservations.filter(item=>item.kind==='refresh' && item.pr===pr.number && item.prId===pr.node_id && item.head===claim.resultId && item.base===main).length===1)
+      if(!eligible.length)return null
+      const commit=await request('GET',`${root}/git/commits/${pr.head.sha}`)
+      if(commit.sha!==pr.head.sha || commit.parents?.length!==2 || commit.parents[1].sha!==main)return null
+      const matching=eligible.filter(claim=>claim.resultId===commit.parents[0].sha)
+      if(matching.length!==1)return null
+      const claim=matching[0]
+      const compare=await request('GET',`${root}/compare/${main}...${claim.resultId}`)
+      const ancestor=compare.merge_base_commit?.sha
+      if(!['ahead','identical','behind','diverged'].includes(compare.status) || !/^[0-9a-f]{40}$/.test(ancestor || '') || (['ahead','identical'].includes(compare.status) && ancestor!==main))return null
+      const trees=[]
+      for(const sha of [ancestor,claim.resultId,main,pr.head.sha]) {
+        const tree=await request('GET',`${root}/git/trees/${sha}?recursive=1`)
+        if(tree.truncated!==false || !Array.isArray(tree.tree) || tree.tree.length>20000)return null
+        const entries=new Map()
+        for(const entry of tree.tree) {
+          if(entry.type==='tree')continue
+          if(!['blob','commit'].includes(entry.type) || !/^[0-9a-f]{40}$/.test(entry.sha || '') || !/^(?:100644|100755|120000|160000)$/.test(entry.mode || '') || typeof entry.path!=='string' || !entry.path || entries.has(entry.path))return null
+          entries.set(entry.path,`${entry.type}:${entry.mode}:${entry.sha}`)
+        }
+        trees.push(entries)
+      }
+      const [original,repaired,trustedMain,current]=trees
+      const paths=new Set([...original.keys(),...repaired.keys(),...trustedMain.keys(),...current.keys()])
+      // Preserve every repaired blob/mode, and adopt main only on paths that
+      // were unchanged from the common ancestor in the validated repair.
+      for(const path of paths)if(current.get(path)!==(repaired.get(path)===original.get(path)?trustedMain.get(path):repaired.get(path)))return null
+      return claim
     },
     async adoptPublishedBaseline(change,pr,main,mainContent) {
       const adopted=adoptMainBaseline(change,mainContent,evaluateScope,change.before)
