@@ -310,3 +310,13 @@ test('repair permits only new tests executed by isolated Jest validation',()=>{
  for(const filename of allowed){assert.equal(evaluateScope([change(filename,'added')]).allowed,true,filename);for(const status of ['modified','removed','renamed'])assert.equal(evaluateScope([change(filename,status)]).allowed,false,filename+' '+status)}
  for(const filename of blocked)assert.equal(evaluateScope([change(filename,'added')]).allowed,false,filename);
 });
+
+test('runtime refuses to start without its offline search binary',async()=>{
+ const {launchIsolated}=require('./dependabot-opencode-worker.cjs');
+ await assert.rejects(launchIsolated(task,{},agentConfig('review','http://broker:8080/v1','fixture'),{apiKey:'fixture',binaryPath:'/verified/opencode'}),/Verified ripgrep binary is missing/);
+});
+test('runtime errors expose only allowlisted category and HTTP status',()=>{
+ const {agentError}=require('./dependabot-opencode-worker.cjs');
+ assert.equal(agentError({name:'APIError',data:{statusCode:429,message:'secret-token',responseBody:'private prompt',responseHeaders:{authorization:'secret'}}}).message,'Agent error (APIError; HTTP 429)');
+ assert.equal(agentError({name:'private prompt',data:{statusCode:'secret'}}).message,'Agent error (unknown)');
+});
