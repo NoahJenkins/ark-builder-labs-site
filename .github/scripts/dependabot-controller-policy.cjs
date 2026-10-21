@@ -9,7 +9,7 @@ const VERCEL_BOT_ID = 35613825
 const range = /^(?:[~^]|>=?)?\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/
 const nodeVersion = /^(?:2[2-9]|[3-9]\d)(?:\.\d+\.\d+|\.x)?$/
 
-const { workflowActionReferences } = require('./dependabot-opencode-contract.cjs')
+const { workflowActionReferences, workflowNodeReferences } = require('./dependabot-opencode-contract.cjs')
 function actionPins(text) {
   return workflowActionReferences(text).filter(pin=>pin.sha || pin.tag)
 }
@@ -21,8 +21,8 @@ function normalizeWorkflow(text, allowNode = true) {
     // Preserve legacy tag updates without allowing an immutable pin to become a tag.
     lines[pin.index] = `${pin.prefix}${pin.action}@${pin.sha ? 'SHA_PIN' : 'TAG_REF'}`
   }
-  const normalized = lines.join('\n')
-  return allowNode ? normalized.replace(/^([ \t]*node-version:[ \t]*)['"]?(2[2-9]|[3-9]\d)(?:\.\d+\.\d+)?['"]?[ \t]*$/gm, '$1NODE') : normalized
+  if(allowNode)for(const input of workflowNodeReferences(text))if(nodeVersion.test(input.version))lines[input.index]=`${input.prefix}NODE`
+  return lines.join('\n')
 }
 
 function packageScope(before, after) {
