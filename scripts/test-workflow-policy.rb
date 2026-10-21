@@ -112,7 +112,7 @@ assert(auto_source.include?("persist-credentials: false"), "checkout must not pe
 assert(!auto_source.include?("REPO_ADMIN_TOKEN"), "broad legacy credential must not reach controller")
 assert(!File.exist?(File.join(ROOT, ".github/workflows/dependabot-behind-refresh.yml")), "no competing unbounded refresh workflow")
 assert(system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-recovery.contract.cjs")), "controller behavior tests")
-assert(system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-gate-lifecycle.test.cjs")), "controller gate lifecycle tests")
+assert(system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-gate-lifecycle.contract.cjs")), "controller gate lifecycle tests")
 
 branch_protection = read_json(".github/branch-protection/main.json")
 required_status_checks = branch_protection.fetch("required_status_checks")
