@@ -67,6 +67,11 @@ function evaluateScope(files) {
   for (const file of files) {
     const { filename, before, after, status } = file
     let allowed = false
+    if (/(^|\/)(?:AGENTS\.md|CLAUDE\.md|auth(?:entication|orization)?|security|migrations|operations)(?:[./]|$)/.test(filename)) return {allowed:false,reason:`Protected test, instruction or security path: ${filename}`}
+    // Added regression tests must be in roots exercised by validation. Existing
+    // tests, setup files, ignored output directories and security paths stay protected.
+    const addedTest = status === 'added' && /^(?:src\/__tests__|tests)\/(?:[a-zA-Z0-9_-]+\/)*[a-zA-Z0-9_.-]+\.(?:test|spec)\.tsx?$/.test(filename) && !filename.split('/').some(part=>['node_modules','dist'].includes(part))
+    if (addedTest) continue
     if (/(^|\/)(?:AGENTS\.md|CLAUDE\.md|auth(?:entication|orization)?|security|migrations|operations|__tests__|tests?)(?:[./]|$)|\.(?:test|spec)\.[cm]?[jt]sx?$/.test(filename)) return {allowed:false,reason:`Protected test, instruction or security path: ${filename}`}
     if (status !== 'removed' && status !== 'renamed') {
       try {
@@ -77,7 +82,6 @@ function evaluateScope(files) {
         else if (/^\.github\/workflows\/[^/]+\.ya?ml$/.test(filename) && filename !== '.github/workflows/dependabot-auto-merge.yml' && status === 'modified') allowed = normalizeWorkflow(before) === normalizeWorkflow(after)
         else if (filename === '.github/workflows/dependabot-auto-merge.yml' && status === 'modified') allowed = normalizeWorkflow(before, false) === normalizeWorkflow(after, false)
         else if (/^src\/(app|components|lib)\/[a-zA-Z0-9_./()\[\]-]+\.(tsx?|jsx?|css)$/.test(filename) && !filename.split('/').includes('..')) allowed = true
-        else if (/^test\/[a-zA-Z0-9_./-]+\.(test|spec)\.tsx?$/.test(filename) && !filename.split('/').includes('..') && status === 'added') allowed = true
       } catch { allowed = false }
     }
     if (!allowed) return { allowed: false, reason: `Protected or unsupported change: ${filename}` }

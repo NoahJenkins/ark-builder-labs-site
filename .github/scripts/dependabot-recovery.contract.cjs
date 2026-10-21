@@ -303,3 +303,10 @@ test('production health requires a successful deployment for the current product
 });
 
 require('./dependabot-validation-binding.contract.cjs');
+
+test('repair permits only new tests discovered by repository test commands',()=>{
+ const allowed=['src/__tests__/components/new-case.test.tsx', 'tests/new-case.spec.ts'],blocked=['test/new-case.test.ts', 'src/components/new-case.test.tsx', 'tests/setup.ts', 'src/__tests__/node_modules/case.test.ts', 'src/__tests__/security/case.test.ts'];
+ const change=(filename,status)=>({filename,status,before:status==='added'?'':'original',after:'regression'});
+ for(const filename of allowed){assert.equal(evaluateScope([change(filename,'added')]).allowed,true,filename);for(const status of ['modified','removed','renamed'])assert.equal(evaluateScope([change(filename,status)]).allowed,false,filename+' '+status)}
+ for(const filename of blocked)assert.equal(evaluateScope([change(filename,'added')]).allowed,false,filename);
+});
