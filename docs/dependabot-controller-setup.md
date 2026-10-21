@@ -107,3 +107,13 @@ Flow-comment comparison retains the owning node and position relative to collect
 Initial PR classification examines every changed file. Source and test files can be excluded from dependency-only classification only when one authenticated App repair-publication receipt matches the PR identity, current head, current main, and trusted workflow origin. Missing, duplicate, or mismatched receipts block that exemption.
 
 A bounded branch refresh can retain an authenticated repair receipt when the App ledger reserves that exact repair head and main SHA, the resulting commit has those two merge parents, and complete Git trees prove that every repaired file/mode is retained while main is adopted only on paths untouched by the repair. Other descendants, changed repair bytes, additional files, missing evidence, and truncated trees cannot inherit repair authority. The refreshed head still needs its own CI and independent review. Automatic provenance transfer does not infer a new resolution for files changed independently on both sides; unverifiable merges require manual resolution.
+
+### Merge gate lifecycle
+
+When reconciliation resumes after a completed gate, the controller creates a new
+App-owned check for the same commit. GitHub retains an existing conclusion when
+a completed check is patched, so reusing it can leave task claims blocked. Pending
+evaluations reuse the new check until completion. This does not reset the recovery
+ledger or authorize a merge without current-head validation and independent review.
+
+GitHub can report an older PR base SHA while the target branch has advanced. When the authenticated comparison proves that main is absent from the PR and GitHub marks the PR mergeable and behind, the controller can use its bounded branch-refresh budget. It checks that the observed PR head/base and current main remain unchanged before the write. This exception permits only branch refresh; merge, review, repair dispatch, and CI retry retain exact-current-base requirements.
