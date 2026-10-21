@@ -854,3 +854,22 @@ runTest('repair provenance survives only a reserved refresh with the proven merg
   assert.equal((await client.snapshot(pr,base)).classification.eligible,false,'unproven source does not pass classification');
  }
 });
+
+runTest('refresh cannot inherit repair provenance after main supersedes the repair',async()=>{
+ const repaired='d'.repeat(40),original='e'.repeat(40),pr={number:1,node_id:task.prId,head:{sha:head}};
+ const receipt={published:true,publishAttempted:true,resultId:repaired,task:{...task,head:original},origin};
+ const source='src/app/page.tsx',fixed={path:source,type:'blob',mode:'100644',sha:'2'.repeat(40)};
+ for(const mainTree of [[{...fixed,sha:'9'.repeat(40)}],[],[{...fixed,mode:'100755'}]]){
+  const client=createClient({repo:'o/r',repositoryId:1,stateIssue:9},'read','write',async url=>{
+   const p=new URL(url).pathname;let data;
+   if(p.endsWith('/git/commits/'+head))data={sha:head,parents:[{sha:repaired},{sha:base}]};
+   else if(p.includes('/compare/'))data={status:'behind',merge_base_commit:{sha:repaired}};
+   else if(p.includes('/git/trees/'))data={truncated:false,tree:p.split('/').at(-1)===repaired?[fixed]:mainTree};
+   else throw Error('Unexpected superseded repair evidence route '+p);
+   return {ok:true,status:200,json:async()=>data};
+  });
+  client.getClaims=async()=>[receipt];
+  client.getLedger=async()=>({ledger:{version:1,reservations:[{...task,kind:'refresh',head:repaired}]}});
+  assert.equal(await client.getPublishedRepairClaim(pr,base),null,'main cannot replace validated repair content, remove it, or change its mode');
+ }
+});

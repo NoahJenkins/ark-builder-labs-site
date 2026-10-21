@@ -88,7 +88,9 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
       const claim=matching[0]
       const compare=await request('GET',`${root}/compare/${main}...${claim.resultId}`)
       const ancestor=compare.merge_base_commit?.sha
-      if(!['ahead','identical','behind','diverged'].includes(compare.status) || !/^[0-9a-f]{40}$/.test(ancestor || '') || (['ahead','identical'].includes(compare.status) && ancestor!==main))return null
+      // A repair behind main is its own merge base and cannot prove which
+      // validated files main later changed. Do not transfer its authority.
+      if(!['ahead','identical','diverged'].includes(compare.status) || !/^[0-9a-f]{40}$/.test(ancestor || '') || (['ahead','identical'].includes(compare.status) && ancestor!==main))return null
       const trees=[]
       for(const sha of [ancestor,claim.resultId,main,pr.head.sha]) {
         const tree=await request('GET',`${root}/git/trees/${sha}?recursive=1`)
