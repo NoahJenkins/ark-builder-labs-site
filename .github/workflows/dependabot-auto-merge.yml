@@ -1,188 +1,336 @@
-name: Dependabot Auto-Merge
+name: Dependabot Controller
 
 on:
   pull_request_target:
-    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main]
+    types: [opened, reopened, synchronize, edited, ready_for_review, converted_to_draft]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  status:
+  deployment_status:
+  schedule:
+    - cron: '17 */2 * * *'
+  workflow_dispatch:
 
+# Trusted checkouts are immutable workflow source; candidate code runs only in a secret-free container.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+  pull-requests: read
+  issues: read
+  checks: read
+  actions: read
+  deployments: read
+  statuses: read
+
+concurrency:
+  group: dependabot-controller-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  DEPENDABOT_CONTROLLER_APP_ID: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
+  DEPENDABOT_STATE_ISSUE_NUMBER: ${{ vars.DEPENDABOT_STATE_ISSUE_NUMBER }}
+  DEPENDABOT_VERCEL_APP_ID: ${{ vars.DEPENDABOT_VERCEL_APP_ID }}
+  DEPENDABOT_AUTOMATION_ENABLED: ${{ vars.DEPENDABOT_AUTOMATION_ENABLED }}
+  DEPENDABOT_AGENT_ENABLED: ${{ vars.DEPENDABOT_AGENT_ENABLED }}
+  DEPENDABOT_DEPLOYMENT_ENVIRONMENT: ${{ vars.DEPENDABOT_DEPLOYMENT_ENVIRONMENT }}
+  DEPENDABOT_DEPLOYMENT_BASELINE_ID: ${{ vars.DEPENDABOT_DEPLOYMENT_BASELINE_ID }}
+  DEPENDABOT_VERCEL_PROJECT_PREFIX: ${{ vars.DEPENDABOT_VERCEL_PROJECT_PREFIX }}
+  GITHUB_WORKFLOW_SHA: ${{ github.workflow_sha }}
 
 jobs:
-  dependabot-auto-merge:
-    name: Dependabot Auto-Merge
+  setup-required:
+    name: Dependabot setup required
+    if: vars.DEPENDABOT_CONTROLLER_APP_ID == ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain inactive automation
+        shell: bash
+        run: |
+          echo '::warning::Dependabot automation is inactive: dedicated controller App configuration is missing.'
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          ## Dependabot automation is inactive
+
+          The controller cannot review, repair, or merge PRs until its dedicated
+          App, state issue, environment credentials, and enable flags are configured.
+          Passing CI alone does not enable auto-merge. The current policy keeps
+          blocked PRs open for review; it does not auto-close major updates.
+
+          Follow docs/dependabot-controller-setup.md before activation.
+          SUMMARY
+
+  controller:
+    name: Reconcile Dependabot PRs
+    if: vars.DEPENDABOT_CONTROLLER_APP_ID != '' && github.ref == 'refs/heads/main'
+    environment: dependabot-controller
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      tasks: ${{ steps.reconcile.outputs.tasks }}
+      has_tasks: ${{ steps.reconcile.outputs.has_tasks }}
+    steps:
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: trusted
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Create scoped controller App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
+          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-checks: write
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-actions: write
+          permission-deployments: read
+          permission-statuses: read
+          permission-administration: read
+      - name: Reconcile current heads
+        id: reconcile
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs controller
+        env:
+          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+
+  claim:
+    name: Claim reserved tasks
+    needs: controller
+    if: always() && !cancelled() && needs.controller.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
+    environment: dependabot-controller
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: >-
-      github.actor == 'dependabot[bot]' &&
-      github.event.pull_request.user.login == 'dependabot[bot]' &&
-      github.event.pull_request.base.ref == 'main' &&
-      github.event.pull_request.draft == false
-
+    outputs:
+      tasks: ${{ steps.claim.outputs.tasks }}
+      has_tasks: ${{ steps.claim.outputs.has_tasks }}
+      app_slug: ${{ steps.app-token.outputs.app-slug }}
     steps:
-      - name: Fetch Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v3
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Validate repository auto-merge prerequisites
-        id: repo-prereqs
-        uses: actions/github-script@v9
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: trusted
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          script: |
-            const repoResponse = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-
-            const problems = [];
-            if (!repoResponse.data.allow_auto_merge) {
-              problems.push('Repository setting allow_auto_merge=false');
-            }
-            if (!repoResponse.data.allow_squash_merge) {
-              problems.push('Repository setting allow_squash_merge=false');
-            }
-
-            if (problems.length > 0) {
-              core.setFailed(
-                `Dependabot auto-merge prerequisites are not satisfied: ${problems.join('; ')}. ` +
-                'Apply .github/repository-settings/* with scripts/apply-repository-settings.sh.'
-              );
-              return;
-            }
-
-            core.info('Repository auto-merge prerequisites are satisfied. Workflow approval permission is enforced by the approval step itself.');
-
-      - name: Validate changed files against allowlist
-        id: changed-files
-        uses: actions/github-script@v9
+          node-version: '24'
+      - name: Create scoped controller App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const files = await github.paginate(github.rest.pulls.listFiles, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              per_page: 100,
-            });
-
-            const allowedPatterns = [
-              /(^|\/)package\.json$/,
-              /(^|\/)pnpm-lock\.yaml$/,
-              /(^|\/)package-lock\.json$/,
-              /(^|\/)yarn\.lock$/,
-              /(^|\/)bun\.lockb$/,
-              /(^|\/)npm-shrinkwrap\.json$/,
-              /^\.github\/workflows\/[^/]+\.ya?ml$/,
-              /^\.github\/dependabot\.ya?ml$/,
-            ];
-
-            const changed = files.map((file) => file.filename);
-            const disallowed = changed.filter((file) => !allowedPatterns.some((pattern) => pattern.test(file)));
-
-            core.info(`Changed files (${changed.length}): ${changed.join(', ')}`);
-            if (disallowed.length > 0) {
-              core.warning(`Disallowed files detected: ${disallowed.join(', ')}`);
-            }
-
-            core.setOutput('eligible', disallowed.length === 0 ? 'true' : 'false');
-
-      - name: Compute eligibility
-        id: eligibility
+          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
+          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-checks: write
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-actions: write
+          permission-deployments: read
+          permission-statuses: read
+          permission-administration: read
+      - name: Persist claims before launch
+        id: claim
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs claim
         env:
-          PACKAGE_ECOSYSTEM: ${{ steps.metadata.outputs.package-ecosystem }}
-          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
-          FILES_ELIGIBLE: ${{ steps.changed-files.outputs.eligible }}
+          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          DEPENDABOT_TASKS: ${{ needs.controller.outputs.tasks }}
+
+  worker:
+    name: OpenCode worker (${{ matrix.task.nonce }})
+    needs: claim
+    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
+    environment: dependabot-dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJSON(needs.claim.outputs.tasks) }}
+    env:
+      DEPENDABOT_TASK: ${{ toJSON(matrix.task) }}
+      DEPENDABOT_CONTROLLER_APP_SLUG: ${{ needs.claim.outputs.app_slug }}
+      DEPENDABOT_DATA_DIR: ${{ github.workspace }}/.dependabot-data
+    steps:
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: trusted
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Prepare complete bounded input without provider credentials
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs prepare
+        env:
+          DEPENDABOT_READ_TOKEN: ${{ github.token }}
+      - name: Install verified pinned Linux runtime
+        shell: bash
         run: |
           set -euo pipefail
-
-          ecosystem_ok=false
-          update_ok=false
-
-          case "$PACKAGE_ECOSYSTEM" in
-            npm|npm_and_yarn|github_actions)
-              ecosystem_ok=true
-              ;;
-          esac
-
-          case "$UPDATE_TYPE" in
-            version-update:semver-patch|version-update:semver-minor|version-update:semver-major)
-              update_ok=true
-              ;;
-          esac
-
-          eligible=false
-          if [[ "$ecosystem_ok" == "true" && "$update_ok" == "true" && "$FILES_ELIGIBLE" == "true" ]]; then
-            eligible=true
-          fi
-
-          echo "ecosystem_ok=$ecosystem_ok" >> "$GITHUB_OUTPUT"
-          echo "update_ok=$update_ok" >> "$GITHUB_OUTPUT"
-          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
-
-          echo "package-ecosystem=$PACKAGE_ECOSYSTEM"
-          echo "update-type=$UPDATE_TYPE"
-          echo "files-eligible=$FILES_ELIGIBLE"
-          echo "eligible=$eligible"
-
-      - name: Auto-approve Dependabot PR
-        if: steps.eligibility.outputs.eligible == 'true'
-        uses: actions/github-script@v9
+          mkdir -p "$RUNNER_TEMP/opencode-bin"
+          curl --fail --location --silent --show-error https://github.com/anomalyco/opencode/releases/download/v1.19.0/opencode-linux-x64-baseline.tar.gz -o "$RUNNER_TEMP/opencode-bin/runtime.tar.gz"
+          echo '6334d70db3990721ea454357e9cf2573c8685524ad7769af9d52cbffb7008438  '"$RUNNER_TEMP/opencode-bin/runtime.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/opencode-bin/runtime.tar.gz" -C "$RUNNER_TEMP/opencode-bin"
+      - name: Run isolated bounded Go session
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs worker
+        env:
+          OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
+          OPENCODE_BINARY: ${{ runner.temp }}/opencode-bin/opencode
+      - name: Upload wrapper-owned data
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          script: |
-            try {
-              await github.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.payload.pull_request.number,
-                event: 'APPROVE',
-                body: 'Auto-approved: eligible Dependabot dependency update in allowed ecosystem and file scope.',
-              });
-              core.info('Successfully approved PR.');
-            } catch (error) {
-              if (error.status === 422 && error.message?.includes('already exists')) {
-                core.info('Approval already exists; continuing.');
-              } else {
-                core.setFailed(`Failed to approve PR: ${error.message} (status: ${error.status}). ` +
-                  'If using GITHUB_TOKEN, ensure "Allow GitHub Actions reviews to count toward required approval" ' +
-                  'is enabled in repo Settings > Actions > General.');
-              }
-            }
+          name: worker-${{ matrix.task.nonce }}
+          path: ${{ github.workspace }}/.dependabot-data/result.json
+          if-no-files-found: error
+          retention-days: 3
 
-      - name: Enable native auto-merge (squash)
-        if: steps.eligibility.outputs.eligible == 'true'
-        uses: actions/github-script@v9
+  validate:
+    name: OpenCode validation (${{ matrix.task.nonce }})
+    needs: [claim, worker]
+    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        task: ${{ fromJSON(needs.claim.outputs.tasks) }}
+    env:
+      DEPENDABOT_TASK: ${{ toJSON(matrix.task) }}
+      DEPENDABOT_CONTROLLER_APP_SLUG: ${{ needs.claim.outputs.app_slug }}
+      DEPENDABOT_DATA_DIR: ${{ github.workspace }}/.dependabot-validation
+    steps:
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          script: |
-            const pullRequestId = context.payload.pull_request.node_id;
-            try {
-              await github.graphql(
-                `mutation($pullRequestId: ID!) {
-                  enablePullRequestAutoMerge(input: {
-                    pullRequestId: $pullRequestId,
-                    mergeMethod: SQUASH
-                  }) {
-                    pullRequest {
-                      number
-                      autoMergeRequest {
-                        enabledAt
-                      }
-                    }
-                  }
-                }`,
-                { pullRequestId }
-              );
-              core.info(`Enabled auto-merge (squash) for PR #${context.payload.pull_request.number}`);
-            } catch (error) {
-              if (error.message?.includes('Auto merge is already enabled')) {
-                core.info(`Auto-merge is already enabled for PR #${context.payload.pull_request.number}.`);
-              } else {
-                throw error;
-              }
-            }
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: trusted
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Checkout candidate data without persistent credentials
+        if: matrix.task.kind == 'repair'
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ matrix.task.head }}
+          persist-credentials: false
+          path: candidate
+      - name: Build trusted secret-free validator
+        if: matrix.task.kind == 'repair'
+        run: docker build --platform linux/amd64 -t dependabot-validator -f trusted/.github/opencode/validator.Dockerfile trusted
+      - name: Validate bounded output in a fresh job
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs validate
+        env:
+          DEPENDABOT_READ_TOKEN: ${{ github.token }}
+          CANDIDATE_ROOT: ${{ github.workspace }}/candidate
+          VALIDATOR_IMAGE: dependabot-validator
+      - name: Upload validated data and digest chain
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validated-${{ matrix.task.nonce }}
+          path: ${{ github.workspace }}/.dependabot-validation/result.json
+          if-no-files-found: error
+          retention-days: 3
 
-      - name: Log ineligible PR reason
-        if: steps.eligibility.outputs.eligible != 'true'
-        run: |
-          echo "PR is not eligible for auto-merge based on ecosystem, update type, or changed file scope."
+  publish:
+    name: Publish authenticated results
+    needs: [claim, worker, validate]
+    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
+    environment: dependabot-controller
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: trusted
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Create scoped controller App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
+          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-checks: write
+          permission-contents: write
+          permission-workflows: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-actions: write
+          permission-deployments: read
+          permission-statuses: read
+          permission-administration: read
+      - name: Verify provenance and publish once
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs publish
+        env:
+          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          DEPENDABOT_TASKS: ${{ needs.claim.outputs.tasks }}
+
+  reconcile:
+    name: Recheck gates after publication
+    needs: [claim, publish]
+    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.ref == 'refs/heads/main'
+    environment: dependabot-controller
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted workflow source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+          path: trusted
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Create scoped controller App token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
+          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-checks: write
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+          permission-actions: write
+          permission-deployments: read
+          permission-statuses: read
+          permission-administration: read
+      - name: Reconcile without reserving more work in this run
+        run: node trusted/.github/scripts/dependabot-controller-run.cjs controller
+        env:
+          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+          DEPENDABOT_AGENT_ENABLED: 'false'

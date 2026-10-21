@@ -15,7 +15,7 @@ const eslintConfig = [
   },
   {
     // CJS config files and compatibility shims are allowed to use require()
-    files: ["jest.config.js", "playwright.config.ts"],
+    files: ["jest.config.js", "playwright.config.ts", ".github/scripts/*.cjs"],
     rules: {
       "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-explicit-any": "off",

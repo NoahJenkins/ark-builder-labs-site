@@ -48,7 +48,6 @@ end
 
 dependabot = read_yaml(".github/dependabot.yml")
 auto_merge = read_yaml(".github/workflows/dependabot-auto-merge.yml")
-refresh = read_yaml(".github/workflows/dependabot-behind-refresh.yml")
 ci = read_yaml(".github/workflows/ci.yaml")
 
 updates = dependabot.fetch("updates")
@@ -100,169 +99,19 @@ assert_group(
   applies_to: "security-updates"
 )
 
-auto_job = auto_merge.fetch("jobs").fetch("dependabot-auto-merge")
-assert_equal(5, auto_job.fetch("timeout-minutes"), "auto-merge timeout")
-
 auto_source = File.read(File.join(ROOT, ".github/workflows/dependabot-auto-merge.yml"))
-[
-  "github.actor == 'dependabot[bot]'",
-  "github.event.pull_request.user.login == 'dependabot[bot]'",
-  "github.event.pull_request.base.ref == 'main'",
-  "github.event.pull_request.draft == false",
-  "npm|npm_and_yarn|github_actions",
-  "version-update:semver-patch|version-update:semver-minor|version-update:semver-major",
-  "^\\.github\\/workflows\\/[^/]+\\.ya?ml$",
-  "^\\.github\\/dependabot\\.ya?ml$",
-  "enablePullRequestAutoMerge",
-  "mergeMethod: SQUASH"
-].each do |contract|
-  assert(auto_source.include?(contract), "auto-merge workflow must retain #{contract}")
+triggers = workflow_triggers(auto_merge)
+%w[pull_request_target workflow_run status deployment_status schedule workflow_dispatch].each do |event|
+  assert(triggers.key?(event), "controller must reconcile #{event}")
 end
-assert(!auto_source.include?("pulls.merge"), "workflow must use native auto-merge, not a direct merge")
-assert(!auto_source.include?("pulls.update"), "workflow must not close or rewrite ineligible PRs")
-
-allowed_patterns_block = auto_source.match(/const allowedPatterns = \[(?<patterns>.*?)^\s*\];/m)
-assert(allowed_patterns_block, "auto-merge workflow must define allowedPatterns")
-
-allowed_pattern_sources = allowed_patterns_block[:patterns].lines.filter_map do |line|
-  line.match(%r{^\s*/(?<source>.*)/,\s*$})&.[](:source)
+%w[controller claim worker validate publish reconcile].each do |job|
+  assert(auto_merge.fetch("jobs").key?(job), "isolated #{job} stage is required")
 end
-assert_equal(
-  [
-    '(^|\/)package\.json$',
-    '(^|\/)pnpm-lock\.yaml$',
-    '(^|\/)package-lock\.json$',
-    '(^|\/)yarn\.lock$',
-    '(^|\/)bun\.lockb$',
-    '(^|\/)npm-shrinkwrap\.json$',
-    '^\.github\/workflows\/[^/]+\.ya?ml$',
-    '^\.github\/dependabot\.ya?ml$'
-  ],
-  allowed_pattern_sources,
-  "auto-merge workflow changed-file allowlist"
-)
-allowed_file_patterns = allowed_pattern_sources.map do |source|
-  Regexp.new(source.gsub('\\/', '/'))
-end
-allowed_files = [
-  "package.json",
-  "apps/site/package.json",
-  "pnpm-lock.yaml",
-  ".github/workflows/ci.yaml",
-  ".github/dependabot.yml"
-]
-disallowed_files = ["README.md", "src/app/page.tsx", "scripts/release.sh"]
-assert(
-  allowed_files.all? { |file| allowed_file_patterns.any? { |pattern| pattern.match?(file) } },
-  "dependency-only files must satisfy the allowlist"
-)
-assert(
-  disallowed_files.none? { |file| allowed_file_patterns.any? { |pattern| pattern.match?(file) } },
-  "non-dependency files must fail the allowlist"
-)
-
-auto_merge_eligible = lambda do |actor:, author:, base:, draft:, ecosystem:, update_type:, files:|
-  actor == "dependabot[bot]" &&
-    author == "dependabot[bot]" &&
-    base == "main" &&
-    !draft &&
-    %w[npm npm_and_yarn github_actions].include?(ecosystem) &&
-    %w[
-      version-update:semver-patch
-      version-update:semver-minor
-      version-update:semver-major
-    ].include?(update_type) &&
-    files.all? { |file| allowed_file_patterns.any? { |pattern| pattern.match?(file) } }
-end
-
-base_pr = {
-  actor: "dependabot[bot]",
-  author: "dependabot[bot]",
-  base: "main",
-  draft: false,
-  ecosystem: "npm_and_yarn",
-  files: ["package.json", "pnpm-lock.yaml"]
-}
-assert(
-  auto_merge_eligible.call(**base_pr, update_type: "version-update:semver-minor"),
-  "grouped routine npm updates must be eligible"
-)
-assert(
-  auto_merge_eligible.call(**base_pr, update_type: "version-update:semver-patch"),
-  "grouped security patches must be eligible without a separate gate"
-)
-assert(
-  auto_merge_eligible.call(**base_pr, update_type: "version-update:semver-major"),
-  "dependency-only major updates must remain eligible"
-)
-assert(
-  auto_merge_eligible.call(
-    **base_pr,
-    ecosystem: "github_actions",
-    update_type: "version-update:semver-minor",
-    files: [".github/workflows/ci.yaml"]
-  ),
-  "grouped GitHub Actions updates must be eligible"
-)
-assert(
-  !auto_merge_eligible.call(
-    **base_pr,
-    update_type: "version-update:semver-patch",
-    files: ["package.json", "src/app/page.tsx"]
-  ),
-  "updates with disallowed files must remain open"
-)
-
-protected_merge_ready = lambda do |check_conclusions|
-  REQUIRED_CHECKS.all? { |name| check_conclusions[name] == "success" }
-end
-passing_checks = REQUIRED_CHECKS.to_h { |name| [name, "success"] }
-failed_checks = passing_checks.merge("Jest Tests" => "failure")
-assert(protected_merge_ready.call(passing_checks), "all four protected checks must permit native auto-merge")
-assert(!protected_merge_ready.call(failed_checks), "a failed protected check must keep the update open")
-
-refresh_eligible = lambda do |auto_merge_enabled:, mergeable_state:, failed:, pending:|
-  auto_merge_enabled && mergeable_state == "behind" && failed.zero? && pending.zero?
-end
-assert(
-  refresh_eligible.call(auto_merge_enabled: true, mergeable_state: "behind", failed: 0, pending: 0),
-  "a green behind branch must be refreshed"
-)
-assert(
-  !refresh_eligible.call(auto_merge_enabled: true, mergeable_state: "behind", failed: 1, pending: 0),
-  "a failed behind branch must stay open without repeated refresh"
-)
-assert(
-  !refresh_eligible.call(auto_merge_enabled: true, mergeable_state: "dirty", failed: 0, pending: 0),
-  "a conflicting branch must stay open"
-)
-
-refresh_on = workflow_triggers(refresh)
-assert(refresh_on.key?("push"), "refresh must retain the main push trigger")
-assert(refresh_on.key?("pull_request_target"), "refresh must retain the merged-PR trigger")
-assert(refresh_on.key?("workflow_dispatch"), "refresh must retain manual recovery")
-assert_equal(
-  ["23 20 * * *"],
-  refresh_on.fetch("schedule").map { |entry| entry.fetch("cron") },
-  "refresh must use one measured daily fallback"
-)
-
-refresh_job = refresh.fetch("jobs").fetch("refresh-behind-prs")
-assert_equal(5, refresh_job.fetch("timeout-minutes"), "refresh timeout")
-
-refresh_source = File.read(File.join(ROOT, ".github/workflows/dependabot-behind-refresh.yml"))
-[
-  "details.data.auto_merge !== null",
-  "mergeableState !== 'behind'",
-  "failedChecks.length > 0",
-  "failedStatuses.length > 0",
-  "pendingChecks.length > 0",
-  "pendingStatuses.length > 0",
-  "github.rest.pulls.updateBranch",
-  "core.setFailed"
-].each do |contract|
-  assert(refresh_source.include?(contract), "refresh workflow must retain #{contract}")
-end
+assert(auto_source.include?("ref: ${{ github.workflow_sha }}"), "checkout must use immutable trusted source")
+assert(auto_source.include?("persist-credentials: false"), "checkout must not persist credentials")
+assert(!auto_source.include?("REPO_ADMIN_TOKEN"), "broad legacy credential must not reach controller")
+assert(!File.exist?(File.join(ROOT, ".github/workflows/dependabot-behind-refresh.yml")), "no competing unbounded refresh workflow")
+assert(system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-recovery.contract.cjs")), "controller behavior tests")
 
 branch_protection = read_json(".github/branch-protection/main.json")
 required_status_checks = branch_protection.fetch("required_status_checks")
