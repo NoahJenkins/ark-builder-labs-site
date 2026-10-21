@@ -21,7 +21,7 @@ function normalizeWorkflow(text, allowNode = true) {
     // Preserve legacy tag updates without allowing an immutable pin to become a tag.
     lines[pin.index] = `${pin.prefix}${pin.action}@${pin.sha ? 'SHA_PIN' : 'TAG_REF'}`
   }
-  if(allowNode)for(const input of workflowNodeReferences(text))if(nodeVersion.test(input.version))lines[input.index]=`${input.prefix}NODE`
+  if(allowNode)for(const input of workflowNodeReferences(text))if(nodeVersion.test(input.version))lines[input.index]=`${input.prefix}NODE${input.suffix}`
   return lines.join('\n')
 }
 
