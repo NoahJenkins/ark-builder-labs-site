@@ -93,3 +93,5 @@ Snapshot fallback for an already-published conflict repair requires one authenti
 Repairs may add regression tests only under `src/__tests__/` for Jest, with `.test.ts`, `.test.tsx`, `.spec.ts`, or `.spec.tsx` names. Existing tests and setup files remain protected. New tests in ignored or unsupported paths are refused. Playwright additions under `tests/` are blocked because the isolated validator does not run Playwright; the fresh hosted Playwright check remains required before merge.
 
 Node-version normalization uses the same parser-identified setup inputs as target retention. Environment keys, nested data, script text, and inputs to unrelated actions remain protected workflow content.
+
+The shared Node-input parser records major wildcard selectors such as `22.x` and `24.x`, including quoted values and flow mappings. Scope validation still applies each repository's existing Node-version policy. Retention rejects fallback that discards a requested wildcard target; UniFi continues to require manual review for Node-version edits.
