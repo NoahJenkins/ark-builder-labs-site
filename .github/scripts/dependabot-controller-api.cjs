@@ -71,15 +71,19 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
       const result = await request(existing ? 'PATCH' : 'POST', existing ? `${root}/check-runs/${existing.id}` : `${root}/check-runs`, body)
       if (result.app?.id !== config.appId || result.head_sha !== pr.head.sha) throw new Error('Unexpected merge-gate publisher or head')
     },
+    async getPublishedRepairClaim(pr,main) {
+      const claims=(await client.getClaims()).filter(claim=>claim.published===true && claim.publishAttempted===true && claim.resultId===pr.head.sha && claim.task?.kind==='repair' && claim.task.pr===pr.number && claim.task.prId===pr.node_id && claim.task.base===main && claim.task.head!==pr.head.sha && /^[0-9a-f]{40}$/.test(claim.task.head || '') && claim.origin?.repositoryId===config.repositoryId && claim.origin.workflowSha===main && claim.origin.workflowPath==='.github/workflows/dependabot-auto-merge.yml' && claim.origin.ref==='refs/heads/main')
+      return claims.length===1?claims[0]:null
+    },
     async adoptPublishedBaseline(change,pr,main,mainContent) {
       const adopted=adoptMainBaseline(change,mainContent,evaluateScope,change.before)
       if(adopted===change)return change
       // Ancestor contents alone cannot recover a target already removed from
       // the current head. Bind fallback to the App's published repair receipt
       // and compare with that repair's immutable, pre-publication parent.
-      const claims=(await client.getClaims()).filter(claim=>claim.published===true && claim.publishAttempted===true && claim.resultId===pr.head.sha && claim.task?.kind==='repair' && claim.task.pr===pr.number && claim.task.prId===pr.node_id && claim.task.base===main && claim.task.head!==pr.head.sha && /^[0-9a-f]{40}$/.test(claim.task.head || '') && claim.origin?.repositoryId===config.repositoryId && claim.origin.workflowSha===main && claim.origin.workflowPath==='.github/workflows/dependabot-auto-merge.yml' && claim.origin.ref==='refs/heads/main')
-      if(claims.length!==1)return change
-      const before=await content(change.filename,claims[0].task.head)
+      const claim=await client.getPublishedRepairClaim(pr,main)
+      if(!claim)return change
+      const before=await content(change.filename,claim.task.head)
       return retainsRepairTargets({...change,before},mainContent,change.before)?adopted:change
     },
     async snapshot(pr, main) {
@@ -105,7 +109,10 @@ function createClient(config, readToken, writeToken, fetcher = fetch) {
       const scope = evaluateScope(changes)
       const {classifyDependabotPullRequest} = await import('./classify-dependabot-pr.mjs')
       const dependencyFiles = files.filter(f=>/package\.json$|(?:pnpm-lock\.yaml|pnpm-workspace\.yaml)$|^\.github\/(?:workflows\/|dependabot\.)/.test(f.filename))
-      const classification = classifyDependabotPullRequest({author:{login:pr.user?.login},body:pr.body,title:pr.title,files:dependencyFiles})
+      // Only validated publication by the dedicated App can extend an initial
+      // dependency-only PR with source or regression-test repairs.
+      const repaired=dependencyFiles.length!==files.length && await client.getPublishedRepairClaim(pr,main)
+      const classification = classifyDependabotPullRequest({author:{login:pr.user?.login},body:pr.body,title:pr.title,files:repaired?dependencyFiles:files})
       if (scope.allowed) await client.verifyActionPins(changes.filter((file) => file.filename.startsWith('.github/workflows/')))
       const workflow = await request('GET', `${root}/actions/workflows/ci.yaml`)
       const runs = await list(`${root}/actions/workflows/${workflow.id}/runs?head_sha=${pr.head.sha}&event=pull_request`, 'workflow_runs')
