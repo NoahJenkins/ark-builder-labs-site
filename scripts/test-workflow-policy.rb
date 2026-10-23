@@ -124,16 +124,26 @@ assert_equal(REQUIRED_CHECKS.sort, ci_check_names.sort, "CI job names must match
 
 # Bound setup costs independently from test execution. Cache hits must never
 # skip Linux system dependencies or restore browsers from an unrelated lockfile.
+job_limits = { "typecheck" => 10, "jest-tests" => 10, "build" => 15, "playwright-tests" => 15 }
+assert_equal(job_limits.keys.sort, ci.fetch("jobs").keys.sort, "every CI job must have a reviewed time limit")
 ci.fetch("jobs").each do |name, job|
   timeout = job.fetch("timeout-minutes")
-  assert(timeout.is_a?(Integer) && timeout.between?(1, 15), "#{name} job timeout must be at most 15 minutes")
+  assert(timeout.is_a?(Integer) && timeout.between?(1, job_limits.fetch(name)), "#{name} job exceeds its time limit")
   job.fetch("steps").each do |step|
     command = step.fetch("run", "")
-    next unless command.include?("pnpm install ") || command.include?("playwright install")
+    action = step.fetch("uses", "")
+    limit = if command.include?("pnpm install ") || command.include?("playwright install")
+      5
+    elsif action.start_with?("pnpm/action-setup@", "actions/setup-node@")
+      3
+    elsif action.start_with?("actions/cache@")
+      2
+    end
+    next unless limit
 
     timeout = step.fetch("timeout-minutes")
-    assert(timeout.is_a?(Integer) && timeout.between?(1, 5), "#{name} install timeout must be at most 5 minutes")
-    assert(!step.fetch("continue-on-error", false), "#{name} must fail on an install timeout")
+    assert(timeout.is_a?(Integer) && timeout.between?(1, limit), "#{name} setup/install/cache exceeds its time limit")
+    assert(!step.fetch("continue-on-error", false), "#{name} must fail on a setup/install/cache timeout")
   end
 end
 browser_steps = ci.fetch("jobs").fetch("playwright-tests").fetch("steps")
