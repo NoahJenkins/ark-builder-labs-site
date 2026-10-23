@@ -122,6 +122,32 @@ assert_equal(REQUIRED_CHECKS, required_status_checks.fetch("contexts"), "protect
 ci_check_names = ci.fetch("jobs").values.map { |job| job.fetch("name") }
 assert_equal(REQUIRED_CHECKS.sort, ci_check_names.sort, "CI job names must match protected checks exactly")
 
+# Bound setup costs independently from test execution. Cache hits must never
+# skip Linux system dependencies or restore browsers from an unrelated lockfile.
+ci.fetch("jobs").each do |name, job|
+  timeout = job.fetch("timeout-minutes")
+  assert(timeout.is_a?(Integer) && timeout.between?(1, 15), "#{name} job timeout must be at most 15 minutes")
+  job.fetch("steps").each do |step|
+    command = step.fetch("run", "")
+    next unless command.include?("pnpm install ") || command.include?("playwright install")
+
+    timeout = step.fetch("timeout-minutes")
+    assert(timeout.is_a?(Integer) && timeout.between?(1, 5), "#{name} install timeout must be at most 5 minutes")
+    assert(!step.fetch("continue-on-error", false), "#{name} must fail on an install timeout")
+  end
+end
+browser_steps = ci.fetch("jobs").fetch("playwright-tests").fetch("steps")
+browser_cache = browser_steps.find { |step| step["id"] == "playwright-cache" }.fetch("with")
+assert_equal("~/.cache/ms-playwright", browser_cache.fetch("path"), "browser cache must contain browser binaries only")
+%w[runner.os runner.arch pnpm-lock.yaml].each do |part|
+  assert(browser_cache.fetch("key").include?(part), "browser cache key must include #{part}")
+end
+assert(!browser_cache.key?("restore-keys"), "browser cache must require the exact lockfile key")
+system_install = browser_steps.find { |step| step["run"] == "pnpm exec playwright install-deps" }
+assert(system_install && !system_install.key?("if"), "Linux system dependencies must install on cache hits and misses")
+browser_install = browser_steps.find { |step| step["run"] == "pnpm exec playwright install" }
+assert_equal("steps.playwright-cache.outputs.cache-hit != 'true'", browser_install.fetch("if"), "cached browser binaries must skip the download")
+
 repository_settings = read_json(".github/repository-settings/repository.json")
 assert_equal(true, repository_settings.fetch("allow_auto_merge"), "repository must allow auto-merge")
 assert_equal(true, repository_settings.fetch("allow_update_branch"), "repository must allow branch updates")

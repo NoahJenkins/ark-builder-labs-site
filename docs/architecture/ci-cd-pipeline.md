@@ -13,7 +13,7 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 2) Jest Tests
 - **Trigger conditions:** Runs after `TypeScript & Lint` succeeds
-- **Actions performed:** Fresh install + `pnpm test`; upload coverage artifact if present
+- **Actions performed:** Frozen install from the pnpm store cache + `pnpm test`; upload coverage artifact if present
 - **Success criteria:** Jest test suite passes
 - **Typical duration:** ~1-4 minutes
 
@@ -25,7 +25,7 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 
 ### 4) Playwright Tests
 - **Trigger conditions:** Runs after `TypeScript & Lint` succeeds, in parallel with `Build Check`
-- **Actions performed:** Install dependencies, install Playwright browsers/deps, run `pnpm run test:e2e`, upload reports/artifacts
+- **Actions performed:** Restore the pnpm store and exact Playwright browser cache, install system libraries under a 5-minute limit, download browsers only on a cache miss, run `pnpm run test:e2e`, upload failure artifacts
 - **Success criteria:** E2E suite passes across configured projects
 - **Typical duration:** ~4-12 minutes
 
@@ -55,6 +55,15 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 - **Success criteria:** Branch protection configuration and verification pass
 - **Typical duration:** <1 minute
 
+## CI Install Limits and Caches
+
+- TypeScript/lint and Jest jobs stop after 10 minutes. Build and Playwright jobs stop after 15 minutes.
+- Each package, browser, or Linux system-library install stops after 5 minutes. Node/pnpm setup stops after 3 minutes; explicit cache operations stop after 2 minutes. An install failure fails the job; there is no fallback install or automatic retry.
+- Every job uses the existing pnpm store cache and a frozen lockfile with `--prefer-offline`. This reuses downloaded packages while preserving lockfile validation and required lifecycle scripts; `node_modules` is not cached.
+- Playwright browser binaries use an exact OS, architecture, and `pnpm-lock.yaml` cache key. A hit skips browser downloads. A miss installs and caches the configured browsers. Broad restore keys are prohibited because a different lockfile can require different browser builds.
+- Linux system libraries are not part of the browser cache. They install on both cache hits and misses under the same 5-minute limit.
+- New commits cancel superseded CI runs. A setup timeout requires investigation before another run; do not retry it automatically or increase the limit to obtain a green result.
+
 ## Deployment Environments
 - **Staging:**
 	- Trigger: N/A (not configured)
@@ -76,10 +85,10 @@ Referenced by tooling/runtime in repository configuration:
 - `NODE_ENV`
 
 ## Troubleshooting
-- **pnpm install failures:** Confirm lockfile consistency and registry access; re-run with clean cache
+- **pnpm install failures:** Inspect the timed-out or failed step, lockfile consistency, and registry access before another run; preserve useful caches
 - **Dependabot security alerts remain open after dependency PRs merge:** Check whether `pnpm-lock.yaml` is still pinning vulnerable transitive versions; if so, add targeted `pnpm.overrides`, regenerate the lockfile, and re-run `pnpm audit`
 - **TypeScript/lint failures:** Run `pnpm exec tsc --noEmit` and `pnpm lint` locally before pushing
-- **Playwright failures due to browser setup:** Ensure `pnpm exec playwright install --with-deps` ran successfully in CI
+- **Playwright failures due to browser setup:** Check the separate system-library and browser-install steps; a browser cache hit does not replace Linux system libraries
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
 - **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled and `can_approve_pull_request_reviews` is true in repository settings
 - **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran after the latest merge to `main` or on the next daily fallback, and confirm `REPO_ADMIN_TOKEN` is configured; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
