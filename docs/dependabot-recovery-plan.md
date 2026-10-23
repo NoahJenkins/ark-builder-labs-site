@@ -1,7 +1,7 @@
 # Dependabot recovery implementation plan
 
 1. Retain the current update eligibility policy and CI requirements.
-2. Reuse the trusted OpenCode worker, broker, validator and publisher boundary.
+2. Reuse the trusted Copilot worker, broker, validator and publisher boundary.
 3. Add event and scheduled reconciliation, with at most two repair, two CI retry and two branch refresh attempts per PR across its lifetime.
 4. Require current head/base checks, independent review and an App-bound gate before native squash merge.
 5. Persist a production deployment failure latch; operator action is required to clear it.

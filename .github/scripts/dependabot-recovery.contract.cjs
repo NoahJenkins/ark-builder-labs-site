@@ -53,14 +53,14 @@ test('failed CI repairs, interrupted CI retries, and behind branches refresh wit
 });
 test('worker denies command/network/task execution; review cannot edit',()=>{
  const config=agentConfig('review','http://broker:8080/v1','temporary');
- assert.equal(config.agent.review.permission.bash,'deny');assert.equal(config.agent.review.permission.edit,'deny');
- assert.equal(config.agent.review.permission.task,'deny');assert.deepEqual(config.plugin,[]);assert.deepEqual(config.mcp,{});
+ assert.deepEqual(config.tools,['curated-read_data']);
+ assert.equal(config.provider,'github-copilot');assert.equal(config.maxAiCredits,30);
 });
 test('data contracts reject traversal, incomplete review and mismatched provenance',()=>{
  assert.throws(()=>validateFiles([{path:'../package.json',content:'{}'}]));
  assert.throws(()=>validateReview({verdict:'approve',findings:[],coveredFiles:['a'],assessment:{security:{status:'pass',rationale:'ok'},compatibility:{status:'pass',rationale:'ok'}}},['a','b']));
  assert.throws(()=>verifyRun({event:'pull_request',path:'.github/workflows/dependabot-auto-merge.yml'}, {}, {}));
- assert.throws(()=>verifyJobs([{name:'OpenCode worker (x)',status:'completed',conclusion:'success',id:1}],{nonce:'x'},{jobId:1}));
+ assert.throws(()=>verifyJobs([{name:'Copilot worker (x)',status:'completed',conclusion:'success',id:1}],{nonce:'x'},{jobId:1}));
 });
 test('source edits cannot weaken existing tests',()=>{
  assert.equal(evaluateScope([{filename:'src/app/a.test.ts',status:'modified',before:'expect(true).toBe(true)',after:''}]).allowed,false);
@@ -98,12 +98,12 @@ test('fresh read-only worker session emits a bound artifact and rejects command 
  const snapshot={task:t,changedFiles:['package.json'],baseFiles:{'package.json':'{}'},headFiles:{'package.json':'{}'},existingPaths:['package.json'],contextFiles:{}};
  const launcher=(bad)=>({env})=>{
    assert.equal(env.OPENCODE_GO_API_KEY,undefined);assert.equal(env.GH_TOKEN,undefined);
-   const events=[{type:'step_start',sessionID:'ses_test'},...(bad?[{type:'tool_use',part:{tool:'bash'}}]:[]),{type:'text',part:{text:JSON.stringify(report)}}];
+   const events=[{type:'model.call_start',data:{model:'gpt-6-luna'}},...(bad?[{type:'tool.execution_start',data:{toolName:'shell'}}]:[]),{type:'assistant.message',data:{model:'gpt-6-luna',content:JSON.stringify(report)}},{type:'result',exitCode:0,sessionId:'12345678-1234-1234-1234-123456789abc'}];
    return spawn(process.execPath,['-e',`for(const e of ${JSON.stringify(events)})process.stdout.write(JSON.stringify(e)+'\\n')`],{env:{PATH:process.env.PATH}});
  };
  try {
    const artifact=await runAgent(t,{root:path.join(root,'good'),snapshot,origin},{launcher:launcher(false)});
-   assert.equal(artifact.task.head,t.head);assert.equal(artifact.agent.model,'glm-5.3');assert.equal(artifact.origin.workflowSha,t.base);
+   assert.equal(artifact.task.head,t.head);assert.equal(artifact.agent.model,'gpt-6-luna');assert.equal(artifact.origin.workflowSha,t.base);
    await assert.rejects(()=>runAgent(t,{root:path.join(root,'bad'),snapshot,origin},{launcher:launcher(true)}),/Denied agent tool/);
  } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
@@ -311,9 +311,9 @@ test('repair permits only new tests executed by isolated Jest validation',()=>{
  for(const filename of blocked)assert.equal(evaluateScope([change(filename,'added')]).allowed,false,filename);
 });
 
-test('runtime refuses to start without its offline search binary',async()=>{
+test('runtime refuses to start without its Copilot credential',async()=>{
  const {launchIsolated}=require('./dependabot-opencode-worker.cjs');
- await assert.rejects(launchIsolated(task,{},agentConfig('review','http://broker:8080/v1','fixture'),{apiKey:'fixture',binaryPath:'/verified/opencode'}),/Verified ripgrep binary is missing/);
+ await assert.rejects(launchIsolated(task,{},agentConfig('review','http://broker:8080/v1','fixture'),{binaryPath:'/verified/copilot'}),/Copilot credential or verified binary is missing/);
 });
 test('runtime errors expose only allowlisted category and HTTP status',()=>{
  const {agentError}=require('./dependabot-opencode-worker.cjs');
