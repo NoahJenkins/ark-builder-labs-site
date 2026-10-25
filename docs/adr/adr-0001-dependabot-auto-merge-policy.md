@@ -130,7 +130,7 @@ The sections above record the March and August policy. The active policy is this
 
 Enable native squash auto-merge for Dependabot pull requests that are patch updates, minor updates, any GitHub Actions update, or a Dependabot security update. Leave npm semver-major updates open and label them `needs-review`. Do not approve pull requests in the workflow. Required CI checks remain the merge gate.
 
-The October controller that replaced the earlier auto-merge workflow is withdrawn. It was added with automation switched off, so Dependabot pull requests stopped merging on green CI. Its repair worker, App-bound merge gate, and lifetime refresh cap are not part of this policy.
+The October controller that replaced the earlier auto-merge workflow is withdrawn as the merge authority. It was added with automation switched off, so Dependabot pull requests stopped merging on green CI. Its App-bound merge gate and lifetime refresh cap are not part of this policy. GitHub Copilot dependency repair stays, including the offline runtime check and the worker that still uses legacy `dependabot-opencode-*` filenames. The OpenCode inference proxy is not part of that runtime.
 
 ## Withdrawn controller (2026-10-20)
 

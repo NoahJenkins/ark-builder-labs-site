@@ -64,7 +64,7 @@ Workflow token permissions:
 
 Job timeout: 5 minutes. One concurrent run per pull request.
 
-The October 2026 Dependabot controller is removed. It shipped with automation disabled, so Dependabot pull requests received "automation is disabled pending setup" instead of merging. There is no separate behind-branch refresh workflow; Dependabot rebases its own pull requests, and native auto-merge still waits until required checks are green on the current base.
+The October 2026 Dependabot merge controller is removed. It shipped with automation disabled, so Dependabot pull requests received "automation is disabled pending setup" instead of merging. GitHub Copilot repair remains: `.github/workflows/copilot-setup-steps.yml`, the offline check in `.github/workflows/copilot-runtime-check.yml`, and the Copilot worker under its legacy `dependabot-opencode-*` filenames. The OpenCode inference proxy does not. There is no separate behind-branch refresh workflow; Dependabot rebases its own pull requests, and native auto-merge still waits until required checks are green on the current base.
 
 ## Repository Settings Health
 

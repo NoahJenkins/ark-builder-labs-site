@@ -167,10 +167,47 @@ assert(!auto_source.include?("pull_request_target"), "auto-merge does not run on
 assert(!auto_source.include?("REPO_ADMIN_TOKEN"), "auto-merge does not use a maintainer token")
 assert(auto_source.include?("--add-label needs-review"), "semver-major updates are labeled needs-review")
 assert(!File.exist?(File.join(ROOT, ".github/workflows/dependabot-behind-refresh.yml")), "no competing unbounded refresh workflow")
-assert(!File.exist?(File.join(ROOT, ".github/workflows/copilot-runtime-check.yml")), "controller worker check is removed with the controller")
+assert(!File.exist?(File.join(ROOT, ".github/scripts/dependabot-opencode-proxy.cjs")), "OpenCode inference proxy is removed")
+assert(!File.exist?(File.join(ROOT, ".github/scripts/dependabot-controller-run.cjs")), "disabled merge controller entrypoint is removed")
+assert(!File.exist?(File.join(ROOT, ".github/scripts/dependabot-controller.cjs")), "disabled merge controller is removed")
+assert(File.exist?(File.join(ROOT, ".github/workflows/copilot-setup-steps.yml")), "Copilot coding-agent setup remains")
+assert(File.exist?(File.join(ROOT, ".github/workflows/copilot-runtime-check.yml")), "Copilot offline runtime check remains")
+assert(File.exist?(File.join(ROOT, ".github/opencode/validator.Dockerfile")), "Copilot repair validator image remains")
+%w[repair.md review.md].each do |prompt|
+  assert(File.exist?(File.join(ROOT, ".github/opencode", prompt)), "Copilot worker prompt #{prompt} remains")
+end
+%w[
+  copilot-data.cjs
+  copilot-runtime.cjs
+  copilot-runtime.contract.cjs
+  copilot-smoke.cjs
+  copilot-worker-usage.fixture.cjs
+  dependabot-opencode-worker.cjs
+  dependabot-opencode-contract.cjs
+  dependabot-controller-ledger.cjs
+  dependabot-workflow-shape.cjs
+].each do |script|
+  assert(File.exist?(File.join(ROOT, ".github/scripts", script)), "Copilot runtime still needs #{script}")
+end
+copilot_check = File.read(File.join(ROOT, ".github/workflows/copilot-runtime-check.yml"))
+assert(copilot_check.include?("copilot-runtime.contract.cjs"), "runtime check runs the Copilot contract")
+assert(copilot_check.include?("copilot-smoke.cjs"), "runtime check runs the Copilot smoke test")
+referenced = []
+Dir.glob(File.join(ROOT, ".github/{workflows,scripts}/**/*.{yml,yaml,cjs,mjs}")).each do |file|
+  File.read(file).scan(%r{\.github/(?:scripts|opencode|workflows)/[A-Za-z0-9_./-]+\.(?:cjs|mjs|yml|yaml|md)}) do |match|
+    referenced << match
+  end
+end
+referenced.uniq.each do |relative|
+  assert(File.exist?(File.join(ROOT, relative)), "workflow or script references missing file #{relative}")
+end
 assert(
   system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-auto-merge-decision.test.mjs")),
   "auto-merge eligibility tests"
+)
+assert(
+  system("node", "--test", File.join(ROOT, ".github/scripts/copilot-runtime.contract.cjs")),
+  "Copilot runtime contract"
 )
 
 branch_protection = read_json(".github/branch-protection/main.json")
