@@ -1,6 +1,6 @@
 # CI and Branch Protection Architecture
 
-Last updated: 2026-10-22
+Last updated: 2026-10-25
 
 ## CI Required Checks
 
@@ -39,67 +39,32 @@ Security grouping changes pull request packaging. It does not add an ignore rule
 Workflow: `.github/workflows/dependabot-auto-merge.yml`
 
 Trigger:
-- `pull_request_target` on `opened`, `reopened`, `synchronize`, `ready_for_review`
+- `pull_request` on `opened`, `reopened`, `synchronize`, `ready_for_review` for `main`
+- pull request author is `dependabot[bot]`
+- pull request is not a draft
 
-Eligibility gates:
-- actor is `dependabot[bot]`
-- PR author is `dependabot[bot]`
-- base branch is `main`
-- PR is not draft
-- ecosystem metadata is `npm`, `npm_and_yarn`, or `github_actions`
-- update type is `version-update:semver-patch`, `version-update:semver-minor`, or `version-update:semver-major`
-- changed files are limited to dependency/workflow allowlist
+Eligibility, from `dependabot/fetch-metadata` (pinned by commit SHA):
+- semver patch and semver minor updates
+- every GitHub Actions update, including majors
+- Dependabot security updates, when the metadata group, GHSA/alert fields, or Dependabot's own "security fix" sentence marks them
+- semver-major npm updates stay open and receive the `needs-review` label
 
 Eligible behavior:
-- auto-approve PR
 - enable native GitHub auto-merge with `squash`
-- fail early if repository-level auto-merge prerequisites drift
+- do not approve the pull request and do not bypass required checks
 - wait for `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests` to pass against the current `main` base through branch protection
-- leave failed, conflicting, or changed-file-disallowed updates open for manual investigation
 
-Repository prerequisites:
+Repository prerequisites, tracked separately from this workflow:
 - repository `allow_auto_merge == true`
 - repository `allow_squash_merge == true`
-- Actions workflow permissions `can_approve_pull_request_reviews == true`
-
-Configuration source of truth:
-- `.github/repository-settings/repository.json`
-- `.github/repository-settings/workflow-permissions.json`
-
-Local apply + verify:
-- `scripts/apply-repository-settings.sh`
 
 Workflow token permissions:
 - `contents: write`
 - `pull-requests: write`
 
-Job timeout: 5 minutes.
+Job timeout: 5 minutes. One concurrent run per pull request.
 
-## Dependabot Behind Refresh
-
-Workflow: `.github/workflows/dependabot-behind-refresh.yml`
-
-Trigger:
-- `push` to `main`
-- merged PRs targeting `main` via `pull_request_target: closed`
-- daily fallback at `20:23 UTC` (`23 20 * * *`)
-- manual `workflow_dispatch`
-
-Behavior:
-- finds open Dependabot PRs against `main`
-- waits briefly after `main` advances so GitHub can recalculate PR mergeability
-- uses `REPO_ADMIN_TOKEN` when configured because the default workflow token cannot reliably call the update-branch API on Dependabot-owned branches
-- filters to PRs with native auto-merge already enabled
-- refreshes only PRs whose latest checks are currently green
-- skips PRs with real failed or still-pending checks to avoid re-running known-bad dependency updates on every merge to `main`
-- retries when GitHub initially reports `mergeable_state=unknown`
-- updates branches whose mergeable state is `behind` so strict required checks can re-run immediately after `main` advances
-- handles merged-PR events because Dependabot auto-merges did not reliably produce follow-on `push` workflow runs on `main` during the 2026-03-31 investigation
-- fails the job when an update-branch request fails, so recovery failures remain visible
-
-Job timeout: 5 minutes.
-
-The daily schedule remains a fallback because the August 2026 review found 96 scheduled runs, one `push` run, and one `pull_request_target` run. Dependabot bot merges did not trigger the event paths in that sample; queued updates recovered through Dependabot self-rebases. This evidence supports reducing the schedule, but not removing the refresh mechanism.
+The October 2026 Dependabot controller is removed. It shipped with automation disabled, so Dependabot pull requests received "automation is disabled pending setup" instead of merging. There is no separate behind-branch refresh workflow; Dependabot rebases its own pull requests, and native auto-merge still waits until required checks are green on the current base.
 
 ## Repository Settings Health
 

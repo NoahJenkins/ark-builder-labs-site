@@ -100,7 +100,7 @@ Production build: `pnpm run build`
 ### CI and Branch Protection
 
 - CI required checks for `main`: `TypeScript & Lint`, `Jest Tests`, `Build Check`, `Playwright Tests`.
-- Dependabot auto-merge policy is implemented in `.github/workflows/dependabot-auto-merge.yml` with strict actor/base/update/file gates.
+- Dependabot auto-merge is `.github/workflows/dependabot-auto-merge.yml`. It enables squash auto-merge for Dependabot patch, minor, GitHub Actions, and security updates after CI is green, and leaves npm majors for review.
 - Branch protection source of truth is `.github/branch-protection/main.json`.
 - Apply/verify branch protection locally with: `bash scripts/apply-branch-protection.sh NoahJenkins ark-builder-labs-site main`.
 - Manual workflow option: `.github/workflows/branch-protection.yml` (uses `GITHUB_TOKEN`; local `scripts/apply-branch-protection.sh` remains the authoritative apply/verify path).

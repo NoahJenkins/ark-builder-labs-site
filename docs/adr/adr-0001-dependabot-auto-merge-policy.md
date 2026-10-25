@@ -16,6 +16,7 @@ Amended
 
 - 2026-03-31: Codified repository automation settings, added behind-branch refresh, and covered merged-PR trigger gaps.
 - 2026-08-24: Consolidated routine and security updates, removed direct maintainer routing, and reduced the refresh schedule to a daily fallback.
+- 2026-10-25: Replaced the disabled Dependabot controller with native squash auto-merge for patch, minor, GitHub Actions, and security updates. npm semver-major updates stay for review. The workflow does not approve pull requests.
 
 ## Context
 
@@ -100,6 +101,8 @@ Native squash auto-merge remains the merge authority. Routine, security, and eli
 
 ## Implementation Notes
 
+As of 2026-10-25, the approval step in IMP-002 and the behind-refresh workflow in IMP-006 and IMP-006A are withdrawn. The current implementation is the native auto-merge workflow described in "Current policy."
+
 - **IMP-001**: Implemented in `.github/workflows/dependabot-auto-merge.yml`.
 - **IMP-002**: Uses `dependabot/fetch-metadata` plus changed-file allowlist validation.
 - **IMP-003**: Uses GitHub native auto-merge with `SQUASH` method.
@@ -121,6 +124,14 @@ Native squash auto-merge remains the merge authority. Routine, security, and eli
 - **REF-005**: `.github/dependabot.yml`
 - **REF-006**: `docs/context/2026-08-24-dependabot-grouping-and-refresh-tuning.md`
 
-## Bounded recovery implementation (2026-10-20)
+## Current policy (2026-10-25)
 
-The [controller setup](../dependabot-controller-setup.md) retains all-semver eligibility and adds current-head/base CI, an App-bound gate, independent OpenCode review, bounded repair/retry/refresh and a production failure latch. The prior auto-approval and behind-refresh jobs are replaced by one serialized controller. Activation is pending dedicated credentials, protected environments, live protection and a hosted canary.
+The sections above record the March and August policy. The active policy is this amendment.
+
+Enable native squash auto-merge for Dependabot pull requests that are patch updates, minor updates, any GitHub Actions update, or a Dependabot security update. Leave npm semver-major updates open and label them `needs-review`. Do not approve pull requests in the workflow. Required CI checks remain the merge gate.
+
+The October controller that replaced the earlier auto-merge workflow is withdrawn. It was added with automation switched off, so Dependabot pull requests stopped merging on green CI. Its repair worker, App-bound merge gate, and lifetime refresh cap are not part of this policy.
+
+## Withdrawn controller (2026-10-20)
+
+The controller described here was not activated. It is not the current implementation. It would have retained all-semver eligibility and added current-head/base CI, an App-bound gate, independent review, bounded repair/retry/refresh, and a production failure latch. Activation stayed pending dedicated credentials and a hosted canary, and the disabled rollout blocked Dependabot merges.
