@@ -29,21 +29,14 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 - **Success criteria:** E2E suite passes across configured projects
 - **Typical duration:** ~4-12 minutes
 
-### 5) Dependabot Auto-Merge Policy
-- **Trigger conditions:** `pull_request_target` events for Dependabot PRs (`opened`, `reopened`, `synchronize`, `ready_for_review`)
-- **Actions performed:** Fetch metadata, verify repository-level auto-merge prerequisites, validate the changed-file allowlist, enforce actor/author/base/draft/ecosystem/update-type gates, auto-approve, and enable native squash auto-merge. Dependabot separately groups routine npm and GitHub Actions patch/minor updates and security updates; safe major updates remain standalone.
-- **Success criteria:** Eligibility rules pass, auto-merge is enabled, and branch protection waits for the exact `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests` checks on the current `main` base. Failed, conflicting, or disallowed updates remain open.
-- **Typical duration:** <1 minute
+### 5) Dependabot Auto-Merge
+- **Trigger conditions:** `pull_request` to `main` (`opened`, `reopened`, `synchronize`, `ready_for_review`) when the author is `dependabot[bot]` and the pull request is not a draft
+- **Actions performed:** Read pinned Dependabot metadata and enable native squash auto-merge for patch, minor, GitHub Actions, and security updates. Semver-major npm updates stay open and get the `needs-review` label. The workflow does not approve pull requests.
+- **Success criteria:** Auto-merge is enabled only for an eligible Dependabot update. Branch protection still waits for `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests` on the current `main` base.
+- **Typical duration:** a few seconds
 - **Timeout:** 5 minutes
 
-### 6) Dependabot Behind Refresh
-- **Trigger conditions:** `push` to `main`, merged PRs targeting `main` via `pull_request_target: closed`, daily fallback at `20:23 UTC`, and manual `workflow_dispatch`
-- **Actions performed:** After `main` advances, wait briefly for GitHub to recalculate PR mergeability, authenticate with `REPO_ADMIN_TOKEN` when available, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`. Any update-branch failure fails the job.
-- **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed after `main` advances or by the daily recovery path, while genuinely failing dependency updates remain open for manual follow-up.
-- **Typical duration:** <1 minute
-- **Timeout:** 5 minutes
-
-### 7) Repository Settings Health
+### 6) Repository Settings Health
 - **Trigger conditions:** Daily schedule and manual `workflow_dispatch`
 - **Actions performed:** If `REPO_ADMIN_TOKEN` is configured, re-apply and verify tracked repository automation settings with `scripts/apply-repository-settings.sh`; otherwise emit a notice and exit successfully
 - **Success criteria:** Admin-token runs prove tracked settings still apply cleanly; non-admin runs remain non-failing and clearly indicate that verification was skipped
@@ -90,8 +83,8 @@ Referenced by tooling/runtime in repository configuration:
 - **TypeScript/lint failures:** Run `pnpm exec tsc --noEmit` and `pnpm lint` locally before pushing
 - **Playwright failures due to browser setup:** Check the separate system-library and browser-install steps; a browser cache hit does not replace Linux system libraries
 - **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
-- **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled and `can_approve_pull_request_reviews` is true in repository settings
-- **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran after the latest merge to `main` or on the next daily fallback, and confirm `REPO_ADMIN_TOKEN` is configured; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
+- **Dependabot auto-merge not enabled:** Confirm the author is `dependabot[bot]`, the pull request is not draft, and metadata classifies it as patch, minor, GitHub Actions, or a security update. Semver-major npm updates are labeled `needs-review` and left open. Confirm repository `allow_auto_merge` and `allow_squash_merge` remain enabled. Native auto-merge still waits for the four required CI checks.
+- **Dependabot PRs stuck behind `main`:** Strict required checks wait for the current base. Dependabot rebases its own branches; this repository does not run a separate behind-refresh workflow.
 
 ## Maintenance
 - Update workflow action versions periodically (e.g., `actions/checkout`, `actions/setup-node`)

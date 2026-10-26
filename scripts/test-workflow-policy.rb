@@ -2,6 +2,7 @@
 # frozen_string_literal: true
 
 require "json"
+require "pathname"
 require "yaml"
 
 ROOT = File.expand_path("..", __dir__)
@@ -99,20 +100,129 @@ assert_group(
   applies_to: "security-updates"
 )
 
+def repo_paths(pattern)
+  Dir.glob(File.join(ROOT, pattern)).reject { |path| path.include?("/node_modules/") || path.include?("/.git/") }
+end
+
+def dependabot_directory(path)
+  relative = Pathname.new(path).relative_path_from(Pathname.new(ROOT)).dirname.to_s
+  relative == "." ? "/" : "/#{relative}"
+end
+
+npm_directories = updates.select { |entry| entry["package-ecosystem"] == "npm" }.map { |entry| entry.fetch("directory") }
+%w[package.json pnpm-lock.yaml pnpm-workspace.yaml].each do |manifest|
+  repo_paths("**/#{manifest}").each do |path|
+    directory = dependabot_directory(path)
+    assert(npm_directories.include?(directory), "npm Dependabot config must cover #{directory} (#{manifest})")
+  end
+end
+
+assert_equal("/", actions_updates.fetch("directory"), "GitHub Actions Dependabot config must cover the repository root")
+assert(!repo_paths(".github/workflows/*.{yml,yaml}").empty?, "repository workflows must exist for the github-actions ecosystem")
+
+{
+  "docker" => ["**/Dockerfile", "**/Dockerfile.*"],
+  "gomod" => ["**/go.mod"],
+  "cargo" => ["**/Cargo.toml"],
+  "pip" => ["**/pyproject.toml", "**/requirements.txt"],
+  "bundler" => ["**/Gemfile"],
+  "composer" => ["**/composer.json"],
+  "maven" => ["**/pom.xml"]
+}.each do |ecosystem, patterns|
+  present = patterns.any? { |pattern| !repo_paths(pattern).empty? }
+  covered = updates.any? { |entry| entry["package-ecosystem"] == ecosystem }
+  assert(!present || covered, "#{ecosystem} manifest exists without a Dependabot ecosystem entry")
+end
+
 auto_source = File.read(File.join(ROOT, ".github/workflows/dependabot-auto-merge.yml"))
 triggers = workflow_triggers(auto_merge)
-%w[pull_request_target workflow_run status deployment_status schedule workflow_dispatch].each do |event|
-  assert(triggers.key?(event), "controller must reconcile #{event}")
-end
-%w[controller claim worker validate publish reconcile].each do |job|
-  assert(auto_merge.fetch("jobs").key?(job), "isolated #{job} stage is required")
-end
-assert(auto_source.include?("ref: ${{ github.workflow_sha }}"), "checkout must use immutable trusted source")
-assert(auto_source.include?("persist-credentials: false"), "checkout must not persist credentials")
-assert(!auto_source.include?("REPO_ADMIN_TOKEN"), "broad legacy credential must not reach controller")
+assert_equal(["pull_request"], triggers.keys, "auto-merge listens only to pull_request")
+pull_request = triggers.fetch("pull_request")
+assert_equal(["main"], pull_request.fetch("branches"), "auto-merge targets main")
+assert_equal(
+  %w[opened reopened synchronize ready_for_review],
+  pull_request.fetch("types"),
+  "auto-merge pull_request types"
+)
+job = auto_merge.fetch("jobs").fetch("auto-merge")
+assert_equal("ubuntu-latest", job.fetch("runs-on"), "auto-merge uses the repository runner")
+assert_equal(5, job.fetch("timeout-minutes"), "auto-merge timeout")
+assert_equal(
+  "dependabot-auto-merge-${{ github.event.pull_request.number }}",
+  auto_merge.fetch("concurrency").fetch("group"),
+  "auto-merge concurrency is per pull request"
+)
+assert(job.fetch("if").include?("dependabot[bot]"), "auto-merge runs only for Dependabot")
+assert(job.fetch("if").include?("draft == false"), "auto-merge skips drafts")
+assert_equal(
+  { "contents" => "write", "pull-requests" => "write" },
+  auto_merge.fetch("permissions"),
+  "auto-merge permissions"
+)
+uses = job.fetch("steps").map { |step| step["uses"] }.compact
+assert(uses.any? { |action| action.match?(%r{\Adependabot/fetch-metadata@[0-9a-f]{40}(?: #|$)}) }, "fetch-metadata is pinned to a full SHA")
+assert(auto_source.include?("gh pr merge --auto --squash"), "auto-merge enables native squash auto-merge")
+assert(!auto_source.include?("--approve"), "auto-merge does not approve pull requests")
+assert(!auto_source.include?("pull_request_target"), "auto-merge does not run on pull_request_target")
+assert(!auto_source.include?("REPO_ADMIN_TOKEN"), "auto-merge does not use a maintainer token")
+assert(auto_source.include?("--add-label needs-review"), "semver-major updates are labeled needs-review")
 assert(!File.exist?(File.join(ROOT, ".github/workflows/dependabot-behind-refresh.yml")), "no competing unbounded refresh workflow")
-assert(system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-recovery.contract.cjs")), "controller behavior tests")
-assert(system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-gate-lifecycle.contract.cjs")), "controller gate lifecycle tests")
+assert(!File.exist?(File.join(ROOT, ".github/scripts/dependabot-opencode-proxy.cjs")), "OpenCode inference proxy is removed")
+assert(!File.exist?(File.join(ROOT, ".github/scripts/dependabot-controller-run.cjs")), "disabled merge controller entrypoint is removed")
+assert(!File.exist?(File.join(ROOT, ".github/scripts/dependabot-controller.cjs")), "disabled merge controller is removed")
+assert(File.exist?(File.join(ROOT, ".github/workflows/copilot-setup-steps.yml")), "Copilot coding-agent setup remains")
+assert(File.exist?(File.join(ROOT, ".github/workflows/copilot-runtime-check.yml")), "Copilot offline runtime check remains")
+assert(File.exist?(File.join(ROOT, ".github/opencode/validator.Dockerfile")), "Copilot repair validator image remains")
+%w[repair.md review.md].each do |prompt|
+  assert(File.exist?(File.join(ROOT, ".github/opencode", prompt)), "Copilot worker prompt #{prompt} remains")
+end
+%w[
+  copilot-data.cjs
+  copilot-runtime.cjs
+  copilot-runtime.contract.cjs
+  copilot-smoke.cjs
+  copilot-worker-usage.fixture.cjs
+  dependabot-opencode-worker.cjs
+  dependabot-opencode-contract.cjs
+  dependabot-controller-ledger.cjs
+  dependabot-workflow-shape.cjs
+].each do |script|
+  assert(File.exist?(File.join(ROOT, ".github/scripts", script)), "Copilot runtime still needs #{script}")
+end
+copilot_check = File.read(File.join(ROOT, ".github/workflows/copilot-runtime-check.yml"))
+assert(copilot_check.include?("copilot-runtime.contract.cjs"), "runtime check runs the Copilot contract")
+assert(copilot_check.include?("copilot-smoke.cjs"), "runtime check runs the Copilot smoke test")
+referenced = []
+Dir.glob(File.join(ROOT, ".github/{workflows,scripts}/**/*.{yml,yaml,cjs,mjs}")).each do |file|
+  File.read(file).scan(%r{\.github/(?:scripts|opencode|workflows)/[A-Za-z0-9_./-]+\.(?:cjs|mjs|yml|yaml|md)}) do |match|
+    referenced << match
+  end
+end
+referenced.uniq.each do |relative|
+  assert(File.exist?(File.join(ROOT, relative)), "workflow or script references missing file #{relative}")
+end
+jest_test = "src/__tests__/lib/dependabot-auto-merge-decision.test.ts"
+assert(File.exist?(File.join(ROOT, jest_test)), "auto-merge eligibility tests live under src/__tests__")
+assert(
+  !File.exist?(File.join(ROOT, ".github/scripts/dependabot-auto-merge-decision.test.mjs")),
+  "Jest must not collect a node:test suite from .github"
+)
+assert(
+  File.read(File.join(ROOT, "jest.config.js")).include?("<rootDir>/.github/"),
+  "Jest must ignore .github"
+)
+assert(
+  !File.read(File.join(ROOT, jest_test)).include?("node:test"),
+  "auto-merge eligibility tests use Jest"
+)
+assert(
+  system("pnpm", "exec", "jest", File.join(ROOT, jest_test), "--watchman=false", chdir: ROOT),
+  "auto-merge eligibility tests"
+)
+assert(
+  system("node", "--test", File.join(ROOT, ".github/scripts/copilot-runtime.contract.cjs")),
+  "Copilot runtime contract"
+)
 
 branch_protection = read_json(".github/branch-protection/main.json")
 required_status_checks = branch_protection.fetch("required_status_checks")

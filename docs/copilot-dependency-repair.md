@@ -1,5 +1,7 @@
 # Copilot dependency repair
 
+Native Dependabot auto-merge now lives in `.github/workflows/dependabot-auto-merge.yml`. The disabled merge controller that used to claim, run, and validate repair tasks is not the merge path. The GitHub Copilot runtime described here remains, including the offline check in `.github/workflows/copilot-runtime-check.yml` and the coding-agent setup in `.github/workflows/copilot-setup-steps.yml`.
+
 Dependency repair and independent dependency review use GitHub Copilot CLI
 1.0.103 with the fixed `gpt-6-luna` model and the default context tier. There is
 no automatic model/provider fallback. A new session is used for each task.
