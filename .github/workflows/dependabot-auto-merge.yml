@@ -70,7 +70,7 @@ jobs:
       has_tasks: ${{ steps.reconcile.outputs.has_tasks }}
     steps:
       - name: Checkout trusted workflow source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
@@ -116,7 +116,7 @@ jobs:
       app_slug: ${{ steps.app-token.outputs.app-slug }}
     steps:
       - name: Checkout trusted workflow source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
@@ -167,7 +167,7 @@ jobs:
       DEPENDABOT_DATA_DIR: ${{ github.workspace }}/.dependabot-data
     steps:
       - name: Checkout trusted workflow source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
@@ -230,7 +230,7 @@ jobs:
       DEPENDABOT_DATA_DIR: ${{ github.workspace }}/.dependabot-validation
     steps:
       - name: Checkout trusted workflow source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
@@ -241,7 +241,7 @@ jobs:
           node-version: '24'
       - name: Checkout candidate data without persistent credentials
         if: matrix.task.kind == 'repair'
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ matrix.task.head }}
           persist-credentials: false
@@ -272,7 +272,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Checkout trusted workflow source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
@@ -315,7 +315,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout trusted workflow source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           ref: ${{ github.workflow_sha }}
           persist-credentials: false
