@@ -199,7 +199,7 @@ jobs:
           COPILOT_BINARY: ${{ runner.temp }}/copilot-bin/copilot
       - name: Retain sanitized model usage separately from trusted result
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: copilot-usage-${{ matrix.task.nonce }}
           path: ${{ github.workspace }}/.dependabot-data/session/usage.json
@@ -207,7 +207,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
       - name: Upload wrapper-owned data
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: worker-${{ matrix.task.nonce }}
           path: ${{ github.workspace }}/.dependabot-data/result.json
@@ -256,7 +256,7 @@ jobs:
           CANDIDATE_ROOT: ${{ github.workspace }}/candidate
           VALIDATOR_IMAGE: dependabot-validator
       - name: Upload validated data and digest chain
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: validated-${{ matrix.task.nonce }}
           path: ${{ github.workspace }}/.dependabot-validation/result.json
