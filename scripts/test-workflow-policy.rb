@@ -201,8 +201,22 @@ end
 referenced.uniq.each do |relative|
   assert(File.exist?(File.join(ROOT, relative)), "workflow or script references missing file #{relative}")
 end
+jest_test = "src/__tests__/lib/dependabot-auto-merge-decision.test.ts"
+assert(File.exist?(File.join(ROOT, jest_test)), "auto-merge eligibility tests live under src/__tests__")
 assert(
-  system("node", "--test", File.join(ROOT, ".github/scripts/dependabot-auto-merge-decision.test.mjs")),
+  !File.exist?(File.join(ROOT, ".github/scripts/dependabot-auto-merge-decision.test.mjs")),
+  "Jest must not collect a node:test suite from .github"
+)
+assert(
+  File.read(File.join(ROOT, "jest.config.js")).include?("<rootDir>/.github/"),
+  "Jest must ignore .github"
+)
+assert(
+  !File.read(File.join(ROOT, jest_test)).include?("node:test"),
+  "auto-merge eligibility tests use Jest"
+)
+assert(
+  system("pnpm", "exec", "jest", File.join(ROOT, jest_test), "--watchman=false", chdir: ROOT),
   "auto-merge eligibility tests"
 )
 assert(
