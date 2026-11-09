@@ -5,9 +5,10 @@ name: PR repair
 # (dependabot-controller environment) and AI_GATEWAY_API_KEY
 # (dependabot-dispatch environment); each job receives only its own credential.
 # It acts only when PR_REPAIR_ENABLED=true and holds off while the legacy
-# controller flag DEPENDABOT_AUTOMATION_ENABLED is true. It never merges an
-# original Dependabot PR; it repairs failing ones and merges only its own
-# validated replacements. See docs/pr-repair.md.
+# controller flag DEPENDABOT_AUTOMATION_ENABLED is true. It merges in-scope
+# Dependabot PRs once required checks pass (approving the exact head first),
+# repairs failing ones, and merges its own validated replacements. See
+# docs/pr-repair.md.
 on:
   workflow_run:
     workflows: [CI]
