@@ -73,7 +73,7 @@
     "agentLogins": []
   },
   "merge": {
-    "originals": false,
+    "originals": true,
     "approve": "none",
     "production": {
       "kind": "deployments",

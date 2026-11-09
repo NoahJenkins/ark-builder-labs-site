@@ -16,7 +16,15 @@ pull requests cannot change it for themselves.
   exact head. Then native auto-merge is queued with `expectedHeadOid`, and only
   while the latest Production deployment succeeded. The original closes after
   the replacement merges, if its head did not move.
-- Originals: not merged by pr-repair. The repository's own Dependabot workflow decides them (see open PR #178).
+- Originals: pr-repair merges in-scope Dependabot updates itself once the
+  required checks pass on the current head, and only while the latest
+  Production deployment succeeded. Because `main` requires up-to-date
+  branches and no account Dependabot obeys is configured, the App brings a
+  behind update up to date (update-branch) once per head. Dependabot stops
+  rebasing a branch someone else pushed to, so if such an update later
+  conflicts, it is reported as `needs-human`: comment `@dependabot recreate`.
+  The legacy controller in `dependabot-auto-merge.yml` stays off
+  (`DEPENDABOT_AUTOMATION_ENABLED=false`).
 - Human pull requests are never repaired, approved, resolved, or merged.
 
 Every Dependabot PR shows one state on its `pr-repair` check and on the
