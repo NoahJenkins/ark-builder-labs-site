@@ -124,7 +124,7 @@ Automation:
 
 Verification checks:
 - required checks exactly match configured contexts
-- `required_approving_review_count == 1`
+- `required_approving_review_count` matches the config (0)
 - `enforce_admins.enabled == false`
 
 ## Administrator Bypass Policy
