@@ -17,7 +17,7 @@ Branch protection requires strict current-base checks. Dependabot native auto-me
 - TypeScript/lint and Jest jobs stop after 10 minutes. Build and Playwright jobs stop after 15 minutes.
 - Each package, browser, or Linux system-library install stops after 5 minutes. Node/pnpm setup stops after 3 minutes; explicit cache operations stop after 2 minutes. An install failure fails the job; there is no fallback install or automatic retry.
 - Every job uses the existing pnpm store cache and a frozen lockfile with `--prefer-offline`. This reuses downloaded packages while preserving lockfile validation and required lifecycle scripts; `node_modules` is not cached.
-- Playwright browser binaries use an exact OS, architecture, and `pnpm-lock.yaml` cache key. A hit skips browser downloads. A miss installs and caches the configured browsers. Broad restore keys are prohibited because a different lockfile can require different browser builds.
+- Playwright browser binaries use an exact OS, architecture, OS release (from `/etc/os-release`), and `pnpm-lock.yaml` cache key; `ubuntu-latest` moves between releases, and each release needs its own browser builds. A hit skips browser downloads. A miss installs and caches the configured browsers. Broad restore keys are prohibited because a different lockfile can require different browser builds.
 - Linux system libraries are not part of the browser cache. They install on both cache hits and misses under the same 5-minute limit.
 - New commits cancel superseded CI runs. A setup timeout requires investigation before another run; do not retry it automatically or increase the limit to obtain a green result.
 
