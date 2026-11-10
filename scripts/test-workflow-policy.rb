@@ -149,7 +149,7 @@ end
 browser_steps = ci.fetch("jobs").fetch("playwright-tests").fetch("steps")
 browser_cache = browser_steps.find { |step| step["id"] == "playwright-cache" }.fetch("with")
 assert_equal("~/.cache/ms-playwright", browser_cache.fetch("path"), "browser cache must contain browser binaries only")
-%w[runner.os runner.arch pnpm-lock.yaml].each do |part|
+%w[runner.os runner.arch steps.os-release.outputs.release pnpm-lock.yaml].each do |part|
   assert(browser_cache.fetch("key").include?(part), "browser cache key must include #{part}")
 end
 assert(!browser_cache.key?("restore-keys"), "browser cache must require the exact lockfile key")

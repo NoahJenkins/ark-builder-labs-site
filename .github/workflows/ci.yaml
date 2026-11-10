@@ -164,6 +164,15 @@ jobs:
         timeout-minutes: 5
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      # Playwright downloads a different browser build per OS release, and
+      # ubuntu-latest moves between releases, so the release is in the key.
+      - name: Get OS release
+        timeout-minutes: 1
+        id: os-release
+        run: |
+          . /etc/os-release
+          printf 'release=%s%s\n' "$ID" "$VERSION_ID" >> "$GITHUB_OUTPUT"
+
       # Restore only browser binaries. Linux system libraries are not cached.
       # The exact lockfile key prevents stale browser versions after updates.
       - name: Cache Playwright browsers
@@ -172,7 +181,7 @@ jobs:
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-${{ steps.os-release.outputs.release }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright system dependencies
         timeout-minutes: 5
