@@ -118,6 +118,11 @@ branch_protection = read_json(".github/branch-protection/main.json")
 required_status_checks = branch_protection.fetch("required_status_checks")
 assert_equal(true, required_status_checks.fetch("strict"), "main protection must require the current base")
 assert_equal(REQUIRED_CHECKS, required_status_checks.fetch("contexts"), "protected check names")
+# Live main protection requires no approving review. The apply script must
+# verify the configured count instead of a constant.
+assert_equal(0, branch_protection.fetch("required_pull_request_reviews").fetch("required_approving_review_count"), "main protection requires no approving review")
+apply_script = File.read(File.join(ROOT, "scripts/apply-branch-protection.sh"))
+assert(apply_script.include?(%q{jq -r '.required_pull_request_reviews.required_approving_review_count' "$CONFIG_PATH"}), "apply script must verify the configured review count")
 
 ci_check_names = ci.fetch("jobs").values.map { |job| job.fetch("name") }
 assert_equal(REQUIRED_CHECKS.sort, ci_check_names.sort, "CI job names must match protected checks exactly")

@@ -41,8 +41,9 @@ if [[ "$required_checks" != "$expected_checks" ]]; then
 fi
 
 required_review_count=$(echo "$protection_json" | jq -r '.required_pull_request_reviews.required_approving_review_count')
-if [[ "$required_review_count" != "1" ]]; then
-  echo "Verification failed: expected required_approving_review_count=1, got ${required_review_count}." >&2
+expected_review_count=$(jq -r '.required_pull_request_reviews.required_approving_review_count' "$CONFIG_PATH")
+if [[ "$required_review_count" != "$expected_review_count" ]]; then
+  echo "Verification failed: expected required_approving_review_count=${expected_review_count}, got ${required_review_count}." >&2
   exit 1
 fi
 
@@ -54,5 +55,5 @@ fi
 
 echo "Verification passed for ${OWNER}/${REPO}:${BRANCH}"
 echo "- Required checks: TypeScript & Lint, Jest Tests, Build Check, Playwright Tests"
-echo "- Required approving reviews: 1"
+echo "- Required approving reviews: ${expected_review_count}"
 echo "- Admin bypass enabled: true (enforce_admins=false)"

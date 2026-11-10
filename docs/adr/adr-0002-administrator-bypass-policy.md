@@ -21,7 +21,7 @@ Branch protection is required for quality and consistency, but maintainer workfl
 ## Decision
 
 Set `enforce_admins: false` in `main` branch protection to keep administrator bypass enabled while still requiring:
-- 1 approving review
+- no approving review (amended 2026-11-10 to match live protection; this was 1 approving review)
 - exact required status checks from CI jobs
 
 ## Consequences
@@ -29,7 +29,7 @@ Set `enforce_admins: false` in `main` branch protection to keep administrator by
 ### Positive
 
 - **POS-001**: Preserves maintainer operational flexibility.
-- **POS-002**: Keeps standard review/check gates for non-admin contributors.
+- **POS-002**: Keeps the required check gates for non-admin contributors.
 - **POS-003**: Reduces friction during urgent fixes.
 
 ### Negative

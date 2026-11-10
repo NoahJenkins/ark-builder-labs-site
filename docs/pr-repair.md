@@ -19,8 +19,8 @@ pull requests cannot change it for themselves.
 - Originals: pr-repair merges in-scope Dependabot updates itself once the
   required checks pass on the current head, and only while the latest
   Production deployment succeeded. The controller App approves the exact head
-  first (`merge.approve: "app"`), because
-  `.github/branch-protection/main.json` declares one required approval. Because `main` requires up-to-date
+  first (`merge.approve: "app"`) as a record of the merge;
+  `.github/branch-protection/main.json` requires no approval. Because `main` requires up-to-date
   branches and no account Dependabot obeys is configured, the App brings a
   behind update up to date (update-branch) once per head. Dependabot stops
   rebasing a branch someone else pushed to, so if such an update later
