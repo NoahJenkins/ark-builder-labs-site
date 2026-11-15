@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SERVICES } from "@/lib/constants"
+import { pageMetadata } from "@/lib/metadata"
 import { ArrowRight, ArrowLeft, Code2, Cloud, Brain, CheckCircle, Star } from "lucide-react"
 
 const iconMap = {
@@ -37,10 +38,11 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
     }
   }
 
-  return {
+  return pageMetadata({
     title: service.title,
     description: service.description,
-  }
+    path: `/services/${service.id}`,
+  })
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {

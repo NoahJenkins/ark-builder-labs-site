@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { pageMetadata } from "@/lib/metadata"
 import Image from "next/image"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
@@ -6,10 +7,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SITE_CONFIG } from "@/lib/constants"
 import { Heart, Shield, Users, Sparkles } from "lucide-react"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About Us",
   description: "Learn about Ark Builder Labs' mission, values, and approach to building exceptional software solutions.",
-}
+  path: "/about",
+})
 
 const values = [
   {

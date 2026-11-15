@@ -81,14 +81,6 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             © {currentYear} {SITE_CONFIG.name}. All rights reserved.
           </p>
-          <div className="flex space-x-6">
-            <Link href="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Terms of Service
-            </Link>
-          </div>
         </div>
       </div>
       {/* Metricool tracker removed temporarily */}

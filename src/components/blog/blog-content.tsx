@@ -28,7 +28,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
   return (
     <div className="max-w-6xl mx-auto">
       {/* Categories Filter */}
-      <FadeIn direction="up" className="mb-12">
+      <div className="mb-12">
         <div className="flex flex-wrap gap-3 justify-center">
           {categories.map((category) => (
             <Badge 
@@ -41,7 +41,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
             </Badge>
           ))}
         </div>
-      </FadeIn>
+      </div>
 
       {filteredPosts.length === 0 ? (
         <FadeIn direction="up" className="text-center py-20">
@@ -57,7 +57,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
         <>
           {/* Featured Posts */}
           {featuredPosts.map((post) => (
-            <FadeIn key={post.id} direction="up" className="mb-16">
+            <div key={post.id} className="mb-16">
               <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-muted/20">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                   <div className="aspect-video lg:aspect-square bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center relative overflow-hidden">
@@ -66,6 +66,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
                         src={post.image}
                         alt={post.title}
                         fill
+                        priority
                         className="object-cover"
                         sizes="(max-width: 1024px) 100vw, 50vw"
                       />
@@ -103,7 +104,7 @@ export function BlogContent({ blogPosts, categories }: BlogContentProps) {
                   </div>
                 </div>
               </Card>
-            </FadeIn>
+            </div>
           ))}
 
           {/* Regular Posts Grid */}

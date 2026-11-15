@@ -1,12 +1,14 @@
 import type { Metadata } from "next"
+import { pageMetadata } from "@/lib/metadata"
 import { FadeIn } from "@/components/animations/fade-in"
 import { BlogContent } from "@/components/blog/blog-content"
 import { getBlogPosts, getBlogCategories } from "@/lib/blog"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Blog",
   description: "Insights, tutorials, and thoughts on web development, cloud engineering, and AI technology from the Ark Builder Labs team.",
-}
+  path: "/blog",
+})
 
 const blogPosts = getBlogPosts()
 const categories = getBlogCategories()
