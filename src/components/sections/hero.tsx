@@ -23,7 +23,6 @@ const RAIN_PARTICLES = Array.from({ length: 80 }, () => ({
 }));
 
 import { Button } from "@/components/ui/button"
-import { FadeIn } from "@/components/animations/fade-in"
 import { SITE_CONFIG } from "@/lib/constants"
 import { ArrowRight, Play } from "lucide-react"
 import Link from "next/link"
@@ -31,7 +30,7 @@ import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 
 export function HeroSection() {
-  const { theme } = useTheme()
+  const { resolvedTheme: theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -126,28 +125,28 @@ export function HeroSection() {
       
       <div className="container mx-auto px-4 relative">
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <FadeIn direction="up" delay={0.1}>
+          <div>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
               <span className="gradient-text">Building Software</span>
               <br />
               <span className="text-foreground">for Every Season</span>
             </h1>
-          </FadeIn>
+          </div>
 
-          <FadeIn direction="up" delay={0.2}>
+          <div>
             <blockquote className="text-sm md:text-base italic text-muted-foreground/80 max-w-xl mx-auto mb-6">
               "Commit to the Lord whatever you do, and he will establish your plans."
               <cite className="block text-xs mt-2 not-italic">— Proverbs 16:3</cite>
             </blockquote>
-          </FadeIn>
+          </div>
 
-          <FadeIn direction="up" delay={0.25}>
+          <div>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {SITE_CONFIG.mission}
             </p>
-          </FadeIn>
+          </div>
 
-          <FadeIn direction="up" delay={0.35}>
+          <div>
             <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
               <Button size="lg" className="text-base" asChild>
                 <Link href="/contact" className="inline-flex items-center space-x-2">
@@ -162,9 +161,9 @@ export function HeroSection() {
                 </Link>
               </Button>
             </div>
-          </FadeIn>
+          </div>
 
-          <FadeIn direction="up" delay={0.45}>
+          <div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16">
               <div className="text-center">
                 <div className="text-3xl md:text-4xl font-bold gradient-text">3+</div>
@@ -179,7 +178,7 @@ export function HeroSection() {
                 <div className="text-muted-foreground">Client Satisfaction</div>
               </div>
             </div>
-          </FadeIn>
+          </div>
         </div>
       </div>
 

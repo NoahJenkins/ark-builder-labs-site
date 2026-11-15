@@ -201,19 +201,18 @@ export async function POST(request: NextRequest) {
           status: formspreeResult.status
         })
 
-        // Fallback to local processing if Formspree fails
-        if (formspreeResult.status && formspreeResult.status >= 500) {
-          console.log('Formspree server error, implementing fallback processing')
-          // TODO: Implement secure email service integration as fallback
-          // - Use environment variables for API keys
-          // - Implement proper error handling
-          // - Add email template validation
-          // - Set up monitoring and alerting
-        }
+        // Do not tell the visitor it worked when delivery failed.
+        return NextResponse.json(
+          { error: 'We could not deliver your message. Please try again or email us directly.' },
+          {
+            status: 502,
+            headers: {
+              'X-Content-Type-Options': 'nosniff',
+              'X-Frame-Options': 'DENY'
+            }
+          }
+        )
       }
-
-      // Simulate processing delay (maintain existing behavior)
-      await new Promise(resolve => setTimeout(resolve, 1000))
 
       // Return success response with security headers
       return NextResponse.json(

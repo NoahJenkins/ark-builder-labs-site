@@ -7,6 +7,8 @@ import { SITE_CONFIG } from "@/lib/constants";
 import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_CONFIG.url),
+  alternates: { canonical: "/" },
   title: {
     default: SITE_CONFIG.name,
     template: `%s | ${SITE_CONFIG.name}`,

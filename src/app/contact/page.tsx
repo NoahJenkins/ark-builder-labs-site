@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { pageMetadata } from "@/lib/metadata"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerChildren } from "@/components/animations/stagger-children"
 import { ContactForm } from "@/components/forms/contact-form"
@@ -7,10 +8,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SITE_CONFIG } from "@/lib/constants"
 import { Mail, Clock, MessageCircle, Calendar, MapPin } from "lucide-react"
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact Us",
   description: "Get in touch with Ark Builder Labs for your next software development project. We respond within 24 hours.",
-}
+  path: "/contact",
+})
 
 const contactMethods = [
   {

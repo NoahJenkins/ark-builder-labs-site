@@ -2,10 +2,10 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import { FadeIn } from "@/components/animations/fade-in"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, ArrowLeft } from "lucide-react"
 import { getBlogPost, getBlogPosts } from "@/lib/blog"
+import { pageMetadata } from "@/lib/metadata"
 import type { ComponentPropsWithoutRef } from 'react'
 
 interface BlogPostPageProps {
@@ -31,10 +31,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
     }
   }
 
-  return {
+  return pageMetadata({
     title: post.title,
     description: post.excerpt,
-  }
+    path: `/blog/${slug}`,
+    type: "article",
+    images: post.image ? [post.image] : undefined,
+  })
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
@@ -73,7 +76,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <section className="py-20 md:py-32 bg-gradient-to-br from-background via-muted/20 to-background">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <FadeIn direction="up">
+            <div>
               <Link 
                 href="/blog" 
                 className="inline-flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors mb-8"
@@ -103,7 +106,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   {post.excerpt}
                 </p>
               )}
-            </FadeIn>
+            </div>
           </div>
         </div>
       </section>
@@ -112,14 +115,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <FadeIn direction="up">
+            <div>
               <div className="prose prose-lg max-w-none dark:prose-invert">
                 <MDXRemote 
                   source={post.content} 
                   components={mdxComponents}
                 />
               </div>
-            </FadeIn>
+            </div>
           </div>
         </div>
       </section>
