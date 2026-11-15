@@ -33,9 +33,6 @@ importers:
       '@calcom/embed-react':
         specifier: ^1.5.3
         version: 1.5.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@next/mdx':
-        specifier: ^16.4.5
-        version: 16.4.5(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))
       '@radix-ui/react-slot':
         specifier: ^1.5.0
         version: 1.5.0(@types/react@19.3.0)(react@19.3.1)
@@ -88,9 +85,6 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
-      '@playwright/mcp':
-        specifier: ^0.0.84
-        version: 0.0.84
       '@playwright/test':
         specifier: ^1.65.0
         version: 1.65.0
@@ -771,17 +765,6 @@ packages:
   '@next/eslint-plugin-next@16.4.5':
     resolution: {integrity: sha512-dNmc4y4En/34tWxaBFF2tG/R9GeiRwVPf7v8Az/Pqk8FcT4Uv0ePmrZKvWBL2nFy1QprPgJW+6XjfyV6jbRV3Q==}
 
-  '@next/mdx@16.4.5':
-    resolution: {integrity: sha512-xAwdzqam24Axqk87G1n1F7tibfi1CxVskRpk8Oi3vmTlGr8QdYmaCzOMz5A5zinXlJdEyocw0JYjXSfRb5o1vg==}
-    peerDependencies:
-      '@mdx-js/loader': '>=0.15.0'
-      '@mdx-js/react': '>=0.15.0'
-    peerDependenciesMeta:
-      '@mdx-js/loader':
-        optional: true
-      '@mdx-js/react':
-        optional: true
-
   '@next/swc-darwin-arm64@16.4.5':
     resolution: {integrity: sha512-W5TniBzWKASbNNwHZ/S/f1MxQUXU/LdjklVMWA0Ujbfl7SZnUzFls45hO0i/sF7Bx1jJBWp7WWmoQajXtX/O8A==}
     engines: {node: '>= 10'}
@@ -939,11 +922,6 @@ packages:
   '@pkgr/core@0.3.6':
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
-
-  '@playwright/mcp@0.0.84':
-    resolution: {integrity: sha512-weqLrA7/D8MJzNV9/t3Hnjp100tS2sxFXKeb2gH6Nhktqmdfvx5qRA9AZ5Mhjnre1jY0wltsrRK5VZS5NBgcvw==}
-    engines: {node: '>=18'}
-    hasBin: true
 
   '@playwright/test@1.65.0':
     resolution: {integrity: sha512-iGURLGuKDLakSEl7Pgfv8h7f+XLT+V861Wfhz0zlEl5nyFuKUopdkFBPKqTllTUp06aOwPuH8iuUEb3yp3MpbQ==}
@@ -3202,18 +3180,8 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  playwright-core@1.65.0-alpha-2026-10-30:
-    resolution: {integrity: sha512-LPMw8B/HRQKMcJeXTqWSrkB/AfCKKmbDQMbu0p7zg8MgibOWaKMjZWR/StAtrQkOxvOmZEju1o1TnPgdoOCwrg==}
-    engines: {node: '>=20'}
-    hasBin: true
-
   playwright@1.65.0:
     resolution: {integrity: sha512-F3AMWcR44qMBt4kq+6Kb6mX7bjGXshktKFOPULd7reED6ZJWevjbNRqysP7q+AATE9kdPEZBibex1BYsvpVoeA==}
-    engines: {node: '>=20'}
-    hasBin: true
-
-  playwright@1.65.0-alpha-2026-10-30:
-    resolution: {integrity: sha512-dmAJMVHKzHvMQjn+XDcaq/pxaZ0W6n8i78rwTM+VGRtQ3WBF5ZiSdB1yL/cyoYUGUMwg3jxN65KqC9cERaCbIg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4600,12 +4568,6 @@ snapshots:
     transitivePeerDependencies:
       - eslint
 
-  '@next/mdx@16.4.5(@mdx-js/react@3.1.1(@types/react@19.3.0)(react@19.3.1))':
-    dependencies:
-      source-map: 0.7.6
-    optionalDependencies:
-      '@mdx-js/react': 3.1.1(@types/react@19.3.0)(react@19.3.1)
-
   '@next/swc-darwin-arm64@16.4.5':
     optional: true
 
@@ -4704,11 +4666,6 @@ snapshots:
     optional: true
 
   '@pkgr/core@0.3.6': {}
-
-  '@playwright/mcp@0.0.84':
-    dependencies:
-      playwright: 1.65.0-alpha-2026-10-30
-      playwright-core: 1.65.0-alpha-2026-10-30
 
   '@playwright/test@1.65.0':
     dependencies:
@@ -7518,15 +7475,9 @@ snapshots:
 
   playwright-core@1.65.0: {}
 
-  playwright-core@1.65.0-alpha-2026-10-30: {}
-
   playwright@1.65.0:
     dependencies:
       playwright-core: 1.65.0
-
-  playwright@1.65.0-alpha-2026-10-30:
-    dependencies:
-      playwright-core: 1.65.0-alpha-2026-10-30
 
   possible-typed-array-names@1.1.0: {}
 

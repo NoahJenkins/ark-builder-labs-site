@@ -16,17 +16,8 @@ pull requests cannot change it for themselves.
   exact head. Then native auto-merge is queued with `expectedHeadOid`, and only
   while the latest Production deployment succeeded. The original closes after
   the replacement merges, if its head did not move.
-- Originals: pr-repair merges in-scope Dependabot updates itself once the
-  required checks pass on the current head, and only while the latest
-  Production deployment succeeded. The controller App approves the exact head
-  first (`merge.approve: "app"`) as a record of the merge;
-  `.github/branch-protection/main.json` requires no approval. Because `main` requires up-to-date
-  branches and no account Dependabot obeys is configured, the App brings a
-  behind update up to date (update-branch) once per head. Dependabot stops
-  rebasing a branch someone else pushed to, so if such an update later
-  conflicts, it is reported as `needs-human`: comment `@dependabot recreate`.
-  The legacy controller in `dependabot-auto-merge.yml` stays off
-  (`DEPENDABOT_AUTOMATION_ENABLED=false`).
+- Originals: `.github/workflows/dependabot-auto-merge.yml` queues native auto-merge on in-scope Dependabot PRs (`merge.originals` is `false`, so pr-repair never touches them). Because `main` requires up-to-date branches, a behind update waits for Dependabot to rebase it (or `@dependabot rebase`).
+- When it runs: only after failed `CI` on `dependabot/**` or `pr-repair/**` branches, plus one daily sweep (09:41 UTC), `workflow_dispatch`, and a contract self-test on PRs that edit its policy or workflow.
 - Human pull requests are never repaired, approved, resolved, or merged.
 
 Every Dependabot PR shows one state on its `pr-repair` check and on the
@@ -46,6 +37,5 @@ Vercel AI Gateway: `openai/gpt-6-luna` repairs and `deepseek/deepseek-v4-flash` 
 
 1. Merge this workflow and policy. Until step 2 it only reports status.
 2. Set the repository variable `PR_REPAIR_ENABLED=true`.
-3. Keep `DEPENDABOT_AUTOMATION_ENABLED` unset or `false`. While it is `true`, pr-repair holds off so two controllers never act on one PR.
 
 Rollback: delete `PR_REPAIR_ENABLED`.

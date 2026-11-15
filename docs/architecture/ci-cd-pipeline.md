@@ -29,31 +29,16 @@ This repository uses GitHub Actions for continuous integration, quality checks, 
 - **Success criteria:** E2E suite passes across configured projects
 - **Typical duration:** ~4-12 minutes
 
-### 5) Dependabot Auto-Merge Policy
-- **Trigger conditions:** `pull_request_target` events for Dependabot PRs (`opened`, `reopened`, `synchronize`, `ready_for_review`)
-- **Actions performed:** Fetch metadata, verify repository-level auto-merge prerequisites, validate the changed-file allowlist, enforce actor/author/base/draft/ecosystem/update-type gates, auto-approve, and enable native squash auto-merge. Dependabot separately groups routine npm and GitHub Actions patch/minor updates and security updates; safe major updates remain standalone.
-- **Success criteria:** Eligibility rules pass, auto-merge is enabled, and branch protection waits for the exact `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests` checks on the current `main` base. Failed, conflicting, or disallowed updates remain open.
-- **Typical duration:** <1 minute
+### 5) Dependabot Auto-Merge
+- **Trigger conditions:** `pull_request_target` (`opened`, `synchronize`, `reopened`) for `dependabot[bot]` PRs
+- **Actions performed:** Read update metadata with `dependabot/fetch-metadata`, enable native squash auto-merge for patch/minor, grouped, and GitHub Actions updates, and label ungrouped majors `major-update`
+- **Success criteria:** Auto-merge is enabled and branch protection waits for `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests`
 - **Timeout:** 5 minutes
 
-### 6) Dependabot Behind Refresh
-- **Trigger conditions:** `push` to `main`, merged PRs targeting `main` via `pull_request_target: closed`, daily fallback at `20:23 UTC`, and manual `workflow_dispatch`
-- **Actions performed:** After `main` advances, wait briefly for GitHub to recalculate PR mergeability, authenticate with `REPO_ADMIN_TOKEN` when available, inspect open Dependabot PRs with auto-merge enabled, skip PRs that already have failing or pending checks, retry `unknown` mergeability, and call the update-branch API for PRs that are clean but `behind`. Any update-branch failure fails the job.
-- **Success criteria:** Stalled auto-merge Dependabot PRs are refreshed after `main` advances or by the daily recovery path, while genuinely failing dependency updates remain open for manual follow-up.
-- **Typical duration:** <1 minute
-- **Timeout:** 5 minutes
-
-### 7) Repository Settings Health
-- **Trigger conditions:** Daily schedule and manual `workflow_dispatch`
-- **Actions performed:** If `REPO_ADMIN_TOKEN` is configured, re-apply and verify tracked repository automation settings with `scripts/apply-repository-settings.sh`; otherwise emit a notice and exit successfully
-- **Success criteria:** Admin-token runs prove tracked settings still apply cleanly; non-admin runs remain non-failing and clearly indicate that verification was skipped
-- **Typical duration:** <1 minute
-
-### 8) Branch Protection Sync
-- **Trigger conditions:** Manual `workflow_dispatch`
-- **Actions performed:** Run `scripts/apply-branch-protection.sh` against `main` via `gh` CLI
-- **Success criteria:** Branch protection configuration and verification pass
-- **Typical duration:** <1 minute
+### 6) PR repair
+- **Trigger conditions:** Failed `CI` on `dependabot/**` and `pr-repair/**` branches, one daily sweep, manual dispatch
+- **Actions performed:** See `docs/pr-repair.md`
+- **Timeout:** per job, 2 to 40 minutes
 
 ## CI Install Limits and Caches
 
@@ -89,9 +74,8 @@ Referenced by tooling/runtime in repository configuration:
 - **Dependabot security alerts remain open after dependency PRs merge:** Check whether `pnpm-lock.yaml` is still pinning vulnerable transitive versions; if so, add targeted `pnpm.overrides`, regenerate the lockfile, and re-run `pnpm audit`
 - **TypeScript/lint failures:** Run `pnpm exec tsc --noEmit` and `pnpm lint` locally before pushing
 - **Playwright failures due to browser setup:** Check the separate system-library and browser-install steps; a browser cache hit does not replace Linux system libraries
-- **Branch protection sync failures:** Confirm token permissions and repository admin rights before dispatching workflow
-- **Dependabot auto-merge not enabled:** Check actor/author/base branch/update type/file allowlist gates in the workflow logs; confirm `allow_auto_merge` is enabled and `can_approve_pull_request_reviews` is true in repository settings
-- **Dependabot PRs stuck behind `main`:** Confirm `.github/workflows/dependabot-behind-refresh.yml` ran after the latest merge to `main` or on the next daily fallback, and confirm `REPO_ADMIN_TOKEN` is configured; if the PR still did not refresh, check whether it has failing or pending checks that intentionally caused the refresh workflow to skip it
+- **Dependabot auto-merge not enabled:** Check the `Dependabot auto-merge` run for the PR; confirm `allow_auto_merge` is enabled in repository settings
+- **Dependabot PRs stuck behind `main`:** `main` requires up-to-date branches; comment `@dependabot rebase` or let the daily pr-repair sweep update the branch
 
 ## Maintenance
 - Update workflow action versions periodically (e.g., `actions/checkout`, `actions/setup-node`)
@@ -99,4 +83,3 @@ Referenced by tooling/runtime in repository configuration:
 - Review required status checks whenever CI job names change
 - Review Dependabot allowlist and update rules as dependency management strategy evolves
 - Review `pnpm.overrides` when Dependabot security alerts are cleared or when upstream packages catch up, so temporary transitive pins do not become stale policy
-- Re-apply `scripts/apply-repository-settings.sh` after repository automation setting drift or repo recreation

@@ -14,10 +14,10 @@ Branch protection requires strict current-base checks. Dependabot native auto-me
 
 ## CI Install Limits and Caches
 
-- TypeScript/lint and Jest jobs stop after 10 minutes. Build and Playwright jobs stop after 15 minutes.
+- The four jobs run in parallel. TypeScript/lint and Jest jobs stop after 10 minutes. Build and Playwright jobs stop after 15 minutes.
 - Each package, browser, or Linux system-library install stops after 5 minutes. Node/pnpm setup stops after 3 minutes; explicit cache operations stop after 2 minutes. An install failure fails the job; there is no fallback install or automatic retry.
 - Every job uses the existing pnpm store cache and a frozen lockfile with `--prefer-offline`. This reuses downloaded packages while preserving lockfile validation and required lifecycle scripts; `node_modules` is not cached.
-- Playwright browser binaries use an exact OS, architecture, OS release (from `/etc/os-release`), and `pnpm-lock.yaml` cache key; `ubuntu-latest` moves between releases, and each release needs its own browser builds. A hit skips browser downloads. A miss installs and caches the configured browsers. Broad restore keys are prohibited because a different lockfile can require different browser builds.
+- Playwright browser binaries use an exact OS, architecture, OS release (from `/etc/os-release`), and `pnpm-lock.yaml` cache key; `ubuntu-latest` moves between releases, and each release needs its own browser builds. A hit skips browser downloads. A miss installs and caches chromium, the only browser CI uses. Playwright runs against the production build (`next build` then `next start`). Broad restore keys are prohibited because a different lockfile can require different browser builds.
 - Linux system libraries are not part of the browser cache. They install on both cache hits and misses under the same 5-minute limit.
 - New commits cancel superseded CI runs. A setup timeout requires investigation before another run; do not retry it automatically or increase the limit to obtain a green result.
 
@@ -36,96 +36,17 @@ Security grouping changes pull request packaging. It does not add an ignore rule
 
 ## Dependabot Auto-Merge Flow
 
-Workflow: `.github/workflows/dependabot-auto-merge.yml`
+Workflow: `.github/workflows/dependabot-auto-merge.yml` (event-driven, no polling).
 
-Trigger:
-- `pull_request_target` on `opened`, `reopened`, `synchronize`, `ready_for_review`
+- Trigger: `pull_request_target` on `opened`, `synchronize`, `reopened`, for PRs authored by `dependabot[bot]` only. Nothing from the PR is checked out or executed.
+- Patch/minor updates, grouped updates, and every GitHub Actions bump get native auto-merge (`gh pr merge --auto --squash`). GitHub waits for the four required checks.
+- Ungrouped major updates get the `major-update` label and are left to pr-repair or a human.
+- Auto-merge is enabled with `GITHUB_TOKEN`, so the merge itself does not start the `push` CI run on `main`. Vercel still deploys because its Git integration is a webhook.
+- Repository prerequisites: `allow_auto_merge` and `allow_squash_merge` enabled.
 
-Eligibility gates:
-- actor is `dependabot[bot]`
-- PR author is `dependabot[bot]`
-- base branch is `main`
-- PR is not draft
-- ecosystem metadata is `npm`, `npm_and_yarn`, or `github_actions`
-- update type is `version-update:semver-patch`, `version-update:semver-minor`, or `version-update:semver-major`
-- changed files are limited to dependency/workflow allowlist
+## pr-repair
 
-Eligible behavior:
-- auto-approve PR
-- enable native GitHub auto-merge with `squash`
-- fail early if repository-level auto-merge prerequisites drift
-- wait for `TypeScript & Lint`, `Jest Tests`, `Build Check`, and `Playwright Tests` to pass against the current `main` base through branch protection
-- leave failed, conflicting, or changed-file-disallowed updates open for manual investigation
-
-Repository prerequisites:
-- repository `allow_auto_merge == true`
-- repository `allow_squash_merge == true`
-- Actions workflow permissions `can_approve_pull_request_reviews == true`
-
-Configuration source of truth:
-- `.github/repository-settings/repository.json`
-- `.github/repository-settings/workflow-permissions.json`
-
-Local apply + verify:
-- `scripts/apply-repository-settings.sh`
-
-Workflow token permissions:
-- `contents: write`
-- `pull-requests: write`
-
-Job timeout: 5 minutes.
-
-## Dependabot Behind Refresh
-
-Workflow: `.github/workflows/dependabot-behind-refresh.yml`
-
-Trigger:
-- `push` to `main`
-- merged PRs targeting `main` via `pull_request_target: closed`
-- daily fallback at `20:23 UTC` (`23 20 * * *`)
-- manual `workflow_dispatch`
-
-Behavior:
-- finds open Dependabot PRs against `main`
-- waits briefly after `main` advances so GitHub can recalculate PR mergeability
-- uses `REPO_ADMIN_TOKEN` when configured because the default workflow token cannot reliably call the update-branch API on Dependabot-owned branches
-- filters to PRs with native auto-merge already enabled
-- refreshes only PRs whose latest checks are currently green
-- skips PRs with real failed or still-pending checks to avoid re-running known-bad dependency updates on every merge to `main`
-- retries when GitHub initially reports `mergeable_state=unknown`
-- updates branches whose mergeable state is `behind` so strict required checks can re-run immediately after `main` advances
-- handles merged-PR events because Dependabot auto-merges did not reliably produce follow-on `push` workflow runs on `main` during the 2026-03-31 investigation
-- fails the job when an update-branch request fails, so recovery failures remain visible
-
-Job timeout: 5 minutes.
-
-The daily schedule remains a fallback because the August 2026 review found 96 scheduled runs, one `push` run, and one `pull_request_target` run. Dependabot bot merges did not trigger the event paths in that sample; queued updates recovered through Dependabot self-rebases. This evidence supports reducing the schedule, but not removing the refresh mechanism.
-
-## Repository Settings Health
-
-Workflow: `.github/workflows/repository-settings-health.yml`
-
-Trigger:
-- daily schedule
-- manual `workflow_dispatch`
-
-Behavior:
-- if `REPO_ADMIN_TOKEN` is configured, re-applies and verifies `.github/repository-settings/*` through `scripts/apply-repository-settings.sh`
-- if `REPO_ADMIN_TOKEN` is not configured, succeeds with a notice explaining that admin-only verification was skipped
-
-## Branch Protection Apply + Verify
-
-Configuration source of truth:
-- `.github/branch-protection/main.json`
-
-Automation:
-- `.github/workflows/branch-protection.yml` (manual dispatch)
-- `scripts/apply-branch-protection.sh`
-
-Verification checks:
-- required checks exactly match configured contexts
-- `required_approving_review_count` matches the config (0)
-- `enforce_admins.enabled == false`
+Workflow: `.github/workflows/pr-repair.yml`; see `docs/pr-repair.md`. It runs only for failed CI on `dependabot/**` and `pr-repair/**` branches, plus one daily sweep.
 
 ## Administrator Bypass Policy
 

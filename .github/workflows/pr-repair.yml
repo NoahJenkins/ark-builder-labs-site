@@ -4,17 +4,17 @@ name: PR repair
 # below). Policy: .github/pr-repair.json on main. It reuses the controller App
 # (dependabot-controller environment) and AI_GATEWAY_API_KEY
 # (dependabot-dispatch environment); each job receives only its own credential.
-# It acts only when PR_REPAIR_ENABLED=true and holds off while the legacy
-# controller flag DEPENDABOT_AUTOMATION_ENABLED is true. It merges in-scope
-# Dependabot PRs once required checks pass (approving the exact head first),
-# repairs failing ones, and merges its own validated replacements. See
-# docs/pr-repair.md.
+# Native auto-merge for ordinary Dependabot PRs is enabled by
+# dependabot-auto-merge.yml; this workflow only repairs Dependabot PRs whose CI
+# failed, merges its own validated pr-repair/<n> replacements, and does one
+# daily sweep for stale or out-of-date PRs. See docs/pr-repair.md.
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
+    branches: ["dependabot/**", "pr-repair/**"]
   schedule:
-    - cron: "41 */2 * * *"
+    - cron: "41 9 * * *"
   workflow_dispatch:
   pull_request:
     paths: [.github/pr-repair.json, .github/workflows/pr-repair.yml]
@@ -41,22 +41,11 @@ jobs:
         with:
           mode: selftest
 
-  preflight:
-    if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
-    environment: dependabot-dispatch
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    permissions: {}
-    outputs:
-      ready: ${{ steps.check.outputs.ready }}
-    steps:
-      - id: check
-        env:
-          KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
-        run: if [ -n "$KEY" ]; then echo ready=true; else echo ready=false; fi >> "$GITHUB_OUTPUT"
-
   plan:
-    needs: preflight
+    if: >-
+      github.event_name != 'pull_request'
+      && github.ref_name == github.event.repository.default_branch
+      && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure')
     environment: dependabot-controller
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -91,8 +80,9 @@ jobs:
           app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
           app-slug: ${{ steps.app.outputs.app-slug }}
           enabled: ${{ vars.PR_REPAIR_ENABLED }}
-          credential-ready: ${{ needs.preflight.outputs.ready }}
-          exclusive-active: ${{ vars.DEPENDABOT_AUTOMATION_ENABLED == 'true' }}
+          # The inference job holds AI_GATEWAY_API_KEY (dependabot-dispatch
+          # environment); it fails visibly there if the key is ever missing.
+          credential-ready: "true"
 
   prepare:
     needs: plan
