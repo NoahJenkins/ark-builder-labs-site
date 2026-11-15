@@ -1,15 +1,13 @@
 name: "Copilot Setup Steps"
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - .github/workflows/copilot-setup-steps.yml
   pull_request:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -27,7 +25,3 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
-      - name: Run linter
-        run: pnpm lint
-      - name: Run tests
-        run: pnpm test

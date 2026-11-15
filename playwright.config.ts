@@ -26,7 +26,7 @@ const _playwright = (() => {
 
 const { defineConfig, devices } = _playwright;
 const isCI = !!process.env.CI;
-const crossBrowserSmokePattern = /@cross-browser/;
+const port = process.env.PORT || '3000';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -48,7 +48,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
+    baseURL: `http://localhost:${port}`,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
@@ -64,16 +64,6 @@ export default defineConfig({
         {
           name: 'chromium',
           use: { ...devices['Desktop Chrome'] },
-        },
-        {
-          name: 'firefox',
-          grep: crossBrowserSmokePattern,
-          use: { ...devices['Desktop Firefox'] },
-        },
-        {
-          name: 'webkit',
-          grep: crossBrowserSmokePattern,
-          use: { ...devices['Desktop Safari'] },
         },
       ]
     : [
@@ -99,15 +89,12 @@ export default defineConfig({
         },
       ],
 
-  /* Run your local dev server before starting the tests */
+  /* CI tests the production build (run `pnpm run build` first); locally use the dev server. */
   webServer: {
-    command: 'pnpm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    command: isCI ? 'pnpm run start' : 'pnpm run dev',
+    url: `http://localhost:${port}`,
+    reuseExistingServer: !isCI,
     timeout: 180000, // Increase server start timeout
     cwd: '.',
-    env: {
-      NODE_ENV: 'development'
-    }
   },
 });

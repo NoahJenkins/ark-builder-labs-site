@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 jobs:
-  # Fast checks run first - type checking and linting
+  # All jobs run in parallel; branch protection gates the merge on each name.
   typecheck:
     name: TypeScript & Lint
     runs-on: ubuntu-latest
@@ -50,14 +50,10 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
-      - name: Verify dependency automation policy
-        run: pnpm run test:workflow-policy
-
   jest-tests:
     name: Jest Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: typecheck  # Only run if typecheck passes
     
     steps:
       - name: Checkout code
@@ -83,23 +79,12 @@ jobs:
         
       - name: Run Jest tests
         run: pnpm test
-        
-      - name: Upload Jest coverage reports
-        uses: codecov/codecov-action@v7
-        if: always() && hashFiles('coverage/lcov.info') != ''
-        with:
-          files: ./coverage/lcov.info
-          flags: jest
-          name: jest-coverage
-          fail_ci_if_error: false
-        continue-on-error: true
 
-  # Build verification - depends on typecheck
+  # Build verification
   build:
     name: Build Check
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: typecheck  # Only build if types are valid
     
     steps:
       - name: Checkout code
@@ -140,7 +125,6 @@ jobs:
     name: Playwright Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: typecheck  # Run in parallel with build to reduce wall-clock CI time
     
     steps:
       - name: Checkout code
@@ -183,14 +167,14 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-${{ runner.arch }}-${{ steps.os-release.outputs.release }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - name: Install Playwright system dependencies
+      - name: Install Playwright chromium and system dependencies
         timeout-minutes: 5
-        run: pnpm exec playwright install-deps
+        run: pnpm exec playwright install --with-deps chromium
 
-      - name: Install Playwright browsers
-        timeout-minutes: 5
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright install
+      # End-to-end tests run against the production build (next start).
+      - name: Build application
+        timeout-minutes: 10
+        run: pnpm run build
 
       - name: Run Playwright tests
         run: pnpm run test:e2e

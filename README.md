@@ -25,7 +25,7 @@ A modern, professional company website built with Next.js 16, featuring bold ani
 - **Forms**: React Hook Form
 - **Theme**: next-themes
 - **UI Components**: Custom component library with CVA (Class Variance Authority)
-- **Blog**: MDX content (frontmatter via `gray-matter`, rendered with `next-mdx-remote/rsc`); MD/MDX page support enabled via `@next/mdx`
+- **Blog**: MDX content (frontmatter via `gray-matter`, rendered with `next-mdx-remote/rsc`)
 - **Content Management**: File-based MDX content system
 
 ## 📋 Pages & Features
@@ -95,15 +95,13 @@ Production build: `pnpm run build`
 ### Testing
 
 - **Unit tests (Jest)**: Tests live under `src/__tests__/`. Jest is configured via `jest.config.js` (wrapping `next/jest`) with setup in `jest.setup.js` (mocks router, animations, IntersectionObserver, matchMedia, and global fetch). Example: `pnpm exec jest src/__tests__/components/blog-content.test.tsx`.
-- **E2E (Playwright)**: Tests live under `tests/`. `playwright.config.ts` starts the dev server (`pnpm run dev`), uses baseURL `http://localhost:3000`, and reuses an existing server locally. Run: `pnpm run test:e2e`.
+- **E2E (Playwright)**: Tests live under `tests/`. `playwright.config.ts` uses baseURL `http://localhost:3000`. Locally it starts the dev server (reusing one if running); in CI it serves the production build (`pnpm run build` first, then `pnpm run start`). Run: `pnpm run test:e2e`.
 
 ### CI and Branch Protection
 
 - CI required checks for `main`: `TypeScript & Lint`, `Jest Tests`, `Build Check`, `Playwright Tests`.
-- Dependabot auto-merge policy is implemented in `.github/workflows/dependabot-auto-merge.yml` with strict actor/base/update/file gates.
-- Branch protection source of truth is `.github/branch-protection/main.json`.
-- Apply/verify branch protection locally with: `bash scripts/apply-branch-protection.sh NoahJenkins ark-builder-labs-site main`.
-- Manual workflow option: `.github/workflows/branch-protection.yml` (uses `GITHUB_TOKEN`; local `scripts/apply-branch-protection.sh` remains the authoritative apply/verify path).
+- Dependabot native auto-merge is enabled by `.github/workflows/dependabot-auto-merge.yml`; failed Dependabot CI is repaired by `.github/workflows/pr-repair.yml`.
+- Branch protection on `main` is a one-time repository setting (not managed by workflows).
 - Architecture details and policy notes: `docs/architecture/ci.md`.
 
 ## 📁 Project Structure
