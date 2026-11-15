@@ -1,349 +1,50 @@
-name: Dependabot Controller
+name: Dependabot auto-merge
 
+# Event-driven: runs once per Dependabot PR update and turns on native
+# auto-merge. GitHub itself then waits for the required checks on main.
+# No checkout: nothing from the PR is executed under pull_request_target.
 on:
   pull_request_target:
-    branches: [main]
-    types: [opened, reopened, synchronize, edited, ready_for_review, converted_to_draft]
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
-  status:
-  deployment_status:
-  schedule:
-    - cron: '17 */2 * * *'
-  workflow_dispatch:
+    types: [opened, synchronize, reopened]
 
-# Trusted checkouts are immutable workflow source; candidate code runs only in a secret-free container.
-permissions:
-  contents: read
-  pull-requests: read
-  issues: read
-  checks: read
-  actions: read
-  deployments: read
-  statuses: read
+permissions: {}
 
 concurrency:
-  group: dependabot-controller-${{ github.repository }}
-  cancel-in-progress: false
-
-env:
-  DEPENDABOT_CONTROLLER_APP_ID: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
-  DEPENDABOT_STATE_ISSUE_NUMBER: ${{ vars.DEPENDABOT_STATE_ISSUE_NUMBER }}
-  DEPENDABOT_VERCEL_APP_ID: ${{ vars.DEPENDABOT_VERCEL_APP_ID }}
-  DEPENDABOT_AUTOMATION_ENABLED: ${{ vars.DEPENDABOT_AUTOMATION_ENABLED }}
-  DEPENDABOT_AGENT_ENABLED: ${{ vars.DEPENDABOT_AGENT_ENABLED }}
-  DEPENDABOT_DEPLOYMENT_ENVIRONMENT: ${{ vars.DEPENDABOT_DEPLOYMENT_ENVIRONMENT }}
-  DEPENDABOT_DEPLOYMENT_BASELINE_ID: ${{ vars.DEPENDABOT_DEPLOYMENT_BASELINE_ID }}
-  DEPENDABOT_VERCEL_PROJECT_PREFIX: ${{ vars.DEPENDABOT_VERCEL_PROJECT_PREFIX }}
-  GITHUB_WORKFLOW_SHA: ${{ github.workflow_sha }}
+  group: dependabot-auto-merge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
-  setup-required:
-    name: Dependabot setup required
-    if: vars.DEPENDABOT_CONTROLLER_APP_ID == ''
-    runs-on: ubuntu-latest
-    steps:
-      - name: Explain inactive automation
-        shell: bash
-        run: |
-          echo '::warning::Dependabot automation is inactive: dedicated controller App configuration is missing.'
-          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
-          ## Dependabot automation is inactive
-
-          The controller cannot review, repair, or merge PRs until its dedicated
-          App, state issue, environment credentials, and enable flags are configured.
-          Passing CI alone does not enable auto-merge. The current policy keeps
-          blocked PRs open for review; it does not auto-close major updates.
-
-          Follow docs/dependabot-controller-setup.md before activation.
-          SUMMARY
-
-  controller:
-    name: Reconcile Dependabot PRs
-    if: vars.DEPENDABOT_CONTROLLER_APP_ID != '' && github.ref == 'refs/heads/main'
-    environment: dependabot-controller
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    outputs:
-      tasks: ${{ steps.reconcile.outputs.tasks }}
-      has_tasks: ${{ steps.reconcile.outputs.has_tasks }}
-    steps:
-      - name: Checkout trusted workflow source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-          path: trusted
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Create scoped controller App token
-        id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
-          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-checks: write
-          permission-contents: write
-          permission-pull-requests: write
-          permission-issues: write
-          permission-actions: write
-          permission-deployments: read
-          permission-statuses: read
-          permission-administration: read
-      - name: Reconcile current heads
-        id: reconcile
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs controller
-        env:
-          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-
-  claim:
-    name: Claim reserved tasks
-    needs: controller
-    if: always() && !cancelled() && needs.controller.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
-    environment: dependabot-controller
+  enable:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs:
-      tasks: ${{ steps.claim.outputs.tasks }}
-      has_tasks: ${{ steps.claim.outputs.has_tasks }}
-      app_slug: ${{ steps.app-token.outputs.app-slug }}
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
-      - name: Checkout trusted workflow source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-          path: trusted
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Create scoped controller App token
-        id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
-          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-checks: write
-          permission-contents: write
-          permission-pull-requests: write
-          permission-issues: write
-          permission-actions: write
-          permission-deployments: read
-          permission-statuses: read
-          permission-administration: read
-      - name: Persist claims before launch
-        id: claim
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs claim
-        env:
-          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          DEPENDABOT_TASKS: ${{ needs.controller.outputs.tasks }}
+      - id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
 
-  worker:
-    name: Copilot worker (${{ matrix.task.nonce }})
-    needs: claim
-    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
-    environment: dependabot-dispatch
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        task: ${{ fromJSON(needs.claim.outputs.tasks) }}
-    env:
-      DEPENDABOT_TASK: ${{ toJSON(matrix.task) }}
-      DEPENDABOT_CONTROLLER_APP_SLUG: ${{ needs.claim.outputs.app_slug }}
-      DEPENDABOT_DATA_DIR: ${{ github.workspace }}/.dependabot-data
-    steps:
-      - name: Checkout trusted workflow source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-          path: trusted
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Prepare complete bounded input without provider credentials
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs prepare
+      - name: Enable native auto-merge (patch/minor, grouped, or github-actions)
+        if: >-
+          steps.meta.outputs.update-type != 'version-update:semver-major'
+          || steps.meta.outputs.dependency-group != ''
+          || steps.meta.outputs.package-ecosystem == 'github_actions'
+        run: gh pr merge --auto --squash "$PR_URL"
         env:
-          DEPENDABOT_READ_TOKEN: ${{ github.token }}
-      - name: Install verified pinned Copilot runtime
-        shell: bash
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+
+      - name: Label ungrouped majors for repair/review
+        if: >-
+          steps.meta.outputs.update-type == 'version-update:semver-major'
+          && steps.meta.outputs.dependency-group == ''
+          && steps.meta.outputs.package-ecosystem != 'github_actions'
         run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/copilot-bin"
-          curl --fail --location --proto '=https' --silent --show-error https://github.com/github/copilot-cli/releases/download/v1.0.103/copilot-linux-x64.tar.gz -o "$RUNNER_TEMP/copilot-bin/runtime.tar.gz"
-          echo '9aeb4430e9ac9523546db07b227c7aba179a4710a55f9ac29ad143b0f9e1b325  '"$RUNNER_TEMP/copilot-bin/runtime.tar.gz" | sha256sum --check
-          tar -xzf "$RUNNER_TEMP/copilot-bin/runtime.tar.gz" -C "$RUNNER_TEMP/copilot-bin"
-      - name: Verify restricted Copilot data tool without credentials
-        run: node trusted/.github/scripts/copilot-smoke.cjs
+          gh label create major-update --color D93F0B --description "Major version bump" 2>/dev/null || true
+          gh pr edit "$PR_URL" --add-label major-update
         env:
-          COPILOT_BINARY: ${{ runner.temp }}/copilot-bin/copilot
-      - name: Run isolated bounded Copilot session
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs worker
-        env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_BINARY: ${{ runner.temp }}/copilot-bin/copilot
-      - name: Retain sanitized model usage separately from trusted result
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: copilot-usage-${{ matrix.task.nonce }}
-          path: ${{ github.workspace }}/.dependabot-data/session/usage.json
-          include-hidden-files: true
-          if-no-files-found: ignore
-          retention-days: 30
-      - name: Upload wrapper-owned data
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: worker-${{ matrix.task.nonce }}
-          path: ${{ github.workspace }}/.dependabot-data/result.json
-          if-no-files-found: error
-          retention-days: 3
-
-  validate:
-    name: Copilot validation (${{ matrix.task.nonce }})
-    needs: [claim, worker]
-    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    strategy:
-      fail-fast: false
-      matrix:
-        task: ${{ fromJSON(needs.claim.outputs.tasks) }}
-    env:
-      DEPENDABOT_TASK: ${{ toJSON(matrix.task) }}
-      DEPENDABOT_CONTROLLER_APP_SLUG: ${{ needs.claim.outputs.app_slug }}
-      DEPENDABOT_DATA_DIR: ${{ github.workspace }}/.dependabot-validation
-    steps:
-      - name: Checkout trusted workflow source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-          path: trusted
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Checkout candidate data without persistent credentials
-        if: matrix.task.kind == 'repair'
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ matrix.task.head }}
-          persist-credentials: false
-          path: candidate
-      - name: Build trusted secret-free validator
-        if: matrix.task.kind == 'repair'
-        run: docker build --platform linux/amd64 -t dependabot-validator -f trusted/.github/opencode/validator.Dockerfile trusted
-      - name: Validate bounded output in a fresh job
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs validate
-        env:
-          DEPENDABOT_READ_TOKEN: ${{ github.token }}
-          CANDIDATE_ROOT: ${{ github.workspace }}/candidate
-          VALIDATOR_IMAGE: dependabot-validator
-      - name: Upload validated data and digest chain
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: validated-${{ matrix.task.nonce }}
-          path: ${{ github.workspace }}/.dependabot-validation/result.json
-          if-no-files-found: error
-          retention-days: 3
-
-  publish:
-    name: Publish authenticated results
-    needs: [claim, worker, validate]
-    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.run_attempt == 1 && github.ref == 'refs/heads/main'
-    environment: dependabot-controller
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout trusted workflow source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-          path: trusted
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Create scoped controller App token
-        id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
-          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-checks: write
-          permission-contents: write
-          permission-workflows: write
-          permission-pull-requests: write
-          permission-issues: write
-          permission-actions: write
-          permission-deployments: read
-          permission-statuses: read
-          permission-administration: read
-      - name: Verify provenance and publish once
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs publish
-        env:
-          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          DEPENDABOT_TASKS: ${{ needs.claim.outputs.tasks }}
-
-  reconcile:
-    name: Recheck gates after publication
-    needs: [claim, publish]
-    if: always() && !cancelled() && needs.claim.outputs.has_tasks == 'true' && github.ref == 'refs/heads/main'
-    environment: dependabot-controller
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout trusted workflow source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          ref: ${{ github.workflow_sha }}
-          persist-credentials: false
-          path: trusted
-      - name: Setup Node.js
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Create scoped controller App token
-        id: app-token
-        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
-        with:
-          app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
-          private-key: ${{ secrets.DEPENDABOT_CONTROLLER_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-          repositories: ${{ github.event.repository.name }}
-          permission-checks: write
-          permission-contents: write
-          permission-pull-requests: write
-          permission-issues: write
-          permission-actions: write
-          permission-deployments: read
-          permission-statuses: read
-          permission-administration: read
-      - name: Reconcile without reserving more work in this run
-        run: node trusted/.github/scripts/dependabot-controller-run.cjs controller
-        env:
-          DEPENDABOT_READ_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          DEPENDABOT_CONTROLLER_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
-          DEPENDABOT_AGENT_ENABLED: 'false'
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ github.event.pull_request.html_url }}

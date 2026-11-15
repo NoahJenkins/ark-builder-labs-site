@@ -12,7 +12,6 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "jest",
-    "test:workflow-policy": "ruby scripts/test-workflow-policy.rb",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
@@ -22,7 +21,6 @@
   },
   "dependencies": {
     "@calcom/embed-react": "^1.5.3",
-    "@next/mdx": "^16.4.5",
     "@radix-ui/react-slot": "^1.5.0",
     "@vercel/analytics": "^2.0.1",
     "class-variance-authority": "^0.7.1",
@@ -42,7 +40,6 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@playwright/mcp": "^0.0.84",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/postcss": "^4.3.4",
     "@testing-library/jest-dom": "^7.0.1",

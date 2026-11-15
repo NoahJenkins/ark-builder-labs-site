@@ -79,3 +79,6 @@ dist/
 # Added by OnboardCopilot: OS files
 Thumbs.db
 desktop.ini
+
+# Stale local Playwright JSON report
+test-results.json
