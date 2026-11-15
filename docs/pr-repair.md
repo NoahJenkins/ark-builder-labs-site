@@ -16,8 +16,8 @@ pull requests cannot change it for themselves.
   exact head. Then native auto-merge is queued with `expectedHeadOid`, and only
   while the latest Production deployment succeeded. The original closes after
   the replacement merges, if its head did not move.
-- Originals: `.github/workflows/dependabot-auto-merge.yml` queues native auto-merge on in-scope Dependabot PRs (`merge.originals` is `false`, so pr-repair never touches them). Because `main` requires up-to-date branches, a behind update waits for Dependabot to rebase it (or `@dependabot rebase`).
-- When it runs: only after failed `CI` on `dependabot/**` or `pr-repair/**` branches, plus one daily sweep (09:41 UTC), `workflow_dispatch`, and a contract self-test on PRs that edit its policy or workflow.
+- Originals: `.github/workflows/dependabot-auto-merge.yml` queues native auto-merge on in-scope Dependabot PRs (`merge.originals` is `false`, so pr-repair never touches them). Dependabot rebases only *conflicting* PRs, not ones that are merely behind, so while `main` requires up-to-date branches (strict) a behind update stays queued until someone comments `@dependabot rebase`. Turn strict off to avoid that.
+- When it runs: after failed `CI` on `dependabot/**` branches, after every `CI` run on `pr-repair/**` branches (a green replacement moves on to review and merge), plus one daily sweep (09:41 UTC), `workflow_dispatch`, and a contract self-test on PRs that edit its policy or workflow.
 - Human pull requests are never repaired, approved, resolved, or merged.
 
 Every Dependabot PR shows one state on its `pr-repair` check and on the

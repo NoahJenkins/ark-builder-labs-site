@@ -25,7 +25,7 @@ A modern, professional company website built with Next.js 16, featuring bold ani
 - **Forms**: React Hook Form
 - **Theme**: next-themes
 - **UI Components**: Custom component library with CVA (Class Variance Authority)
-- **Blog**: MDX content (frontmatter via `gray-matter`, rendered with `next-mdx-remote/rsc`); MD/MDX page support enabled via `@next/mdx`
+- **Blog**: MDX content (frontmatter via `gray-matter`, rendered with `next-mdx-remote/rsc`)
 - **Content Management**: File-based MDX content system
 
 ## 📋 Pages & Features

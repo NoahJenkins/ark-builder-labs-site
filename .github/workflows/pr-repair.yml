@@ -41,11 +41,34 @@ jobs:
         with:
           mode: selftest
 
-  plan:
+  # Reports whether the inference key exists without giving it to plan. Without
+  # it, plan reserves nothing and marks failing PRs missing-configuration on
+  # their pr-repair check, instead of burning repair attempts on a failing infer.
+  # Runs only when plan runs (failed Dependabot CI, pr-repair branches, daily).
+  preflight:
     if: >-
       github.event_name != 'pull_request'
       && github.ref_name == github.event.repository.default_branch
-      && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure')
+      && (github.event_name != 'workflow_run'
+          || github.event.workflow_run.conclusion == 'failure'
+          || startsWith(github.event.workflow_run.head_branch, 'pr-repair/'))
+    environment: dependabot-dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - id: check
+        env:
+          KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
+        run: if [ -n "$KEY" ]; then echo ready=true; else echo ready=false; fi >> "$GITHUB_OUTPUT"
+
+  # Dependabot branches: only after failed CI. pr-repair/<n> replacements: after
+  # every CI run, because a green replacement is what moves on to review and
+  # merge (native auto-merge, enabled by pr-repair with the App token).
+  plan:
+    needs: preflight
     environment: dependabot-controller
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -80,9 +103,7 @@ jobs:
           app-id: ${{ vars.DEPENDABOT_CONTROLLER_APP_ID }}
           app-slug: ${{ steps.app.outputs.app-slug }}
           enabled: ${{ vars.PR_REPAIR_ENABLED }}
-          # The inference job holds AI_GATEWAY_API_KEY (dependabot-dispatch
-          # environment); it fails visibly there if the key is ever missing.
-          credential-ready: "true"
+          credential-ready: ${{ needs.preflight.outputs.ready }}
 
   prepare:
     needs: plan
